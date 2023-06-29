@@ -3,9 +3,9 @@ from typing import Protocol
 import mmcv
 import numpy as np
 
-from htr_pipeline.utils.parser_xml import XmlParser
 from src.htr_pipeline.inferencer import Inferencer
 from src.htr_pipeline.utils.helper import timer_func
+from src.htr_pipeline.utils.parser_xml import XmlParser
 from src.htr_pipeline.utils.preprocess_img import Preprocess
 from src.htr_pipeline.utils.process_xml import XMLHelper
 
