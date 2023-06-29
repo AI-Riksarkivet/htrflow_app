@@ -7,7 +7,7 @@ from helper.text.text_app import TextApp
 from helper.text.text_howto import TextHowTo
 from helper.text.text_riksarkivet import TextRiksarkivet
 from helper.text.text_roadmap import TextRoadmap
-from htr_pipeline.gradio_backend import CustomTrack, FastTrack, SingletonModelLoader
+from src.htr_pipeline.gradio_backend import CustomTrack, FastTrack, SingletonModelLoader
 
 model_loader = SingletonModelLoader()
 fast_track = FastTrack(model_loader)
