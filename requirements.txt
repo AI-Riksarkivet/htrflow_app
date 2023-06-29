@@ -1,0 +1,18 @@
+# !pip install -U openmim
+# !mim install mmengine
+# !mim install mmcv
+# !mim install mmdet
+# !mim install mmocr
+torch
+torchvision
+openmim
+gradio
+pandas
+numpy
+opencv-python-headless
+jinja2
+transformers
+huggingface_hub
+requests
+# scipy
+# sklearn

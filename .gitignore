@@ -1,0 +1,23 @@
+venv/
+.vscode/
+
+# Byte-compiled / optimized / DLL files
+*/__pycache__
+__pycache__/
+*.py[cod]
+
+vis_data/
+notebooks/
+output/
+my_xml_filename.xml
+models/RmtDet_regions/epoch_12.pth
+models/RmtDet_lines/epoch_12.pth
+models/SATRN/epoch_5.pth
+helper/examples/images/*.jpg
+flagged_data_points/
+src/htr_pipeline.egg-info/
+
+# 
+page_xml.xml
+page_txt.txt
+transcribed_text.txt

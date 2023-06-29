@@ -1,0 +1,13 @@
+.github/
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+.env
+Makefile
+page_txt.txt
+page_xml.xml
+helper/text/images/
+helper/text/videos/
