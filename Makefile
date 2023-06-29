@@ -7,7 +7,7 @@ venv:
 activate: 
 	source ./venv/bin/activate
 
-docker_install: local_install install_openmmlab
+install: local_install install_openmmlab
 
 docker_install: local_install install_openmmlab_with_mim
 
