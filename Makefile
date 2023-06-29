@@ -7,20 +7,29 @@ venv:
 activate: 
 	source ./venv/bin/activate
 
-install: local_install install_openmmlab
+docker_install: local_install install_openmmlab
+
+docker_install: local_install install_openmmlab_with_mim
 
 local_install:
 	@echo "Running requirements install"
 	pip install --upgrade pip
 	pip install -r requirements.txt
 
-install_openmmlab:
+install_openmmlab_with_mim:
 	@echo "Running Openmmlab requirements install"
 	pip install -U openmim
 	mim install mmengine
 	mim install mmcv
 	mim install mmdet
 	mim install mmocr
+
+install_openmmlab:
+	@echo "Running Openmmlab requirements install"
+	pip install mmengine
+	pip install mmcv
+	pip install mmdet
+	pip install mmocr
 
 build:
 	pip install -e .

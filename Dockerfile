@@ -9,7 +9,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y
 #RUN apt-get update && apt-get install -y git ninja-build libglib2.0-0 libsm6 libxrender-dev libxext6 libgl1-mesa-glx \
 
-# mim openmmlabs installs
+# mim openmmlabs installs (quick fix..)
 RUN mim install mmengine 
 RUN mim install mmcv 
 RUN mim install mmdet 
