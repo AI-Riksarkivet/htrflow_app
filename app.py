@@ -40,7 +40,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                         # )
 
                         radio_file_input = gr.CheckboxGroup(
-                            choices=["Txt", "Page XML"],
+                            choices=["Txt", "XML"],
                             value=["Txt"],
                             label="Output file extension",
                             # info="Only txt and page xml is supported for now!",
