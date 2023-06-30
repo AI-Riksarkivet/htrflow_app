@@ -6,8 +6,6 @@ __pycache__
 .Python
 env
 .env
-Makefile
 page_txt.txt
 page_xml.xml
-helper/text/images/
-helper/text/videos/
+src/tests/

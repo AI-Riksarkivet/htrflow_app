@@ -92,11 +92,6 @@ class GradioConfig:
         return f"""
         function monitorButtonHover() {{
 
-            gradioURL = window.location.href
-            if (!gradioURL.endsWith('?__theme=dark')) {{
-                window.location.replace(gradioURL + '?__theme=dark');
-            }}
-
             const buttons = document.querySelectorAll('{button_ids}');
             buttons.forEach(function(button) {{
                 button.addEventListener('mouseenter', function() {{
@@ -109,6 +104,11 @@ class GradioConfig:
             }})
         }}
         """
+
+        #     gradioURL = window.location.href
+        # if (!gradioURL.endsWith('?__theme=dark')) {{
+        #     window.location.replace(gradioURL + '?__theme=dark');
+        # }}
 
 
 buttons_with_tooltip = {

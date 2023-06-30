@@ -1,19 +1,19 @@
-torch
-torchvision
-openmim
-gradio
-pandas
-numpy
-opencv-python-headless
-jinja2
-transformers
-huggingface_hub
-datasets
-requests
+torch==2.0.1
+torchvision==0.15.2
+openmim==0.3.9
+gradio==3.35.2
+pandas==2.0.3
+numpy==1.25.0
+opencv-python-headless==4.7.0.72
+Jinja2==3.1.2
+transformers==4.30.2
+huggingface-hub==0.15.1
+datasets==2.13.1
+requests==2.31.0
 # scipy
 # sklearn
 
-# make install_openmmlab
+# make install_openmmlab (they are excuted in dockerfile)
 # !pip install -U openmim
 # !mim install mmengine
 # !mim install mmcv
