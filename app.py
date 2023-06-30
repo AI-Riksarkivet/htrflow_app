@@ -14,7 +14,6 @@ custom_track = CustomTrack(model_loader)
 images_for_demo = DemoImages()
 
 with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
-    gr.Markdown("&nbsp;")
     gr.Markdown(TextApp.title_markdown)
 
     with gr.Tabs():
