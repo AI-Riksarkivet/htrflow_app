@@ -8,6 +8,7 @@ opencv-python-headless
 jinja2
 transformers
 huggingface_hub
+datasets
 requests
 # scipy
 # sklearn

@@ -74,3 +74,7 @@ class XmlParser:
                     text = textline.find(f"{self.namespace}TextEquiv").find(f"{self.namespace}Unicode").text
                     f.write(text + "\n")
                 f.write("\n")
+
+
+if __name__ == "__main__":
+    pass

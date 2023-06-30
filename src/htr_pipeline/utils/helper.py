@@ -90,10 +90,3 @@ if __name__ == "__main__":
         kwargs={"spam": "eggs"},
     )
     print(retval)
-
-    # Example of using the decorator
-    retval = another_long_running_function()
-    print(retval)
-    retval = another_long_running_function()
-    print(retval)
-    print(retval)

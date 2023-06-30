@@ -6,3 +6,7 @@ class TextApp:
     <h1><center> Handwritten Text Recognition Tool </center></h1>
 
     <h3><center> Swedish National Archives - Riksarkivet </center></h3>"""
+
+
+if __name__ == "__main__":
+    pass

@@ -92,3 +92,7 @@ To explore the HTR results, follow these steps:
         ## &nbsp;
         Alternatively, you can watch the instructional video below, which provides a step-by-step walkthrough of the HTR Tool and some additional features.
     """
+
+
+if __name__ == "__main__":
+    pass

@@ -85,3 +85,7 @@ class SegMaskHelper:
         translated_line_polygons = [[[a + box[0], b + box[1]] for [a, b] in poly] for poly in line_polygons]
 
         return translated_line_polygons
+
+
+if __name__ == "__main__":
+    pass

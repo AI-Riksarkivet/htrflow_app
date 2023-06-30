@@ -124,4 +124,7 @@ class FilterSegMask:
 
         new_filtered_result.pred_instances = new_pred_instances
         return new_filtered_result
-        return new_filtered_result
+
+
+if __name__ == "__main__":
+    pass
