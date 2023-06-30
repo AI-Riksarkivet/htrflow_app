@@ -26,7 +26,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                             label="Image to run HTR on", type="numpy", tool="editor", elem_id="image_upload"
                         ).style(height=395)
 
-                    with gr.Row():
+                    with gr.Row(equal_height=False):
                         # with gr.Group():
                         # callback = gr.CSVLogger()
                         # # hf_writer = gr.HuggingFaceDatasetSaver(HF_API_TOKEN, "htr_pipelin_flags")
@@ -35,18 +35,23 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                         #     variant="secondary",
                         #     visible=True,
                         # ).style(full_width=True)
-                        radio_file_input = gr.Radio(
-                            value="Text file", choices=["Text file ", "Page XML file "], label="What kind file output?"
+                        # radio_file_input = gr.Radio(
+                        #     value="Text file", choices=["Text file ", "Page XML file "], label="What kind file output?"
+                        # )
+
+                        radio_file_input = gr.CheckboxGroup(
+                            choices=["Txt", "Page XML"],
+                            value=["Txt"],
+                            label="Output file extension",
+                            # info="Only txt and page xml is supported for now!",
                         )
-                    with gr.Row():
-                        htr_clear_button = gr.Button("", variant="Secondary")
 
                         htr_pipeline_button = gr.Button(
                             "Run HTR",
                             variant="primary",
                             visible=True,
                             elem_id="run_pipeline_button",
-                        ).style(full_width=True)
+                        ).style(full_width=False)
 
                     with gr.Group():
                         with gr.Row():
