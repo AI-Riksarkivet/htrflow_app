@@ -38,11 +38,13 @@ class FastTrack:
             f.write(rendered_xml)
 
         xml_img = self.visualize_xml_and_return_txt(image, xml_txt)
-
-        if radio_button_choices == "Text file":
-            returned_file_extension = xml_txt
+        if len(radio_button_choices) < 2:
+            if radio_button_choices[0] == "Txt":
+                returned_file_extension = xml_txt
+            else:
+                returned_file_extension = xml_xml
         else:
-            returned_file_extension = xml_xml
+            returned_file_extension = [xml_txt, xml_xml]
 
         return xml_img, returned_file_extension, gr.update(visible=True)
 
