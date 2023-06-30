@@ -86,3 +86,7 @@ class OrderObject:
 
         # Return the ordered regions
         return df["region_id"].tolist()
+
+
+if __name__ == "__main__":
+    pass

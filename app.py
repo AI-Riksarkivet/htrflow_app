@@ -1,17 +1,17 @@
+import os
+import shutil
+
 import gradio as gr
 
-from helper.examples.examples import ExamplesImages
+from helper.examples.examples import DemoImages
 from helper.gradio_config import css, js, theme
-from helper.text.text_about import TextAbout
-from helper.text.text_app import TextApp
-from helper.text.text_howto import TextHowTo
-from helper.text.text_riksarkivet import TextRiksarkivet
-from helper.text.text_roadmap import TextRoadmap
+from helper.text import TextAbout, TextApp, TextHowTo, TextRiksarkivet, TextRoadmap
 from src.htr_pipeline.gradio_backend import CustomTrack, FastTrack, SingletonModelLoader
 
 model_loader = SingletonModelLoader()
 fast_track = FastTrack(model_loader)
 custom_track = CustomTrack(model_loader)
+images_for_demo = DemoImages()
 
 with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
     gr.Markdown("&nbsp;")
@@ -36,15 +36,17 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                         #     visible=True,
                         # ).style(full_width=True)
                         radio_file_input = gr.Radio(
-                            value="Text file", choices=["Text file", "Page XML"], label="What kind file output?"
+                            value="Text file", choices=["Text file ", "Page XML file "], label="What kind file output?"
                         )
+                    with gr.Row():
+                        htr_clear_button = gr.Button("", variant="Secondary")
 
                         htr_pipeline_button = gr.Button(
                             "Run HTR",
                             variant="primary",
                             visible=True,
                             elem_id="run_pipeline_button",
-                        ).style(full_width=False)
+                        ).style(full_width=True)
 
                     with gr.Group():
                         with gr.Row():
@@ -54,8 +56,8 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                                 fast_name_files_placeholder = gr.Markdown(visible=False)
 
                                 gr.Examples(
-                                    examples=ExamplesImages.example_images_with_info,
-                                    inputs=[fast_track_input_region_image, fast_name_files_placeholder],
+                                    examples=images_for_demo.examples_list,
+                                    inputs=[fast_name_files_placeholder, fast_track_input_region_image],
                                     label="Example images",
                                     examples_per_page=3,
                                 )
@@ -82,6 +84,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                 with gr.Tab("1. Region Segmentation"):
                     with gr.Row():
                         with gr.Column(scale=2):
+                            vis_data_folder_placeholder = gr.Markdown(visible=False)
                             name_files_placeholder = gr.Markdown(visible=False)
 
                             with gr.Row():
@@ -132,8 +135,8 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                             with gr.Row():
                                 with gr.Accordion("Example images to use:", open=False) as example_accord:
                                     gr.Examples(
-                                        examples=ExamplesImages.example_images_with_info,
-                                        inputs=[input_region_image, name_files_placeholder],
+                                        examples=images_for_demo.examples_list,
+                                        inputs=[name_files_placeholder, input_region_image],
                                         label="Example images",
                                         examples_per_page=2,
                                     )
@@ -161,7 +164,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                                     columns=[2],
                                     rows=[2],
                                     # object_fit="contain",
-                                    height=300,
+                                    height=400,
                                     preview=True,
                                     container=False,
                                 )
@@ -474,8 +477,14 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
         outputs=[txt_file_downlod, txt_file_downlod],
     )
 
+    # def remove_temp_vis():
+    #     if os.path.exists("./vis_data"):
+    #         os.remove("././vis_data")
+    #     return None
+
     clear_button.click(
         lambda: (
+            (shutil.rmtree("./vis_data") if os.path.exists("./vis_data") else None, None)[1],
             None,
             None,
             None,
@@ -494,6 +503,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
         ),
         inputs=[],
         outputs=[
+            vis_data_folder_placeholder,
             input_region_image,
             regions_cropped_gallery,
             input_region_from_gallery,
@@ -518,5 +528,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
 demo.queue(concurrency_count=5, max_size=20)
 
 
+if __name__ == "__main__":
+    demo.launch(server_name="0.0.0.0", server_port=7860, show_api=False, show_error=True)
 if __name__ == "__main__":
     demo.launch(server_name="0.0.0.0", server_port=7860, show_api=False, show_error=True)

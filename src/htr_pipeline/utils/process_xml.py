@@ -148,3 +148,7 @@ class XMLHelper:
                 text_lines.append(line_data)
 
         return text_lines, htr_scores
+
+
+if __name__ == "__main__":
+    pass

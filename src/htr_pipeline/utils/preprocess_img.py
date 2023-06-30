@@ -17,3 +17,7 @@ class Preprocess:
         img_gradio = cv2.cvtColor(threshed, cv2.COLOR_BGR2RGB)
 
         return img_gradio
+
+
+if __name__ == "__main__":
+    pass
