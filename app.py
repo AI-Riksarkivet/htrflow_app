@@ -18,14 +18,14 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
 
     with gr.Tabs():
         with gr.Tab("HTR Tool"):
-            with gr.Row():
+            with gr.Row(equal_height=True):
                 with gr.Column(scale=2):
                     with gr.Row():
                         fast_track_input_region_image = gr.Image(
-                            label="Image to run HTR on", type="numpy", tool="editor", elem_id="image_upload"
-                        ).style(height=395)
+                            label="Image to run HTR on", type="numpy", tool="editor", elem_id="image_upload", height=395
+                        )
 
-                    with gr.Row(equal_height=False):
+                    with gr.Row():
                         # with gr.Group():
                         # callback = gr.CSVLogger()
                         # # hf_writer = gr.HuggingFaceDatasetSaver(HF_API_TOKEN, "htr_pipelin_flags")
@@ -67,12 +67,9 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                                 )
 
                 with gr.Column(scale=4):
-                    with gr.Row():
-                        fast_track_output_image = gr.Image(
-                            label="HTR results visualizer",
-                            type="numpy",
-                            tool="editor",
-                        ).style(height=650)
+                    fast_track_output_image = gr.Image(
+                        label="HTR results visualizer", type="numpy", tool="editor", height=650
+                    )
 
                 with gr.Row(visible=False) as api_placeholder:
                     htr_pipeline_button_api = gr.Button(
@@ -395,10 +392,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
 
                 with gr.Tab("Riksarkivet"):
                     with gr.Row():
-                        with gr.Column():
-                            gr.Markdown(TextRiksarkivet.riksarkivet)
-                        with gr.Column():
-                            gr.Markdown(TextRiksarkivet.contact)
+                        gr.Markdown(TextRiksarkivet.riksarkivet)
 
     htr_pipeline_button.click(
         fast_track.segment_to_xml,
