@@ -141,13 +141,26 @@ class XMLHelper:
             line_data["id"] = line_id
             line_data["boundary"] = line_pol
 
-            line_data["unicode"], htr_score = inferencer.transcribe(line)
+            transcribed_text, htr_score = inferencer.transcribe(line)
+            escaped_text = self._escape_xml_chars(transcribed_text)
+            line_data["unicode"] = escaped_text
+            line_data["pred_score"] = round(htr_score, 4)
+
             htr_scores.append(htr_score)
 
             if htr_score > htr_threshold:
                 text_lines.append(line_data)
 
         return text_lines, htr_scores
+
+    def _escape_xml_chars(self, textline):
+        return (
+            textline.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("'", "&apos;")
+            .replace('"', "&quot;")
+        )
 
 
 if __name__ == "__main__":
