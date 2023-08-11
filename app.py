@@ -6,9 +6,8 @@ import gradio as gr
 from helper.examples.examples import DemoImages
 from helper.gradio_config import css, js, theme
 from helper.text import TextAbout, TextApp, TextHowTo, TextRiksarkivet, TextRoadmap
+from htr_tool import htr_tool_tab
 from src.htr_pipeline.gradio_backend import CustomTrack, SingletonModelLoader
-
-from .htr_tool import htr_tool_tab
 
 model_loader = SingletonModelLoader()
 custom_track = CustomTrack(model_loader)
