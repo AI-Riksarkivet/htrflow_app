@@ -92,7 +92,10 @@ class Inferencer:
 
             if visualize:
                 result_viz = self.seg_model.visualize(
-                    inputs=[image], preds=[result_tl_clean], return_vis=True, no_save_vis=True
+                    inputs=[image],
+                    preds=[result_tl_clean],
+                    return_vis=True,
+                    no_save_vis=True,
                 )[0]
             else:
                 result_viz = None
