@@ -21,5 +21,5 @@ src/htr_pipeline.egg-info/
 page_xml.xml
 page_txt.txt
 transcribed_text.txt
-helper/examples/.cache_images/
-helper/examples/images/*.jpg
+app/helper/examples/.cache_images/
+app/helper/examples/images/*.jpg
