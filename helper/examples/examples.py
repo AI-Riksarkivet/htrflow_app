@@ -5,10 +5,18 @@ from PIL import Image
 
 
 class DemoImages:
-    def __init__(self, url="Riksarkivet/test_images_demo", cache_dir="./helper/examples/.cache_images") -> None:
-        self.images_datasets = datasets.load_dataset(url, cache_dir=cache_dir)
-        self.example_df = self.images_datasets["train"].to_pandas()
-        self.examples_list = self.convert_bytes_to_images()
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(DemoImages, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def __init__(self, url="Riksarkivet/test_images_demo", cache_dir="./helper/examples/.cache_images"):
+        if not hasattr(self, "images_datasets"):
+            self.images_datasets = datasets.load_dataset(url, cache_dir=cache_dir)
+            self.example_df = self.images_datasets["train"].to_pandas()
+            self.examples_list = self.convert_bytes_to_images()
 
     def convert_bytes_to_images(self):
         examples_list = []

@@ -16,8 +16,10 @@ class SingletonModelLoader:
         return cls._instance
 
     def __init__(self):
-        self.inferencer = Inferencer(local_run=True)
-        self.pipeline = Pipeline(self.inferencer)
+        if not hasattr(self, "inferencer"):
+            self.inferencer = Inferencer(local_run=True)
+        if not hasattr(self, "pipeline"):
+            self.pipeline = Pipeline(self.inferencer)
 
 
 # fast track
