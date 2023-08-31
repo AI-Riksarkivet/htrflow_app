@@ -22,6 +22,11 @@ class TextRoadmap:
         </a>
     </p>"""
 
+    roadmap_image = """  
+        <p align="center">
+            <img src="" alt="Badge 1">
+    </p>"""
+
 
 if __name__ == "__main__":
     pass
