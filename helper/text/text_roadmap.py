@@ -39,5 +39,5 @@ class TextRoadmap:
 
     roadmap_image = """  
     <figure>
-    <img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/roadmap_image.png" alt="HTR_tool" style="width:70%; display: block; margin-left: auto; margin-right:auto;" >
+    <img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/roadmap_image_2.png" alt="HTR_tool" style="width:70%; display: block; margin-left: auto; margin-right:auto;" >
     </figure> """
