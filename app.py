@@ -34,17 +34,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
 
                 with gr.Tab("Stepwise HTR Tool"):
                     with gr.Row().style(equal_height=False):
-                        with gr.Column():
-                            gr.Markdown(TextHowTo.stepwise_htr_tool)
-
-                        with gr.Column():
-                            gr.Markdown(TextHowTo.both_htr_tool_video)
-                            gr.Video(
-                                value="https://github.com/Borg93/htr_gradio_file_placeholder/raw/main/eating_spaghetti.mp4",
-                                label="How to use Stepwise HTR Tool",
-                            )
-                            gr.Markdown(TextHowTo.reach_out)
-
+                        gr.Markdown(TextHowTo.stepwise_htr_tool)
                     with gr.Row():
                         gr.Markdown(TextHowTo.stepwise_htr_tool_tab_intro)
                     with gr.Row():
