@@ -11,12 +11,16 @@ class TextRoadmap:
     """
 
     discussion = """
-    
-                                <p align="center">
-                                    <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions">
-                                        <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-a-discussion-xl-dark.svg" alt="Badge 1">
-                                    </a>
-                                </p>"""
+    ## Get in Touch
+
+    If you have suggestions, questions, or would like to discuss our roadmap further, please don't hesitate to reach out.
+    Press badge below to open a discussion on HuggingFace.
+
+    <p align="center">
+        <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions">
+            <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-a-discussion-xl-dark.svg" alt="Badge 1">
+        </a>
+    </p>"""
 
 
 if __name__ == "__main__":
