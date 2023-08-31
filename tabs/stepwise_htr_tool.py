@@ -68,7 +68,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                                 examples=images_for_demo.examples_list,
                                 inputs=[name_files_placeholder, input_region_image],
                                 label="Example images",
-                                examples_per_page=2,
+                                examples_per_page=5,
                             )
 
                 with gr.Column(scale=3):

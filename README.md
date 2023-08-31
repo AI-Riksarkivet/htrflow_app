@@ -5,6 +5,7 @@ colorFrom: purple
 colorTo: green
 sdk: docker
 pinned: false
-models: []
+models:
+  - Riksarkivet/HTR_pipeline_models
 datasets: []
 ---
