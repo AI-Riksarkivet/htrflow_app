@@ -1,7 +1,10 @@
 import gradio as gr
 
 from helper.gradio_config import css, js, theme
-from helper.text import TextAbout, TextApp, TextHowTo, TextRoadmap
+from helper.text.text_about import TextAbout
+from helper.text.text_app import TextApp
+from helper.text.text_howto import TextHowTo
+from helper.text.text_roadmap import TextRoadmap
 from tabs.htr_tool import htr_tool_tab
 from tabs.stepwise_htr_tool import stepwise_htr_tool_tab
 
@@ -98,32 +101,22 @@ print(job.result())
             with gr.Tabs():
                 with gr.Tab("Project"):
                     with gr.Row():
+                        gr.Markdown(TextAbout.intro_and_pipeline_overview_text)
+                    with gr.Row():
+                        with gr.Tabs():
+                            with gr.Tab("I. Binarization"):
+                                gr.Markdown(TextAbout.binarization)
+                            with gr.Tab("II. Region Segmentation"):
+                                gr.Markdown(TextAbout.text_region_segment)
+                            with gr.Tab("III. Line Segmentation"):
+                                gr.Markdown(TextAbout.text_line_segmentation)
+                            with gr.Tab("IV. Transcriber"):
+                                gr.Markdown(TextAbout.text_htr)
+                    with gr.Row():
                         with gr.Column():
-                            gr.Markdown(TextAbout.intro_and_pipeline_overview_text)
-                            with gr.Row():
-                                with gr.Tabs():
-                                    with gr.Tab("I. Binarization"):
-                                        gr.Markdown(TextAbout.binarization)
-                                    with gr.Tab("II. Region Segmentation"):
-                                        gr.Markdown(TextAbout.text_region_segment)
-                                    with gr.Tab("III. Line Segmentation"):
-                                        gr.Markdown(TextAbout.text_line_segmentation)
-                                    with gr.Tab("IV. Transcriber"):
-                                        gr.Markdown(TextAbout.text_htr)
-                            with gr.Row():
-                                gr.Markdown(TextAbout.text_data)
-
+                            gr.Markdown(TextAbout.text_data)
                         with gr.Column():
-                            gr.Markdown(TextAbout.filler_text_data)
                             gr.Markdown(TextAbout.text_models)
-                            with gr.Row():
-                                with gr.Tabs():
-                                    with gr.Tab("Region Segmentation"):
-                                        gr.Markdown(TextAbout.text_models_region)
-                                    with gr.Tab("Line Segmentation"):
-                                        gr.Markdown(TextAbout.text_line_segmentation)
-                                    with gr.Tab("Transcriber"):
-                                        gr.Markdown(TextAbout.text_models_htr)
 
                 with gr.Tab("Roadmap"):
                     with gr.Row():
@@ -131,8 +124,6 @@ print(job.result())
                             gr.Markdown(TextRoadmap.roadmap)
                         with gr.Column():
                             gr.Markdown(TextRoadmap.discussion)
-                    with gr.Row():
-                        gr.Markdown(TextRoadmap.roadmap_image)
 
     demo.load(None, None, None, _js=js)
 
