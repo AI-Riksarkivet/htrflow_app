@@ -131,6 +131,8 @@ print(job.result())
                             gr.Markdown(TextRoadmap.roadmap)
                         with gr.Column():
                             gr.Markdown(TextRoadmap.discussion)
+                    with gr.Row():
+                        gr.Markdown(TextRoadmap.roadmap_image)
 
     demo.load(None, None, None, _js=js)
 
