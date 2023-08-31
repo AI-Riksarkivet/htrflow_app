@@ -52,10 +52,11 @@ class TextAbout:
     """
 
     text_data = """
-    
+    ## The Dataset
+
     For a glimpse into the kind of data we're working with, you can explore our sample test data on Hugging Face:
     
-    [![Sample Test Data](https://img.shields.io/badge/Sample%20Test%20Data-View-blue.svg)](https://huggingface.co/datasets/Riksarkivet/test_images_demo)
+    [HuggingFace Dataset Card](https://huggingface.co/datasets/Riksarkivet/test_images_demo)
     
     **Note**: This is just a sample. The complete training dataset will be released in the future.
     """
@@ -64,7 +65,7 @@ class TextAbout:
     ## The Models
     For detailed information about all the models used in this project, please refer to the model cards available on Hugging Face:
     
-    [![Model Cards](https://img.shields.io/badge/Model%20Cards-View-blue.svg)](https://huggingface.co/Riksarkivet/HTR_pipeline_models)
+    [HuggingFace Model Card](https://huggingface.co/Riksarkivet/HTR_pipeline_models)
     """
 
 
