@@ -56,8 +56,20 @@ with gr.Blocks() as htr_tool_tab:
                             examples=images_for_demo.examples_list,
                             inputs=[fast_name_files_placeholder, fast_track_input_region_image],
                             label="Example images",
-                            examples_per_page=3,
+                            examples_per_page=5,
                         )
+            with gr.Row():
+                gr.Markdown(
+                    """
+                    Image viewer for xml output: 
+                    <p align="center">
+                        <a href="https://huggingface.co/spaces/Riksarkivet/Viewer_demo">
+                            <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl-dark.svg" alt="Badge 1">
+                        </a>
+                    </p>
+                    
+                    """
+                )
 
         with gr.Column(scale=4):
             fast_track_output_image = gr.Image(label="HTR results visualizer", type="numpy", tool="editor", height=650)
@@ -82,3 +94,8 @@ with gr.Blocks() as htr_tool_tab:
         outputs=[xml_rendered_placeholder_for_api],
         api_name="predict",
     )
+
+    # callback.setup([fast_track_input_region_image], "flagged_data_points")
+    # flagging_button.click(lambda *args: callback.flag(args), [fast_track_input_region_image], None, preprocess=False)
+    # flagging_button.click(lambda: (gr.update(value="Flagged")), outputs=flagging_button)
+    # fast_track_input_region_image.change(lambda: (gr.update(value="Flag")), outputs=flagging_button)

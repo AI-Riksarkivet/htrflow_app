@@ -13,7 +13,18 @@ class TextHowTo:
     </figure> 
     The HTR Tool will transform an image of handwritten text into structured, transcribed text within approximately 1-2 minutes (depending on your hardware). 
     Note that the generated page XML file is strucutred in such manner that it allows for an easy integration with other software, such as Transkribus.
+    
+    <br><br>
+
+    You can use our own developed Image viewer for the xml output: 
+    <p align="center">
+        <a href="https://huggingface.co/spaces/Riksarkivet/Viewer_demo">
+            <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-in-hf-spaces-xl-dark.svg" alt="Badge 1">
+        </a>
+    </p>
     <br>
+
+                    
 """
     reach_out = """  Feel free to reach out if you have any questions or need further assistance!
 
@@ -23,13 +34,15 @@ class TextHowTo:
 ## Stepwise HTR Tool
 
 The Stepwise HTR Tool is a powerful tool for performing Handwritten Text Recognition (HTR) tasks. The Stepwise version provides you with fine-grained control over each step of the HTR process, allowing for greater customization and troubleshooting capabilities.
-With the Stepwise HTR Tool, you can break down the HTR process into distinct steps: region segmentation, line segmentation, text transcription, and result exploration.
-This tool offers a range of configuration options to tailor the HTR process to your specific needs. You can adjust settings such as P-threshold and C-threshold to fine-tune the region and line segmentation, and choose from a selection of underlying machine learning models to drive each step of the process.
-The Stepwise HTR Tool also provides a dedicated Explore Results tab, allowing you to thoroughly analyze and interact with the transcriptions. You can sort and identify both bad and good predictions, helping you gain insights and make improvements to the HTR accuracy.
-Each step is interconnected, and the output of one step serves as the input for the next step, ensuring a seamless and efficient workflow.
 <br><br>
+With the Stepwise HTR Tool, you can break down the HTR process into distinct steps: region segmentation, line segmentation, text transcription, and result exploration. This tool offers a range of configuration options to tailor the HTR process to your specific needs. You can adjust settings such as P-threshold and C-threshold to fine-tune the region and line segmentation, and choose from a selection of underlying machine learning models to drive each step of the process.
+<br><br>
+The Stepwise HTR Tool also provides a dedicated Explore Results tab, allowing you to thoroughly analyze and interact with the transcriptions. You can sort and identify both bad and good predictions, helping you gain insights and make improvements to the HTR accuracy. Each step is interconnected, and the output of one step serves as the input for the next step, ensuring a seamless and efficient workflow.
 
-Follow the instructions below provided in each tab to perform the respective step of the HTR process and ensure you work through the tabs sequentially:
+"""
+    stepwise_htr_tool_tab_intro = """
+    Follow the instructions below provided in each tab to perform the respective step of the HTR process and ensure you work through the tabs sequentially:
+
 """
 
     stepwise_htr_tool_tab1 = """
@@ -84,14 +97,29 @@ To explore the HTR results, follow these steps:
 """
 
     stepwise_htr_tool_end = """
-    As mentioned, please note that each tab in this workflow is dependent on the previous steps, where you progressively work through the process in a step-by-step manner.
-    <br>
-    """
+As mentioned, please note that each tab in this workflow is dependent on the previous steps, where you progressively work through the process in a step-by-step manner.
+<br>
+"""
 
     both_htr_tool_video = """
-        ## &nbsp;
-        Alternatively, you can watch the instructional video below, which provides a step-by-step walkthrough of the HTR Tool and some additional features.
-    """
+## &nbsp;
+Alternatively, you can watch the instructional video below, which provides a step-by-step walkthrough of the HTR Tool and some additional features.
+"""
+
+    figure_htr_api = """
+<figure>
+<img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/notebook_api.png" alt="HTR_tool" style="width:98%; display: block; margin-left: auto; margin-right:auto;" >
+<figcaption style="text-align: center;"> <em> Figure - How to run API through a client in a notebook </em></figcaption>
+</figure> 
+"""
+
+    figure_htr_hardware = """
+
+<figure>
+<img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/hardware_example.png" alt="HTR_tool" style="width:75%; display: block; margin-left: auto; margin-right:auto;" >
+<figcaption style="text-align: center;"> <em> Figure - Choose a hardware that has atleast a GPU </em></figcaption>
+</figure> 
+"""
 
 
 if __name__ == "__main__":
