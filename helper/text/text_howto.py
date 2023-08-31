@@ -45,6 +45,13 @@ The Stepwise HTR Tool also provides a dedicated Explore Results tab, allowing yo
 
 """
 
+    htr_tool_api_text = """
+## Usage of Client API
+
+For those interested in testing out the demo, it's available to run as a Gradio Python client. 
+To facilitate this, there's a lightweight package called gradio_client that you can easily install via pip.
+        """
+
     stepwise_htr_tool_tab1 = """
 ### Tab 1: Region Segmentation
 The Region Segmentation tab allows you to perform the initial step of segmenting the handwritten text into regions of interest. By adjusting the P-threshold and C-threshold settings, you can control the confidence score required for a prediction and the minimum overlap or similarity for a detected region to be considered valid. Additionally, you can select an underlying machine learning model for region segmentation.
@@ -119,6 +126,21 @@ Alternatively, you can watch the instructional video below, which provides a ste
 <img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/hardware_example.png" alt="HTR_tool" style="width:75%; display: block; margin-left: auto; margin-right:auto;" >
 <figcaption style="text-align: center;"> <em> Figure - Choose a hardware that has atleast a GPU </em></figcaption>
 </figure> 
+"""
+    duplicatin_space_htr_text = """
+## Duplicating a Space for private use
+It's worth noting that while using any public Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. 
+However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. 
+This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
+
+<br>
+<p align="center">
+    <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo?duplicate=true">
+        <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/duplicate-this-space-xl-dark.svg" alt="Badge 1">
+    </a>
+</p>
+<br>
+
 """
 
 

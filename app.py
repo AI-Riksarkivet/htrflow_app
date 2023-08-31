@@ -60,15 +60,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                 with gr.Tab("API"):
                     with gr.Row():
                         with gr.Column():
-                            gr.Markdown(
-                                """
-                                ## Usage of Client API
-
-                                For those interested in testing out the demo, it's available to run as a Gradio Python client. 
-                                To facilitate this, there's a lightweight package called gradio_client that you can easily install via pip.
-                                        """
-                            )
-
+                            gr.Markdown(TextHowTo.htr_tool_api_text)
                             gr.Code(
                                 value="""
 from gradio_client import Client # pip install gradio_client
@@ -95,23 +87,7 @@ print(job.result())
                             gr.Markdown(TextHowTo.figure_htr_api)
 
                         with gr.Column():
-                            gr.Markdown(
-                                """
-        ## Duplicating a Space for private use
-        It's worth noting that while using any public Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. 
-        However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. 
-        This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
-
-        <br>
-        <p align="center">
-            <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo?duplicate=true">
-                <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/duplicate-this-space-xl-dark.svg" alt="Badge 1">
-            </a>
-        </p>
-        <br>
-
-        """
-                            )
+                            gr.Markdown(TextHowTo.duplicatin_space_htr_text)
                             gr.Markdown(TextHowTo.figure_htr_hardware)
 
                             gr.Markdown(
@@ -154,16 +130,7 @@ print(job.result())
                         with gr.Column():
                             gr.Markdown(TextRoadmap.roadmap)
                         with gr.Column():
-                            gr.Markdown(TextRoadmap.notebook)
-
-                            gr.Markdown(
-                                """
-                                <p align="center">
-                                    <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions">
-                                        <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-a-discussion-xl-dark.svg" alt="Badge 1">
-                                    </a>
-                                </p>"""
-                            )
+                            gr.Markdown(TextRoadmap.discussion)
 
     demo.load(None, None, None, _js=js)
 
