@@ -23,10 +23,6 @@ class TextRoadmap:
     </p>"""
 
     roadmap_image = """  
-        <p align="center">
-            <img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/roadmap_image.png" alt="Badge 1">
-    </p>"""
-
-
-if __name__ == "__main__":
-    pass
+    <figure>
+    <img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/roadmap_image.png" alt="HTR_tool" style="width:70%; display: block; margin-left: auto; margin-right:auto;" >
+    </figure> """
