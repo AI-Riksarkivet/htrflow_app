@@ -24,7 +24,7 @@ class TextRoadmap:
 
     roadmap_image = """  
         <p align="center">
-            <img src="" alt="Badge 1">
+            <img src="https://raw.githubusercontent.com/Borg93/htr_gradio_file_placeholder/main/roadmap_image.png" alt="Badge 1">
     </p>"""
 
 
