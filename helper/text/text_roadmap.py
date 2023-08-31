@@ -1,13 +1,28 @@
 class TextRoadmap:
     roadmap = """
-
     ## Roadmap
+    
+    - **Model Training & Updates**
+      - Continually retrain and update both segmentation and text-recognition models as more training data becomes available.
+    
+    - **Specialized TrOCR Model**
+      - Train a TrOCR model specialized on Swedish historical handwritten text.
+      - Initialize with a historical BERT-model trained at the Swedish National Archives.
+    
+    - **Open-source HTR Project**
+      - Develop an easy-to-implement pipeline like the demo.
+      - Ensure high modularity: 
+        - Different segmentation strategies.
+        - Integration of models from various frameworks.
+        - Effective evaluation methods for entire pipelines and their comparisons.
+      - Broad use-cases: Not just running text, but all types of handwritten archives.
+    
+    - **Large Scale HTR**
+      - Conduct large scale HTR on handwritten historical archives of interest to humanities researchers.
 
-    * Continually retrain and update both segmentation och text-recognition models as more training-data becomes available.
-    * Train a TrOCR model specialized on swedish historical handwritten text that is initialized with an historical BERT-model trained here at the Swedish National Archives.
-    * An open-source HTR-project where it is easy to implement pipelines such as the one shown in the demo, but that is highly modularized, so you can implement different segmentation strategies, implement models trained with a variety of frameworks, and that offers effective ways to evaluate entire pipelines and compare them with each other. Use-cases should not be restricted to running text, but should comprise all types of handwritten archives.
-    * Do large scale HTR on handwritten historical archives that are of interest to researchers within the humanities. 
-   
+    - **Rest APIs**
+      - Serve model through inference APIs 
+      
     """
 
     discussion = """
