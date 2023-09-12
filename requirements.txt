@@ -10,6 +10,8 @@ transformers==4.30.2
 huggingface-hub==0.15.1
 datasets==2.13.1
 requests==2.31.0
+pillow==9.5.0
+
 
 
 # make install_openmmlab (they are excuted in dockerfile)

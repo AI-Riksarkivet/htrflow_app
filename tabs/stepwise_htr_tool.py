@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import gradio as gr
 
 from helper.examples.examples import DemoImages

@@ -16,9 +16,7 @@ class DemoImages:
         if not hasattr(self, "images_datasets"):
             self.images_datasets = datasets.load_dataset(url, cache_dir=cache_dir)
             self.example_df = self.images_datasets["train"].to_pandas()
-            print("df images: ", self.example_df)
             self.examples_list = self.convert_bytes_to_images()
-            print("loaded images: ", self.examples_list)
 
     def convert_bytes_to_images(self):
         examples_list = []
