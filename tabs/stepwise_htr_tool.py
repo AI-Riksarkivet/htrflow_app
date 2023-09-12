@@ -238,7 +238,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                 with gr.Column(scale=1, visible=True):
                     mapping_dict = gr.Variable()
                     transcribed_text_df_finish = gr.Dataframe(
-                        headers=["Transcribed text", "HTR prediction score"],
+                        headers=["Transcribed text", "Pred score"],
                         max_rows=15,
                         col_count=(2, "fixed"),
                         wrap=True,
