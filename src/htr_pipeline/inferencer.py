@@ -113,7 +113,7 @@ class Inferencer:
     @timer_func
     def transcribe(self, line_cropped):
         result_rec = self.htr_model_inferencer(line_cropped)
-        return result_rec["predictions"][0]["text"], result_rec["predictions"][0]["scores"]
+        return result_rec["predictions"][0]["text"], round(result_rec["predictions"][0]["scores"], 4)
 
     # def transcribe_different_model(self, image):
     #     processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
