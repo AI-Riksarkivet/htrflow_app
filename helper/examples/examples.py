@@ -14,8 +14,8 @@ class DemoImages:
 
     def __init__(self, url="Riksarkivet/test_images_demo", cache_dir="./helper/examples/.cache_images"):
         if not hasattr(self, "images_datasets"):
-            self.images_datasets = datasets.load_dataset(url, cache_dir=cache_dir)
-            self.example_df = self.images_datasets["train"].to_pandas()
+            self.images_datasets = datasets.load_dataset(url, cache_dir=cache_dir, split="train")
+            self.example_df = self.images_datasets.to_pandas()
             self.examples_list = self.convert_bytes_to_images()
 
     def convert_bytes_to_images(self):
@@ -41,6 +41,9 @@ class DemoImages:
 
 
 if __name__ == "__main__":
-    test = DemoImages(cache_dir=".cache_images")
+    # test = DemoImages(cache_dir=".cache_images")
 
-    print(test.examples_list)
+    # print(test.examples_list)
+
+    images_datasets = datasets.load_dataset("Riksarkivet/test_images_demo", cache_dir="./helper/examples/.cache_images")
+    print(images_datasets["train"]["image"][0])
