@@ -1,6 +1,7 @@
 import random
 import xml.etree.ElementTree as ET
 
+import gradio as gr
 from PIL import Image, ImageDraw, ImageFont
 
 
@@ -24,7 +25,7 @@ class XmlViz:
         font_path = font_path_tff
 
         max_bbox_width = 0  # Initialize maximum bounding box width
-
+        gr.Info("Parsing XML to visualize the data.")
         for textregion in self.root.findall(f".//{self.namespace}TextRegion"):
             coords = textregion.find(f"{self.namespace}Coords").attrib["points"].split()
             points = [tuple(map(int, point.split(","))) for point in coords]

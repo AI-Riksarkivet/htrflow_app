@@ -1,3 +1,4 @@
+import gradio as gr
 from tqdm import tqdm
 
 from src.htr_pipeline.utils.process_segmask import SegMaskHelper
@@ -17,7 +18,6 @@ class PipelineInferencer:
             image, inferencer, pred_score_threshold_regions, pred_score_threshold_lines, containments_threshold
         )
 
-        print(template_data)
         return self.xml_helper.render(template_data)
 
     def _process_regions(
@@ -35,7 +35,7 @@ class PipelineInferencer:
             containments_threshold=containments_threshold,
             visualize=False,
         )
-
+        gr.Info(f"Found {len(regions_cropped_ordered)} Regions to parse")
         region_data_list = []
         for i, data in tqdm(enumerate(zip(regions_cropped_ordered, reg_polygons_ordered, reg_masks_ordered))):
             region_data = self._create_region_data(
@@ -84,12 +84,23 @@ class PipelineInferencer:
 
         text_lines = []
         htr_scores = []
+
+        id_number = region_id.split("_")[1]
+        total_lines_len = len(lines_cropped_ordered)
+
+        gr.Info(f" Region {id_number}, found {total_lines_len} lines to parse and transcribe.")
+
         for index, (line, line_pol) in enumerate(zip(lines_cropped_ordered, line_polygons_ordered_trans)):
             line_data, htr_score = self._create_line_data(line, line_pol, index, region_id, inferencer, htr_threshold)
 
             if line_data:
                 text_lines.append(line_data)
             htr_scores.append(htr_score)
+
+            remaining_lines = total_lines_len - index - 1
+
+            if (index + 1) % 10 == 0 and remaining_lines > 5:  # +1 because index starts at 0
+                gr.Info(f"Parsed {index + 1} lines. Still {remaining_lines} lines left to transcribe.")
 
         return text_lines, htr_scores
 
