@@ -21,6 +21,9 @@ class GradioConfig:
         #image_upload [data-testid="image"], #image_upload [data-testid="image"] > div{min-height: 450px}
         #gallery {height: 400px} 
         .fixed-height.svelte-g4rw9.svelte-g4rw9 {min-height: 400px;}
+
+        #gallery_lines > div.preview.svelte-1b19cri > div.thumbnails.scroll-hide.svelte-1b19cri {display: none;}
+
                 """
 
     def generate_tooltip_css(self):

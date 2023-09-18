@@ -1,6 +1,6 @@
 import gradio as gr
 
-from helper.gradio_config import css, js, theme
+from helper.gradio_config import css, theme
 from helper.text.text_about import TextAbout
 from helper.text.text_app import TextApp
 from helper.text.text_howto import TextHowTo
@@ -21,7 +21,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
         with gr.Tab("How to use"):
             with gr.Tabs():
                 with gr.Tab("HTR Tool"):
-                    with gr.Row().style(equal_height=False):
+                    with gr.Row(equal_height=False):
                         with gr.Column():
                             gr.Markdown(TextHowTo.htr_tool)
                         with gr.Column():
@@ -33,7 +33,7 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                             gr.Markdown(TextHowTo.reach_out)
 
                 with gr.Tab("Stepwise HTR Tool"):
-                    with gr.Row().style(equal_height=False):
+                    with gr.Row(equal_height=False):
                         gr.Markdown(TextHowTo.stepwise_htr_tool)
                     with gr.Row():
                         gr.Markdown(TextHowTo.stepwise_htr_tool_tab_intro)
@@ -115,7 +115,7 @@ print(job.result())
                         with gr.Column():
                             gr.Markdown(TextRoadmap.discussion)
 
-    demo.load(None, None, None, _js=js)
+    # demo.load(None, None, None, _js=js)
 
 
 demo.queue(concurrency_count=1, max_size=1)
