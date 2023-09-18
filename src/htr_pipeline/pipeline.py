@@ -6,7 +6,7 @@ import numpy as np
 from src.htr_pipeline.inferencer import Inferencer
 from src.htr_pipeline.utils.helper import timer_func
 from src.htr_pipeline.utils.parser_xml import XmlParser
-from src.htr_pipeline.utils.pipeline_inferencer import PipelineInferencer, XMLHelper
+from src.htr_pipeline.utils.pipeline_inferencer import PipelineInferencer
 from src.htr_pipeline.utils.preprocess_img import Preprocess
 from src.htr_pipeline.utils.process_segmask import SegMaskHelper
 from src.htr_pipeline.utils.visualize_xml import XmlViz
