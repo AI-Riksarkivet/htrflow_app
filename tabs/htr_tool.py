@@ -19,32 +19,17 @@ with gr.Blocks() as htr_tool_tab:
                 )
 
             with gr.Row():
-                # with gr.Group():
-                # callback = gr.CSVLogger()
-                # # hf_writer = gr.HuggingFaceDatasetSaver(HF_API_TOKEN, "htr_pipelin_flags")
-                # flagging_button = gr.Button(
-                #     "Flag",
-                #     variant="secondary",
-                #     visible=True,
-                # ).style(full_width=True)
-                # radio_file_input = gr.Radio(
-                #     value="Text file", choices=["Text file ", "Page XML file "], label="What kind file output?"
-                # )
-
                 radio_file_input = gr.CheckboxGroup(
                     choices=["Txt", "XML"],
-                    value=["Txt"],
+                    value=["XML"],
                     label="Output file extension",
                     # info="Only txt and page xml is supported for now!",
+                    scale=1,
                 )
 
                 htr_pipeline_button = gr.Button(
-                    "Run HTR",
-                    variant="primary",
-                    visible=True,
-                    elem_id="run_pipeline_button",
-                ).style(full_width=False)
-
+                    "Run HTR", variant="primary", visible=True, elem_id="run_pipeline_button", scale=1
+                )
             with gr.Group():
                 with gr.Row():
                     fast_file_downlod = gr.File(label="Download output file", visible=False)
@@ -75,11 +60,7 @@ with gr.Blocks() as htr_tool_tab:
             fast_track_output_image = gr.Image(label="HTR results visualizer", type="numpy", tool="editor", height=650)
 
         with gr.Row(visible=False) as api_placeholder:
-            htr_pipeline_button_api = gr.Button(
-                "Run pipeline",
-                variant="primary",
-                visible=False,
-            ).style(full_width=False)
+            htr_pipeline_button_api = gr.Button("Run pipeline", variant="primary", visible=False, scale=1)
 
     xml_rendered_placeholder_for_api = gr.Textbox(visible=False)
     htr_pipeline_button.click(
@@ -94,8 +75,3 @@ with gr.Blocks() as htr_tool_tab:
         outputs=[xml_rendered_placeholder_for_api],
         api_name="predict",
     )
-
-    # callback.setup([fast_track_input_region_image], "flagged_data_points")
-    # flagging_button.click(lambda *args: callback.flag(args), [fast_track_input_region_image], None, preprocess=False)
-    # flagging_button.click(lambda: (gr.update(value="Flagged")), outputs=flagging_button)
-    # fast_track_input_region_image.change(lambda: (gr.update(value="Flag")), outputs=flagging_button)

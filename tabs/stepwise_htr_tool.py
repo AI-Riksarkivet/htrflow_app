@@ -25,7 +25,8 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             label="Image to Region segment",
                             # type="numpy",
                             tool="editor",
-                        ).style(height=350)
+                            height=350,
+                        )
 
                     with gr.Accordion("Region segment settings:", open=False):
                         with gr.Row():
@@ -63,7 +64,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             "Segment Region",
                             variant="primary",
                             elem_id="region_segment_button",
-                        )  # .style(full_width=False)
+                        )
 
                     with gr.Row():
                         with gr.Accordion("Example images to use:", open=False) as example_accord:
@@ -75,7 +76,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             )
 
                 with gr.Column(scale=3):
-                    output_region_image = gr.Image(label="Segmented regions", type="numpy").style(height=600)
+                    output_region_image = gr.Image(label="Segmented regions", type="numpy", height=600)
 
         ##############################################
         with gr.Tab("2. Line Segmentation"):
@@ -84,27 +85,27 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                 # type="numpy",
                 interactive="False",
                 visible=True,
-            ).style(height=600)
+                height=600,
+            )
 
             with gr.Row(visible=False) as control_line_segment:
                 with gr.Column(scale=2):
                     with gr.Box():
                         regions_cropped_gallery = gr.Gallery(
                             label="Segmented regions",
-                            show_label=False,
                             elem_id="gallery",
-                        ).style(
                             columns=[2],
                             rows=[2],
                             # object_fit="contain",
-                            height=400,
+                            height=450,
                             preview=True,
                             container=False,
                         )
 
                     input_region_from_gallery = gr.Image(
-                        label="Region segmentation to line segment", interactive="False", visible=False
-                    ).style(height=400)
+                        label="Region segmentation to line segment", interactive="False", visible=False, height=400
+                    )
+
                     with gr.Row():
                         with gr.Accordion("Line segment settings:", open=False):
                             with gr.Row():
@@ -126,7 +127,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                                     info="""The minimum required overlap or similarity 
                                                     for a detected region or object to be considered valid""",
                                 )
-                            with gr.Row().style(equal_height=False):
+                            with gr.Row(equal_height=False):
                                 line_segment_model_dropdown = gr.Dropdown(
                                     choices=["Riksarkivet/RmtDet_lines"],
                                     value="Riksarkivet/RmtDet_lines",
@@ -138,22 +139,22 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             " ",
                             variant="Secondary",
                             # elem_id="center_button",
-                        ).style(full_width=True)
+                            scale=1,
+                        )
 
                         line_segment_button = gr.Button(
                             "Segment Lines",
                             variant="primary",
                             # elem_id="center_button",
-                        ).style(full_width=True)
+                            scale=1,
+                        )
 
                 with gr.Column(scale=3):
                     # gr.Markdown("""lorem ipsum""")
 
                     output_line_from_region = gr.Image(
-                        label="Segmented lines",
-                        type="numpy",
-                        interactive="False",
-                    ).style(height=600)
+                        label="Segmented lines", type="numpy", interactive="False", height=600
+                    )
 
         ###############################################
         with gr.Tab("3. Transcribe Text"):
@@ -162,19 +163,16 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                 # type="numpy",
                 interactive="False",
                 visible=True,
-            ).style(height=600)
+                height=600,
+            )
 
             with gr.Row(visible=False) as control_htr:
                 inputs_lines_to_transcribe = gr.Variable()
 
                 with gr.Column(scale=2):
                     image_inputs_lines_to_transcribe = gr.Image(
-                        label="Transcribed lines",
-                        type="numpy",
-                        interactive="False",
-                        visible=False,
-                    ).style(height=470)
-
+                        label="Transcribed lines", type="numpy", interactive="False", visible=False, height=470
+                    )
                     with gr.Row():
                         with gr.Accordion("Transcribe settings:", open=False):
                             transcriber_model = gr.Dropdown(
@@ -184,30 +182,21 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                                 info="Will add more models later!",
                             )
                     with gr.Row():
-                        clear_transcribe_button = gr.Button(" ", variant="Secondary", visible=True).style(
-                            full_width=True
-                        )
-                        transcribe_button = gr.Button("Transcribe lines", variant="primary", visible=True).style(
-                            full_width=True
-                        )
+                        clear_transcribe_button = gr.Button(" ", variant="Secondary", visible=True, scale=1)
 
-                        donwload_txt_button = gr.Button("Download text", variant="secondary", visible=False).style(
-                            full_width=True
-                        )
-
-                    with gr.Row():
-                        txt_file_downlod = gr.File(label="Download text", visible=False)
+                        transcribe_button = gr.Button("Transcribe Lines", variant="primary", visible=True, scale=1)
 
                 with gr.Column(scale=3):
                     with gr.Row():
                         transcribed_text_df = gr.Dataframe(
                             headers=["Transcribed text"],
-                            max_rows=15,
+                            max_rows=14,
                             col_count=(1, "fixed"),
                             wrap=True,
                             interactive=False,
                             overflow_row_behaviour="paginate",
-                        ).style(height=600)
+                            height=600,
+                        )
 
         #####################################
         with gr.Tab("4. Explore Results"):
@@ -216,35 +205,43 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                 # type="numpy",
                 interactive="False",
                 visible=True,
-            ).style(height=600)
+                height=600,
+            )
 
-            with gr.Row(visible=False) as control_results_transcribe:
+            with gr.Row(visible=False, equal_height=False) as control_results_transcribe:
                 with gr.Column(scale=1, visible=True):
                     with gr.Box():
                         temp_gallery_input = gr.Variable()
 
                         gallery_inputs_lines_to_transcribe = gr.Gallery(
                             label="Cropped transcribed lines",
-                            show_label=True,
                             elem_id="gallery_lines",
-                        ).style(
                             columns=[3],
                             rows=[3],
                             # object_fit="contain",
-                            # height="600",
+                            height=300,
                             preview=True,
                             container=False,
                         )
+
+                    dataframe_text_index = gr.Textbox(
+                        label="Text from DataFrame selection",
+                        info="Click on a dataframe cell to view the corresponding transcribed text line crop. You can also sort the dataframe to easily locate specific entries.",
+                        lines=2,
+                        interactive=False,
+                    )
+
                 with gr.Column(scale=1, visible=True):
                     mapping_dict = gr.Variable()
                     transcribed_text_df_finish = gr.Dataframe(
-                        headers=["Transcribed text", "Pred score"],
-                        max_rows=15,
+                        headers=["Transcribed text", "pred score"],
+                        max_rows=14,
                         col_count=(2, "fixed"),
                         wrap=True,
                         interactive=False,
                         overflow_row_behaviour="paginate",
-                    ).style(height=600)
+                        height=600,
+                    )
 
     # custom track
     region_segment_button.click(
@@ -260,7 +257,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
     transcribed_text_df_finish.select(
         fn=custom_track.get_select_index_df,
         inputs=[transcribed_text_df_finish, mapping_dict],
-        outputs=gallery_inputs_lines_to_transcribe,
+        outputs=[gallery_inputs_lines_to_transcribe, dataframe_text_index],
     )
 
     line_segment_button.click(
@@ -287,22 +284,11 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             transcribed_text_df,
             transcribed_text_df_finish,
             mapping_dict,
-            txt_file_downlod,
+            # Hide
             control_results_transcribe,
             image_placeholder_explore_results,
         ],
     )
-
-    donwload_txt_button.click(
-        custom_track.download_df_to_txt,
-        inputs=transcribed_text_df,
-        outputs=[txt_file_downlod, txt_file_downlod],
-    )
-
-    # def remove_temp_vis():
-    #     if os.path.exists("./vis_data"):
-    #         os.remove("././vis_data")
-    #     return None
 
     clear_button.click(
         lambda: (

@@ -1,7 +1,9 @@
 import functools
 import threading
 import time
+from functools import wraps
 
+import gradio as gr
 import tqdm
 
 
@@ -73,6 +75,19 @@ def another_long_running_function(*args, **kwargs):
     # print("Running with args:%s and kwargs:%s" % (args, kwargs))
     time.sleep(5)
     return "success"
+
+
+# Decorator for logging
+def gradio_info(message):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            gr.Info(message)
+            return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 if __name__ == "__main__":

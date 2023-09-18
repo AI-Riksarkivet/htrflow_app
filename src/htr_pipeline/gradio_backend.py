@@ -5,6 +5,7 @@ import pandas as pd
 
 from src.htr_pipeline.inferencer import Inferencer, InferencerInterface
 from src.htr_pipeline.pipeline import Pipeline, PipelineInterface
+from src.htr_pipeline.utils.helper import gradio_info
 
 
 class SingletonModelLoader:
@@ -28,6 +29,7 @@ class FastTrack:
         self.pipeline: PipelineInterface = model_loader.pipeline
 
     def segment_to_xml(self, image, radio_button_choices):
+        gr.Info("Running HTR-pipeline")
         xml_xml = "page_xml.xml"
         xml_txt = "page_txt.txt"
 
@@ -40,6 +42,11 @@ class FastTrack:
             f.write(rendered_xml)
 
         xml_img = self.visualize_xml_and_return_txt(image, xml_txt)
+        returned_file_extension = self.file_extenstion_to_return(radio_button_choices, xml_xml, xml_txt)
+
+        return xml_img, returned_file_extension, gr.update(visible=True)
+
+    def file_extenstion_to_return(self, radio_button_choices, xml_xml, xml_txt):
         if len(radio_button_choices) < 2:
             if radio_button_choices[0] == "Txt":
                 returned_file_extension = xml_txt
@@ -47,8 +54,7 @@ class FastTrack:
                 returned_file_extension = xml_xml
         else:
             returned_file_extension = [xml_txt, xml_xml]
-
-        return xml_img, returned_file_extension, gr.update(visible=True)
+        return returned_file_extension
 
     def segment_to_xml_api(self, image):
         rendered_xml = self.pipeline.running_htr_pipeline(image)
@@ -70,12 +76,14 @@ class CustomTrack:
     def __init__(self, model_loader):
         self.inferencer: InferencerInterface = model_loader.inferencer
 
+    @gradio_info("Running Segment Region")
     def region_segment(self, image, pred_score_threshold, containments_treshold):
         predicted_regions, regions_cropped_ordered, _, _ = self.inferencer.predict_regions(
             image, pred_score_threshold, containments_treshold
         )
         return predicted_regions, regions_cropped_ordered, gr.update(visible=False), gr.update(visible=True)
 
+    @gradio_info("Running Segment Line")
     def line_segment(self, image, pred_score_threshold, containments_threshold):
         predicted_lines, lines_cropped_ordered, _ = self.inferencer.predict_lines(
             image, pred_score_threshold, containments_threshold
@@ -93,22 +101,35 @@ class CustomTrack:
         )
 
     def transcribe_text(self, df, images):
+        gr.Info("Running Transcribe Lines")
         transcription_temp_list_with_score = []
         mapping_dict = {}
 
+        total_images = len(images)
+        current_index = 0
+
+        bool_to_show_placeholder = gr.update(visible=True)
+        bool_to_show_control_results_transcribe = gr.update(visible=False)
+
         for image in images:
+            current_index += 1
+
+            if current_index == total_images:
+                bool_to_show_control_results_transcribe = gr.update(visible=True)
+                bool_to_show_placeholder = gr.update(visible=False)
+
             transcribed_text, prediction_score_from_htr = self.inferencer.transcribe(image)
             transcription_temp_list_with_score.append((transcribed_text, prediction_score_from_htr))
 
             df_trans_explore = pd.DataFrame(
-                transcription_temp_list_with_score, columns=["Transcribed text", "HTR prediction score"]
+                transcription_temp_list_with_score, columns=["Transcribed text", "Pred score"]
             )
 
             mapping_dict[transcribed_text] = image
 
-            yield df_trans_explore[["Transcribed text"]], df_trans_explore, mapping_dict, gr.update(
-                visible=False
-            ), gr.update(visible=True), gr.update(visible=False)
+            yield df_trans_explore[
+                ["Transcribed text"]
+            ], df_trans_explore, mapping_dict, bool_to_show_control_results_transcribe, bool_to_show_placeholder
 
     def get_select_index_image(self, images_from_gallery, evt: gr.SelectData):
         return images_from_gallery[evt.index]["name"]
@@ -120,7 +141,7 @@ class CustomTrack:
         new_first = [sorted_image]
         new_list = [img for txt, img in mapping_dict.items() if txt != key_text]
         new_first.extend(new_list)
-        return new_first
+        return new_first, key_text
 
     def download_df_to_txt(self, transcribed_df):
         text_in_list = transcribed_df["Transcribed text"].tolist()
