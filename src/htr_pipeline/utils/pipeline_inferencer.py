@@ -100,7 +100,9 @@ class PipelineInferencer:
             remaining_lines = total_lines_len - index - 1
 
             if (index + 1) % 10 == 0 and remaining_lines > 5:  # +1 because index starts at 0
-                gr.Info(f"Parsed {index + 1} lines. Still {remaining_lines} lines left to transcribe.")
+                gr.Info(
+                    f"Region {id_number}, parsed {index + 1} lines. Still {remaining_lines} lines left to transcribe."
+                )
 
         return text_lines, htr_scores
 
