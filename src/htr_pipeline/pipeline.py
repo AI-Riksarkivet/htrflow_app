@@ -40,8 +40,8 @@ class Pipeline:
     def visualize_xml(self, input_image: np.ndarray) -> np.ndarray:
         xml_viz = XmlViz()
         bin_input_image = self.preprocess_img.binarize_img(input_image)
-        xml_image = xml_viz.visualize_xml(bin_input_image)
-        return xml_image
+        xml_image, text_polygon_dict = xml_viz.visualize_xml(bin_input_image)
+        return xml_image, text_polygon_dict
 
     @timer_func
     def parse_xml_to_txt(self) -> None:

@@ -4,6 +4,8 @@ from tqdm import tqdm
 from src.htr_pipeline.utils.process_segmask import SegMaskHelper
 from src.htr_pipeline.utils.xml_helper import XMLHelper
 
+terminate = False
+
 
 class PipelineInferencer:
     def __init__(self, process_seg_mask: SegMaskHelper, xml_helper: XMLHelper):
@@ -29,6 +31,8 @@ class PipelineInferencer:
         containments_threshold,
         htr_threshold=0.7,
     ):
+        global terminate
+
         _, regions_cropped_ordered, reg_polygons_ordered, reg_masks_ordered = inferencer.predict_regions(
             image,
             pred_score_threshold=pred_score_threshold_regions,
@@ -38,6 +42,8 @@ class PipelineInferencer:
         gr.Info(f"Found {len(regions_cropped_ordered)} Regions to parse")
         region_data_list = []
         for i, data in tqdm(enumerate(zip(regions_cropped_ordered, reg_polygons_ordered, reg_masks_ordered))):
+            if terminate:
+                break
             region_data = self._create_region_data(
                 data, i, inferencer, pred_score_threshold_lines, containments_threshold, htr_threshold
             )
@@ -68,7 +74,7 @@ class PipelineInferencer:
         region_data["textLines"] = text_lines
         mean_htr_score = sum(htr_scores) / len(htr_scores) if htr_scores else 0
 
-        return region_data if mean_htr_score > htr_threshold else None
+        return region_data if mean_htr_score > htr_threshold + 0.1 else None
 
     def _process_lines(
         self, text_region, inferencer, pred_score_threshold, containments_threshold, mask, region_id, htr_threshold=0.7
@@ -90,7 +96,11 @@ class PipelineInferencer:
 
         gr.Info(f" Region {id_number}, found {total_lines_len} lines to parse and transcribe.")
 
+        global terminate
+
         for index, (line, line_pol) in enumerate(zip(lines_cropped_ordered, line_polygons_ordered_trans)):
+            if terminate:
+                break
             line_data, htr_score = self._create_line_data(line, line_pol, index, region_id, inferencer, htr_threshold)
 
             if line_data:

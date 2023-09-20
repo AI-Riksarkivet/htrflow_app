@@ -1,6 +1,8 @@
 import os
 
+import cv2
 import gradio as gr
+import numpy as np
 import pandas as pd
 
 from src.htr_pipeline.inferencer import Inferencer, InferencerInterface
@@ -23,13 +25,21 @@ class SingletonModelLoader:
             self.pipeline = Pipeline(self.inferencer)
 
 
+def handling_callback_stop_inferencer():
+    from src.htr_pipeline.utils import pipeline_inferencer
+
+    pipeline_inferencer.terminate = False
+
+
 # fast track
 class FastTrack:
     def __init__(self, model_loader):
         self.pipeline: PipelineInterface = model_loader.pipeline
 
     def segment_to_xml(self, image, radio_button_choices):
-        gr.Info("Running HTR-pipeline")
+        handling_callback_stop_inferencer()
+
+        gr.Info("Excuting HTR on image")
         xml_xml = "page_xml.xml"
         xml_txt = "page_txt.txt"
 
@@ -41,10 +51,18 @@ class FastTrack:
         with open(xml_xml, "w") as f:
             f.write(rendered_xml)
 
-        xml_img = self.visualize_xml_and_return_txt(image, xml_txt)
+        if os.path.exists(f"./{xml_txt}"):
+            os.remove(f"./{xml_txt}")
+
+        self.pipeline.parse_xml_to_txt()
+
         returned_file_extension = self.file_extenstion_to_return(radio_button_choices, xml_xml, xml_txt)
 
-        return xml_img, returned_file_extension, gr.update(visible=True)
+        return returned_file_extension, gr.update(visible=True)
+
+    def visualize_image_viewer(self, image):
+        xml_img, text_polygon_dict = self.pipeline.visualize_xml(image)
+        return xml_img, text_polygon_dict
 
     def file_extenstion_to_return(self, radio_button_choices, xml_xml, xml_txt):
         if len(radio_button_choices) < 2:
@@ -56,19 +74,18 @@ class FastTrack:
             returned_file_extension = [xml_txt, xml_xml]
         return returned_file_extension
 
+    def get_text_from_coords(self, text_polygon_dict, evt: gr.SelectData):
+        x, y = evt.index[0], evt.index[1]
+
+        for text, polygon_coords in text_polygon_dict.items():
+            if (
+                cv2.pointPolygonTest(np.array(polygon_coords), (x, y), False) >= 0
+            ):  # >= 0 means on the polygon or inside
+                return text
+
     def segment_to_xml_api(self, image):
         rendered_xml = self.pipeline.running_htr_pipeline(image)
         return rendered_xml
-
-    def visualize_xml_and_return_txt(self, img, xml_txt):
-        xml_img = self.pipeline.visualize_xml(img)
-
-        if os.path.exists(f"./{xml_txt}"):
-            os.remove(f"./{xml_txt}")
-
-        self.pipeline.parse_xml_to_txt()
-
-        return xml_img
 
 
 # Custom track

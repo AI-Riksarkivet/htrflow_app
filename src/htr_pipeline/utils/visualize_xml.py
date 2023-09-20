@@ -1,8 +1,8 @@
 import random
 import xml.etree.ElementTree as ET
 
-import gradio as gr
-from PIL import Image, ImageDraw, ImageFont
+import cv2
+import numpy as np
 
 
 class XmlViz:
@@ -11,58 +11,24 @@ class XmlViz:
         self.root = self.tree.getroot()
         self.namespace = "{http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15}"
 
-    def visualize_xml(
-        self,
-        background_image,
-        font_size=9,
-        text_offset=10,
-        font_path_tff="./src/htr_pipeline/utils/templates/arial.ttf",
-    ):
-        image = Image.fromarray(background_image).convert("RGBA")
-
-        text_offset = -text_offset
-        base_font_size = font_size
-        font_path = font_path_tff
-
-        max_bbox_width = 0  # Initialize maximum bounding box width
-        gr.Info("Parsing XML to visualize the data.")
-        for textregion in self.root.findall(f".//{self.namespace}TextRegion"):
-            coords = textregion.find(f"{self.namespace}Coords").attrib["points"].split()
-            points = [tuple(map(int, point.split(","))) for point in coords]
-            x_coords, y_coords = zip(*points)
-            min_x, max_x = min(x_coords), max(x_coords)
-            bbox_width = max_x - min_x  # Width of the current bounding box
-            max_bbox_width = max(max_bbox_width, bbox_width)  # Update maximum bounding box width
-
-        scaling_factor = max_bbox_width / 400.0  # Use maximum bounding box width for scaling
-        font_size_scaled = int(base_font_size * scaling_factor)
-        font = ImageFont.truetype(font_path, font_size_scaled)
+    def visualize_xml(self, background_image):
+        overlay = background_image.copy()
+        text_polygon_dict = {}
 
         for textregion in self.root.findall(f".//{self.namespace}TextRegion"):
-            fill_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255), 100)
+            fill_color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
             for textline in textregion.findall(f".//{self.namespace}TextLine"):
                 coords = textline.find(f"{self.namespace}Coords").attrib["points"].split()
                 points = [tuple(map(int, point.split(","))) for point in coords]
-
-                poly_image = Image.new("RGBA", image.size)
-                poly_draw = ImageDraw.Draw(poly_image)
-                poly_draw.polygon(points, fill=fill_color)
+                cv2.fillPoly(overlay, [np.array(points)], fill_color)
 
                 text = textline.find(f"{self.namespace}TextEquiv").find(f"{self.namespace}Unicode").text
+                text_polygon_dict[text] = points
 
-                x_coords, y_coords = zip(*points)
-                min_x, max_x = min(x_coords), max(x_coords)
-                min_y = min(y_coords)
-                text_width, text_height = poly_draw.textsize(text, font=font)  # Get text size
-                text_position = (
-                    (min_x + max_x) // 2 - text_width // 2,
-                    min_y + text_offset,
-                )  # Center text horizontally
+        # Blend the overlay with the original image
+        cv2.addWeighted(overlay, 0.5, background_image, 0.5, 0, background_image)
 
-                poly_draw.text(text_position, text, fill=(0, 0, 0), font=font)
-                image = Image.alpha_composite(image, poly_image)
-
-        return image
+        return background_image, text_polygon_dict
 
 
 if __name__ == "__main__":
