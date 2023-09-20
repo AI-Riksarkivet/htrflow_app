@@ -22,6 +22,7 @@ class GradioConfig:
         #gallery {height: 400px} 
         .fixed-height.svelte-g4rw9.svelte-g4rw9 {min-height: 400px;}
 
+        #download_file > div.empty.svelte-lk9eg8.large.unpadded_box  {min-height: 100px;}
         #gallery_lines > div.preview.svelte-1b19cri > div.thumbnails.scroll-hide.svelte-1b19cri {display: none;}
 
                 """

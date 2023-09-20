@@ -118,7 +118,7 @@ print(job.result())
     # demo.load(None, None, None, _js=js)
 
 
-demo.queue(concurrency_count=1, max_size=1)
+demo.queue(concurrency_count=2, max_size=2)
 
 
 if __name__ == "__main__":
