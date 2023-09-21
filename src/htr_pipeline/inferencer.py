@@ -26,24 +26,50 @@ class Inferencer:
 
     @timer_func
     def predict_regions(self, input_image, pred_score_threshold=0.5, containments_threshold=0.5, visualize=True):
+        import time
+
+        t1 = time.time()
+
         input_image = self.preprocess_img.binarize_img(input_image)
 
         image = mmcv.imread(input_image)
+
+        t2 = time.time()
+
+        print(f"Function executed bin and read in {(t2-t1):.4f}s")
+
+        t1 = time.time()
+
         result = self.seg_model(image, return_datasample=True)
         result_pred = result["predictions"][0]
+        t2 = time.time()
+
+        print(f"Function executed predict in {(t2-t1):.4f}s")
+
+        t1 = time.time()
 
         filtered_result_pred = self.postprocess_seg_mask.filter_on_pred_threshold(
             result_pred, pred_score_threshold=pred_score_threshold
         )
 
+        t2 = time.time()
+
+        print(f"Function executed filter in {(t2-t1):.4f}s")
+
         if len(filtered_result_pred.pred_instances.masks) == 0:
             raise gr.Error("No Regions were predicted by the model")
 
         else:
+            t1 = time.time()
+
             result_align = self.process_seg_mask.align_masks_with_image(filtered_result_pred, image)
             result_clean = self.postprocess_seg_mask.remove_overlapping_masks(
                 predicted_mask=result_align, containments_threshold=containments_threshold
             )
+
+            t2 = time.time()
+
+            print(f"Function executed align and remove in {(t2-t1):.4f}s")
 
             if visualize:
                 result_viz = self.seg_model.visualize(
@@ -52,12 +78,18 @@ class Inferencer:
             else:
                 result_viz = None
 
+            t1 = time.time()
+
             regions_cropped, polygons = self.process_seg_mask.crop_masks(result_clean, image)
             order = self.ordering.order_regions_marginalia(result_clean)
 
             regions_cropped_ordered = [regions_cropped[i] for i in order]
             polygons_ordered = [polygons[i] for i in order]
             masks_ordered = [result_clean.pred_instances.masks[i] for i in order]
+
+            t2 = time.time()
+
+            print(f"Function executed crop and margin in {(t2-t1):.4f}s")
 
             return result_viz, regions_cropped_ordered, polygons_ordered, masks_ordered
 
