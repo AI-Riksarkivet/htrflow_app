@@ -86,7 +86,7 @@ with gr.Blocks() as htr_tool_tab:
                                     )
                                 with gr.Row():
                                     gr.Slider(
-                                        value=0.7,
+                                        value=0.6,
                                         minimum=0.5,
                                         maximum=1,
                                         label="HTR threshold",
@@ -94,7 +94,7 @@ with gr.Blocks() as htr_tool_tab:
                                         scale=1,
                                     )
                                     gr.Slider(
-                                        value=0.8,
+                                        value=0.7,
                                         minimum=0.6,
                                         maximum=1,
                                         label="Avg threshold",
@@ -105,7 +105,7 @@ with gr.Blocks() as htr_tool_tab:
                                 htr_tool_region_segment_model_dropdown = gr.Dropdown(
                                     choices=["Riksarkivet/RmtDet_region"],
                                     value="Riksarkivet/RmtDet_region",
-                                    label="Region segment model",
+                                    label="Region Segment models",
                                     info="Will add more models later!",
                                 )
 
@@ -113,15 +113,15 @@ with gr.Blocks() as htr_tool_tab:
                                 htr_tool_line_segment_model_dropdown = gr.Dropdown(
                                     choices=["Riksarkivet/RmtDet_lines"],
                                     value="Riksarkivet/RmtDet_lines",
-                                    label="Line segment model",
+                                    label="Line Segment models",
                                     info="Will add more models later!",
                                 )
 
                                 htr_tool_transcriber_model_dropdown = gr.Dropdown(
                                     choices=["Riksarkivet/SATRN_transcriber", "microsoft/trocr-base-handwritten"],
                                     value="Riksarkivet/SATRN_transcriber",
-                                    label="Transcribe model",
-                                    info="Will add more models later!",
+                                    label="Transcriber models",
+                                    info="Models will be continuously  updated with future additions for specific cases.",
                                 )
 
                     with gr.Column(scale=2):

@@ -6,6 +6,8 @@ from src.htr_pipeline.utils.xml_helper import XMLHelper
 
 terminate = False
 
+# TODO check why region is so slow to start.. Is their error with loading the model?
+
 
 class PipelineInferencer:
     def __init__(self, process_seg_mask: SegMaskHelper, xml_helper: XMLHelper):
@@ -29,7 +31,7 @@ class PipelineInferencer:
         pred_score_threshold_regions,
         pred_score_threshold_lines,
         containments_threshold,
-        htr_threshold=0.7,
+        htr_threshold=0.6,
     ):
         global terminate
 
@@ -77,7 +79,7 @@ class PipelineInferencer:
         return region_data if mean_htr_score > htr_threshold + 0.1 else None
 
     def _process_lines(
-        self, text_region, inferencer, pred_score_threshold, containments_threshold, mask, region_id, htr_threshold=0.7
+        self, text_region, inferencer, pred_score_threshold, containments_threshold, mask, region_id, htr_threshold=0.6
     ):
         _, lines_cropped_ordered, line_polygons_ordered = inferencer.predict_lines(
             text_region, pred_score_threshold, containments_threshold, visualize=False, custom_track=False
