@@ -50,48 +50,29 @@ with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
                                     gr.Markdown(TextHowTo.stepwise_htr_tool_tab4)
                     gr.Markdown(TextHowTo.stepwise_htr_tool_end)
 
-                with gr.Tab("API"):
+                with gr.Tab("API & Duplicate for Privat use"):
                     with gr.Row():
                         with gr.Column():
                             gr.Markdown(TextHowTo.htr_tool_api_text)
                             gr.Code(
-                                value="""
-from gradio_client import Client # pip install gradio_client
-
-# Change url to your client (localhost: http://127.0.0.1:7860/)
-client = Client("https://huggingface.co/spaces/Riksarkivet/htr_demo") 
-job = client.submit(
-    "https://your.image.url.or.pah.jpg", 
-    api_name="/predict",
-)
-
-print(job.result())
-
-                        """,
+                                value=TextHowTo.code_for_api,
                                 language="python",
                                 interactive=False,
                                 show_label=False,
                             )
-                            gr.Markdown(
-                                """                    
-                    Below you can see the results, in XML, from the API call:
-                    """
-                            )
-                            gr.Markdown(TextHowTo.figure_htr_api)
-
                         with gr.Column():
                             gr.Markdown(TextHowTo.duplicatin_space_htr_text)
                             gr.Markdown(TextHowTo.figure_htr_hardware)
-
-                            gr.Markdown(
-                                "Note that if you have GPU hardware available, you can also run this application on Docker or clone it locally."
-                            )
+                            gr.Markdown(TextHowTo.duplicatin_for_privat)
 
         with gr.Tab("About"):
             with gr.Tabs():
                 with gr.Tab("Project"):
                     with gr.Row():
-                        gr.Markdown(TextAbout.intro_and_pipeline_overview_text)
+                        with gr.Column():
+                            gr.Markdown(TextAbout.intro_and_pipeline_overview_text)
+                        with gr.Column():
+                            gr.Markdown(TextAbout.text_src_code_data_models)
                     with gr.Row():
                         with gr.Tabs():
                             with gr.Tab("I. Binarization"):
@@ -102,11 +83,10 @@ print(job.result())
                                 gr.Markdown(TextAbout.text_line_segmentation)
                             with gr.Tab("IV. Transcriber"):
                                 gr.Markdown(TextAbout.text_htr)
+
+                with gr.Tab("Contribution"):
                     with gr.Row():
-                        with gr.Column():
-                            gr.Markdown(TextAbout.text_data)
-                        with gr.Column():
-                            gr.Markdown(TextAbout.text_models)
+                        gr.Markdown(TextRoadmap.text_contribution)
 
                 with gr.Tab("Roadmap"):
                     with gr.Row():
