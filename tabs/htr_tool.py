@@ -68,7 +68,7 @@ with gr.Blocks() as htr_tool_tab:
                                 with gr.Row():
                                     radio_file_input = gr.CheckboxGroup(
                                         choices=["Txt", "XML"],
-                                        value=["XML"],
+                                        value=["Txt", "XML"],
                                         label="Output file extension",
                                         # info="Only txt and page xml is supported for now!",
                                         scale=1,
@@ -103,23 +103,23 @@ with gr.Blocks() as htr_tool_tab:
                                     )
 
                                 htr_tool_region_segment_model_dropdown = gr.Dropdown(
-                                    choices=["Riksarkivet/RmtDet_region"],
-                                    value="Riksarkivet/RmtDet_region",
+                                    choices=["Riksarkivet/rtmdet_region"],
+                                    value="Riksarkivet/rtmdet_region",
                                     label="Region Segment models",
                                     info="Will add more models later!",
                                 )
 
                                 # with gr.Accordion("Transcribe settings:", open=False):
                                 htr_tool_line_segment_model_dropdown = gr.Dropdown(
-                                    choices=["Riksarkivet/RmtDet_lines"],
-                                    value="Riksarkivet/RmtDet_lines",
+                                    choices=["Riksarkivet/rtmdet_lines"],
+                                    value="Riksarkivet/rtmdet_lines",
                                     label="Line Segment models",
                                     info="Will add more models later!",
                                 )
 
                                 htr_tool_transcriber_model_dropdown = gr.Dropdown(
-                                    choices=["Riksarkivet/SATRN_transcriber", "microsoft/trocr-base-handwritten"],
-                                    value="Riksarkivet/SATRN_transcriber",
+                                    choices=["Riksarkivet/satrn_htr", "microsoft/trocr-base-handwritten"],
+                                    value="Riksarkivet/satrn_htr",
                                     label="Transcriber models",
                                     info="Models will be continuously  updated with future additions for specific cases.",
                                 )

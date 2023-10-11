@@ -6,6 +6,10 @@ colorTo: green
 sdk: docker
 pinned: false
 models:
-  - Riksarkivet/HTR_pipeline_models
+  [
+    "Riksarkivet/rtmdet_regions",
+    "Riksarkivet/rtmdet_lines",
+    "Riksarkivet/satrn_htr",
+  ]
 datasets: []
 ---

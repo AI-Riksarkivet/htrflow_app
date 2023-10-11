@@ -12,9 +12,7 @@ class TextHowTo:
     <figcaption style="text-align: center;"> <em> Figure - How to Run the HTR Tool </em></figcaption>
     </figure> 
     The HTR Tool will transform an image of handwritten text into structured, transcribed text within approximately 1-2 minutes (depending on your hardware). 
-    Note that the generated page XML file is strucutred in such manner that it allows for an easy integration with other software, such as Transkribus.
-    
-    <br><br>
+    Note that the generated page XML file is strucutred in such manner that it allows for an easy integration with other software, such as Transkribus. <br>
 
     You can use our own developed Image viewer for the xml output: 
     <p align="center">
@@ -33,10 +31,8 @@ class TextHowTo:
     stepwise_htr_tool = """
 ## Stepwise HTR Tool
 
-The Stepwise HTR Tool is a powerful tool for performing Handwritten Text Recognition (HTR) tasks. The Stepwise version provides you with fine-grained control over each step of the HTR process, allowing for greater customization and troubleshooting capabilities.
-<br><br>
-With the Stepwise HTR Tool, you can break down the HTR process into distinct steps: region segmentation, line segmentation, text transcription, and result exploration. This tool offers a range of configuration options to tailor the HTR process to your specific needs. You can adjust settings such as P-threshold and C-threshold to fine-tune the region and line segmentation, and choose from a selection of underlying machine learning models to drive each step of the process.
-<br><br>
+The Stepwise HTR Tool is a powerful tool for performing Handwritten Text Recognition (HTR) tasks. The Stepwise version provides you with fine-grained control over each step of the HTR process, allowing for greater customization and troubleshooting capabilities. <br>
+With the Stepwise HTR Tool, you can break down the HTR process into distinct steps: region segmentation, line segmentation, text transcription, and result exploration. This tool offers a range of configuration options to tailor the HTR process to your specific needs. You can adjust settings such as P-threshold and C-threshold to fine-tune the region and line segmentation, and choose from a selection of underlying machine learning models to drive each step of the process. <br>
 The Stepwise HTR Tool also provides a dedicated Explore Results tab, allowing you to thoroughly analyze and interact with the transcriptions. You can sort and identify both bad and good predictions, helping you gain insights and make improvements to the HTR accuracy. Each step is interconnected, and the output of one step serves as the input for the next step, ensuring a seamless and efficient workflow.
 
 """
@@ -48,14 +44,12 @@ The Stepwise HTR Tool also provides a dedicated Explore Results tab, allowing yo
     htr_tool_api_text = """
 ## Usage of Client API
 
-For those interested in testing out the demo, it's available to run as a Gradio Python client. 
-To facilitate this, there's a lightweight package called gradio_client that you can easily install via pip.
+For those interested in testing out the demo, it's available to run as a Gradio Python client. To facilitate this, there's a lightweight package called ´gradio_client´ that you can easily install via pip.
         """
 
     stepwise_htr_tool_tab1 = """
 ### Tab 1: Region Segmentation
-The Region Segmentation tab allows you to perform the initial step of segmenting the handwritten text into regions of interest. By adjusting the P-threshold and C-threshold settings, you can control the confidence score required for a prediction and the minimum overlap or similarity for a detected region to be considered valid. Additionally, you can select an underlying machine learning model for region segmentation.
-<br><br>
+The Region Segmentation tab allows you to perform the initial step of segmenting the handwritten text into regions of interest. By adjusting the P-threshold and C-threshold settings, you can control the confidence score required for a prediction and the minimum overlap or similarity for a detected region to be considered valid. Additionally, you can select an underlying machine learning model for region segmentation. <br>
 To perform region segmentation, follow these steps:
 1. Open the "Region Segmentation" tab.
 2. Upload an image or choose an image from the provided Examples (under "Example images to use:" accordin).
@@ -69,8 +63,7 @@ To perform region segmentation, follow these steps:
 
 ### Tab 2: Line Segmentation
 In the Line Segmentation tab, you can further refine the segmentation process by identifying individual lines of text. 
-Similar to the Region Segmentation tab, you can adjust the P-threshold and C-threshold settings for line segmentation and choose an appropriate machine learning model.
-<br><br>
+Similar to the Region Segmentation tab, you can adjust the P-threshold and C-threshold settings for line segmentation and choose an appropriate machine learning model. <br>
 To perform line segmentation, follow these steps:
 1. Open the "Line Segmentation" tab. 
 2. Choice a segmented region from image gallery, which populated with the results from the previous tab.
@@ -83,8 +76,7 @@ To perform line segmentation, follow these steps:
 
     stepwise_htr_tool_tab3 = """
 ### Tab 3: Transcribe Text
-The Transcribe Text tab allows you to convert the segmented text into transcriptions. Here, you can select the desired machine learning model for text transcription.
-<br><br>
+The Transcribe Text tab allows you to convert the segmented text into transcriptions. Here, you can select the desired machine learning model for text transcription. <br>
 To transcribe text, follow these steps:
 1. Open the "Transcribe Text" tab.
 2. The image to transcribe is predefined with the results from the previous tab.
@@ -95,8 +87,7 @@ To transcribe text, follow these steps:
 
     stepwise_htr_tool_tab4 = """
 ### Tab 4: Explore Results
-Once the transcription is complete, you can explore the results in the Explore Results tab. This tab provides various features for analyzing and interacting with the transcriptions, allowing you to sort and identify both bad and good predictions.
-<br><br>
+Once the transcription is complete, you can explore the results in the Explore Results tab. This tab provides various features for analyzing and interacting with the transcriptions, allowing you to sort and identify both bad and good predictions. <br>
 To explore the HTR results, follow these steps:
 1. Open the "Explore Results" tab.
 2. Analyze the generated results. The image gallery of cropped text line segments is bi-directional coupled through interaction with the dataframe on the left.
@@ -128,10 +119,9 @@ Alternatively, you can watch the instructional video below, which provides a ste
 </figure> 
 """
     duplicatin_space_htr_text = """
-## Duplicating a Space for private use
-It's worth noting that while using any public Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. 
-However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. 
-This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
+## Duplicating for Private Use
+
+It's worth noting that while using any public Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
 
 <br>
 <p align="center">
@@ -139,9 +129,56 @@ This private version allows you to make unlimited requests without any restricti
         <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/duplicate-this-space-xl-dark.svg" alt="Badge 1">
     </a>
 </p>
-<br>
+"""
+
+    duplicatin_for_privat = """
+For individuals with access to dedicated hardware, additional options are available. You have the flexibility to run this application on your own machine utilizing Docker, or by cloning the repository directly. Doing so allows you to leverage your hardware's capabilities to their fullest extent. 
+- [Clone with Docker](https://huggingface.co/spaces/Riksarkivet/htr_demo?docker=true)
+- [Clone Repo](https://huggingface.co/spaces/Riksarkivet/htr_demo/settings?clone=true)
+
+**Note**: To take advantage of CUDA for accelerated inferences, an Nvidia graphics card is required. This setup significantly enhances the performance, ensuring a smoother and faster operation.
 
 """
+
+    code_for_api = """
+from gradio_client import Client # pip install gradio_client
+
+# Change url to your client (localhost: http://127.0.0.1:7860/)
+client = Client("https://huggingface.co/spaces/Riksarkivet/htr_demo") 
+job = client.submit(
+    "https://your.image.url.or.pah.jpg", 
+    api_name="/predict",
+)
+
+print(job.result())
+
+# Loaded as API: http://127.0.0.1:7860/ ✔
+# <?xml version="1.0" encoding="UTF-8"?>
+# <PcGts xmlns="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15/pagecontent.xsd">
+#     <Metadata>
+#         <Creator>Swedish National Archives</Creator>
+#         <Created>2023-08-21, 13:28:06</Created>
+#     </Metadata>
+#     <Page imageFilename="page_xml.xml" imageWidth="4885" imageHeight="4066">
+#     <TextRegion id="region_0" custom="readingOrder {index:0;}">
+#         <Coords points="1477,265 1467,217 1440,201 1370,211 1248,203 1127,224 1067,224 1003,212 844,247 766,243 747,261 742,280 751,332 766,346 1258,341 1357,332 1439,341 1468,327"/>
+#     <TextLine id="line_region_0_0" custom="readingOrder {index:0;}">
+#                 <Coords points="1458,248 1443,222 1449,200 1412,215 1366,200 1325,207 1302,200 1241,200 1235,206 1205,200 1187,210 1085,222 957,206 795,239 769,273 771,333 783,340 1445,333 1450,324"/>
+#                                 <TextEquiv>
+#             <Unicode>År 1865.</Unicode>
+#         </TextEquiv>
+#                         <PredScore pred_score="0.9482"/>
+#             </TextLine>
+#     </TextRegion>
+#     <TextRegion id="region_1" custom="readingOrder {index:1;}">
+# ......................................
+#     </TextRegion>
+#     </Page>
+# </PcGts>
+
+# Output is truncated. View as a scrollable element or open in a text editor. Adjust cell output settings...
+
+                        """
 
 
 if __name__ == "__main__":
