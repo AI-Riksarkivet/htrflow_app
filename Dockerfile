@@ -5,12 +5,15 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     build-essential \
-    # python3.9 \  # Commented out as it might be pre-installed
     python3-pip \
     git \
     ffmpeg \
     libsm6 \
     libxext6 \
+    curl \
+    && curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash \
+    && apt-get install --no-install-recommends -y git-lfs \
+    && git lfs install \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /code

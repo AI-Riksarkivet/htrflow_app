@@ -1,13 +1,6 @@
-import hashlib
 import os
-import shutil
-import sqlite3
-from datetime import datetime
 
 import gradio as gr
-import huggingface_hub
-import pandas as pd
-import pytz
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from helper.gradio_config import css, theme
@@ -15,71 +8,16 @@ from helper.text.text_about import TextAbout
 from helper.text.text_app import TextApp
 from helper.text.text_howto import TextHowTo
 from helper.text.text_roadmap import TextRoadmap
+from helper.utils import add_ip_data, backup_db
 from tabs.htr_tool import htr_tool_tab
 from tabs.stepwise_htr_tool import stepwise_htr_tool_tab
 
-DB_FILE = "./traffic_data.db"
+SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
 
-TOKEN = os.environ.get("HUB_TOKEN")
-repo = huggingface_hub.Repository(
-    local_dir="data", repo_type="dataset", clone_from="Riksarkivet/traffic_demo_data", use_auth_token=TOKEN
-)
-repo.git_pull()
-
-# Set db to latest
-shutil.copyfile("./data/traffic_data.db", DB_FILE)
-
-
-def hash_ip(ip_address):
-    return hashlib.sha256(ip_address.encode()).hexdigest()
-
-
-# Create table if it doesn't already exist
-db = sqlite3.connect(DB_FILE)
-try:
-    db.execute("SELECT * FROM ip_data").fetchall()
-    db.close()
-except sqlite3.OperationalError:
-    db.execute(
-        """
-        CREATE TABLE ip_data (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                              current_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                              hashed_ip TEXT)
-        """
-    )
-    db.commit()
-    db.close()
-
-
-def current_time_sw():
-    swedish_tz = pytz.timezone("Europe/Stockholm")
-    return datetime.now(swedish_tz).strftime("%Y-%m-%d %H:%M:%S")
-
-
-def add_ip_data(request: gr.Request):
-    host = request.client.host
-    hashed_ip = hash_ip(host)
-
-    db = sqlite3.connect(DB_FILE)
-    cursor = db.cursor()
-    cursor.execute("INSERT INTO ip_data(current_time, hashed_ip) VALUES(?,?)", [current_time_sw(), hashed_ip])
-    db.commit()
-    db.close()
-
-
-def backup_db():
-    shutil.copyfile(DB_FILE, "./data/traffic_data.db")
-    db = sqlite3.connect(DB_FILE)
-    ip_data = db.execute("SELECT * FROM ip_data").fetchall()
-    pd.DataFrame(ip_data, columns=["id", "current_time", "hashed_ip"]).to_csv("./data/ip_data.csv", index=False)
-
-    print("updating traffic_data")
-    repo.push_to_hub(blocking=False, commit_message=f"Updating data at {datetime.now()}")
-
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=backup_db, trigger="interval", seconds=60)
-scheduler.start()
+if SECRET_KEY:
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=backup_db, trigger="interval", seconds=60)
+    scheduler.start()
 
 
 with gr.Blocks(title="HTR Riksarkivet", theme=theme, css=css) as demo:
