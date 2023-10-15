@@ -23,3 +23,9 @@ page_txt.txt
 transcribed_text.txt
 helper/examples/.cache_images/
 helper/examples/images/localtest/
+.env
+TODO.md
+.cache_images/
+traffic_data.db
+ip_data.csv
+data/

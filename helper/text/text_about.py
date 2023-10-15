@@ -1,6 +1,6 @@
 class TextAbout:
     # About text
-    intro_and_pipeline_overview_text = """
+    intro_text = """
 
     ## Introduction
     The Swedish National Archives introduces a demonstrational end-to-end HTR (Handwritten Text Recognition) pipeline. This pipeline comprises two instance segmentation models: one designated for segmenting text-regions and another for isolating text-lines within these regions, coupled with an HTR model for image-to-text transcription. The objective of this project is to establish a generic pipeline capable of processing running-text documents spanning from 1600 to 1900.
@@ -12,10 +12,14 @@ class TextAbout:
     -  Navigate to the > **About** > **Roadmap**. 
 
     To understand how to utilize this application through a REST API, self-host or via Docker, 
-    - Navigate to the > **How to Use** > **API & Duplicate for Private Use**.
+    - Navigate to the > **About** > **How to Use** > **API & Duplicate for Private Use**.
+    
+    """
 
     ## The Pipeline in Overview
-
+    pipeline_overview_text = """
+    ## The Pipeline in Overview
+    
     The steps in the pipeline can be seen below as follows:
     """
 

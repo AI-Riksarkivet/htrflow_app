@@ -155,6 +155,15 @@ with gr.Blocks() as htr_tool_tab:
         api_name="predict",
     )
 
+    def dummy_update_htr_tool_transcriber_model_dropdown(htr_tool_transcriber_model_dropdown):
+        return gr.update(value="Riksarkivet/satrn_htr")
+
+    htr_tool_transcriber_model_dropdown.change(
+        fn=dummy_update_htr_tool_transcriber_model_dropdown,
+        inputs=htr_tool_transcriber_model_dropdown,
+        outputs=htr_tool_transcriber_model_dropdown,
+    )
+
     def update_selected_tab_output_and_setting():
         return gr.update(visible=True), gr.update(visible=False)
 

@@ -7,9 +7,13 @@ numpy==1.25.0
 opencv-python-headless==4.7.0.72
 Jinja2==3.1.2
 transformers==4.30.2
-huggingface-hub==0.15.1
+huggingface-hub
 datasets==2.14.5
 requests==2.31.0
+apscheduler
+pytz
+jiwer
+evaluate
 # pillow==9.5.0
 
 

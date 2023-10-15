@@ -117,7 +117,7 @@ class CustomTrack:
             gr.update(visible=True),
         )
 
-    def transcribe_text(self, df, images):
+    def transcribe_text(self, images):
         gr.Info("Running Transcribe Lines")
         transcription_temp_list_with_score = []
         mapping_dict = {}
@@ -142,11 +142,11 @@ class CustomTrack:
                 transcription_temp_list_with_score, columns=["Transcribed text", "Pred score"]
             )
 
+            joined_transcription_temp_list = "\n".join([tup[0] for tup in transcription_temp_list_with_score])
+
             mapping_dict[transcribed_text] = image
 
-            yield df_trans_explore[
-                ["Transcribed text"]
-            ], df_trans_explore, mapping_dict, bool_to_show_control_results_transcribe, bool_to_show_placeholder
+            yield joined_transcription_temp_list, df_trans_explore, mapping_dict, bool_to_show_control_results_transcribe, bool_to_show_placeholder
 
     def get_select_index_image(self, images_from_gallery, evt: gr.SelectData):
         return images_from_gallery[evt.index]["name"]

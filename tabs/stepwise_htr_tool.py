@@ -1,9 +1,11 @@
 import os
 import shutil
 
+import evaluate
 import gradio as gr
 
 from helper.examples.examples import DemoImages
+from helper.text.text_howto import TextHowTo
 from src.htr_pipeline.gradio_backend import CustomTrack, SingletonModelLoader
 
 model_loader = SingletonModelLoader()
@@ -12,9 +14,29 @@ custom_track = CustomTrack(model_loader)
 
 images_for_demo = DemoImages()
 
+cer_metric = evaluate.load("cer")
+
+
 with gr.Blocks() as stepwise_htr_tool_tab:
     with gr.Tabs():
         with gr.Tab("1. Region Segmentation"):
+            with gr.Row():
+                with gr.Accordion("Info", open=False) as example_accord:
+                    with gr.Row(equal_height=False):
+                        gr.Markdown(TextHowTo.stepwise_htr_tool)
+                    with gr.Row():
+                        gr.Markdown(TextHowTo.stepwise_htr_tool_tab_intro)
+                    with gr.Row():
+                        with gr.Tabs():
+                            with gr.Tab("1. Region Segmentation"):
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab1)
+                            with gr.Tab("2. Line Segmentation"):
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab2)
+                            with gr.Tab("3. Transcribe Text"):
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab3)
+                            with gr.Tab("4. Explore Results"):
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab4)
+                    gr.Markdown(TextHowTo.stepwise_htr_tool_end)
             with gr.Row():
                 with gr.Column(scale=2):
                     vis_data_folder_placeholder = gr.Markdown(visible=False)
@@ -25,37 +47,8 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             label="Image to Region segment",
                             # type="numpy",
                             tool="editor",
-                            height=350,
+                            height=400,
                         )
-
-                    with gr.Accordion("Region segment settings:", open=False):
-                        with gr.Row():
-                            reg_pred_score_threshold_slider = gr.Slider(
-                                minimum=0.4,
-                                maximum=1,
-                                value=0.5,
-                                step=0.05,
-                                label="P-threshold",
-                                info="""Filter and determine the confidence score 
-                                                required for a prediction score to be considered""",
-                            )
-                            reg_containments_threshold_slider = gr.Slider(
-                                minimum=0,
-                                maximum=1,
-                                value=0.5,
-                                step=0.05,
-                                label="C-threshold",
-                                info="""The minimum required overlap or similarity 
-                                                for a detected region or object to be considered valid""",
-                            )
-
-                        with gr.Row():
-                            region_segment_model_dropdown = gr.Dropdown(
-                                choices=["Riksarkivet/RmtDet_region"],
-                                value="Riksarkivet/RmtDet_region",
-                                label="Region segment model",
-                                info="Will add more models later!",
-                            )
 
                     with gr.Row():
                         clear_button = gr.Button("Clear", variant="secondary", elem_id="clear_button")
@@ -66,7 +59,36 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             elem_id="region_segment_button",
                         )
 
-                    with gr.Row():
+                    with gr.Group():
+                        with gr.Accordion("Region segment settings:", open=False):
+                            with gr.Row():
+                                reg_pred_score_threshold_slider = gr.Slider(
+                                    minimum=0.4,
+                                    maximum=1,
+                                    value=0.5,
+                                    step=0.05,
+                                    label="P-threshold",
+                                    info="""Filter and determine the confidence score 
+                                                    required for a prediction score to be considered""",
+                                )
+                                reg_containments_threshold_slider = gr.Slider(
+                                    minimum=0,
+                                    maximum=1,
+                                    value=0.5,
+                                    step=0.05,
+                                    label="C-threshold",
+                                    info="""The minimum required overlap or similarity 
+                                                    for a detected region or object to be considered valid""",
+                                )
+
+                            with gr.Row():
+                                region_segment_model_dropdown = gr.Dropdown(
+                                    choices=["Riksarkivet/RmtDet_region"],
+                                    value="Riksarkivet/RmtDet_region",
+                                    label="Region segment model",
+                                    info="Will add more models later!",
+                                )
+
                         with gr.Accordion("Example images to use:", open=False) as example_accord:
                             gr.Examples(
                                 examples=images_for_demo.examples_list,
@@ -76,7 +98,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             )
 
                 with gr.Column(scale=3):
-                    output_region_image = gr.Image(label="Segmented regions", type="numpy", height=600)
+                    output_region_image = gr.Image(label="Segmented regions", type="numpy", height=550)
 
         ##############################################
         with gr.Tab("2. Line Segmentation"):
@@ -188,14 +210,11 @@ with gr.Blocks() as stepwise_htr_tool_tab:
 
                 with gr.Column(scale=3):
                     with gr.Row():
-                        transcribed_text_df = gr.Dataframe(
-                            headers=["Transcribed text"],
-                            max_rows=14,
-                            col_count=(1, "fixed"),
-                            wrap=True,
-                            interactive=False,
-                            overflow_row_behaviour="paginate",
-                            height=600,
+                        transcribed_text = gr.Textbox(
+                            label="Transcribed text",
+                            info="Transcribed text is being streamed back from the HTR-model",
+                            lines=25,
+                            value="",
                         )
 
         #####################################
@@ -219,17 +238,26 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             columns=[3],
                             rows=[3],
                             # object_fit="contain",
-                            height=300,
+                            height=250,
                             preview=True,
                             container=False,
                         )
 
                     dataframe_text_index = gr.Textbox(
                         label="Text from DataFrame selection",
-                        info="Click on a dataframe cell to view the corresponding transcribed text line crop. You can also sort the dataframe to easily locate specific entries.",
-                        lines=2,
+                        placeholder="Select row from the DataFrame.",
                         interactive=False,
                     )
+
+                    gt_text_index = gr.Textbox(
+                        label="Ground Truth",
+                        placeholder="Provide the ground truth, if available.",
+                        interactive=True,
+                    )
+                    with gr.Row(equal_height=False):
+                        calc_cer_button = gr.Button("Calculate CER", variant="primary", visible=True)
+
+                        cer_output = gr.Textbox(label="CER:")
 
                 with gr.Column(scale=1, visible=True):
                     mapping_dict = gr.Variable()
@@ -279,9 +307,9 @@ with gr.Blocks() as stepwise_htr_tool_tab:
 
     transcribe_button.click(
         custom_track.transcribe_text,
-        inputs=[transcribed_text_df, inputs_lines_to_transcribe],
+        inputs=[inputs_lines_to_transcribe],
         outputs=[
-            transcribed_text_df,
+            transcribed_text,
             transcribed_text_df_finish,
             mapping_dict,
             # Hide
@@ -289,6 +317,14 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             image_placeholder_explore_results,
         ],
     )
+
+    def compute_cer(dataframe_text_index, gt_text_index):
+        if gt_text_index is not None and gt_text_index.strip() != "":
+            return cer_metric.compute(predictions=[dataframe_text_index], references=[gt_text_index])
+        else:
+            return "Ground truth not provided"
+
+    calc_cer_button.click(compute_cer, inputs=[dataframe_text_index, gt_text_index], outputs=cer_output)
 
     clear_button.click(
         lambda: (
@@ -318,7 +354,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             control_line_segment,
             output_line_from_region,
             inputs_lines_to_transcribe,
-            transcribed_text_df,
+            transcribed_text,
             control_htr,
             inputs_lines_to_transcribe,
             image_placeholder_htr,
