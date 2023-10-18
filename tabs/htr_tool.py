@@ -1,6 +1,7 @@
 import gradio as gr
 
 from helper.examples.examples import DemoImages
+from helper.utils import TrafficDataHandler
 from src.htr_pipeline.gradio_backend import FastTrack, SingletonModelLoader
 
 model_loader = SingletonModelLoader()
@@ -32,6 +33,7 @@ with gr.Blocks() as htr_tool_tab:
                             visible=True,
                             elem_id="run_pipeline_button",
                         )
+                        htr_pipeline_button_var = gr.State(value="htr_pipeline_button")
 
                     htr_pipeline_button_api = gr.Button("Run pipeline", variant="primary", visible=False, scale=1)
 
@@ -260,5 +262,5 @@ with gr.Blocks() as htr_tool_tab:
     fast_track_output_image.select(
         fast_track.get_text_from_coords, inputs=text_polygon_dict, outputs=selection_text_from_image_viewer
     )
-
-    htr_pipeline_button.click(fn=handler.store_metric_data, inputs="htr_pipeline_button")
+    gr.Variable()
+    htr_pipeline_button.click(fn=TrafficDataHandler.store_metric_data, inputs=htr_pipeline_button_var)
