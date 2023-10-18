@@ -2,7 +2,7 @@ class TextApp:
     title_markdown = """
 
 
-    <h1><center> HTRflow - Demo </center></h1>
+    <h1><center> HTRFLOW </center></h1>
 
     <h3><center> Swedish National Archives - Riksarkivet </center></h3>"""
 
