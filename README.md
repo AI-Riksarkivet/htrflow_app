@@ -1,5 +1,5 @@
 ---
-title: HTR Pipeline
+title: HTRFLOW
 emoji: 🏢
 colorFrom: purple
 colorTo: green

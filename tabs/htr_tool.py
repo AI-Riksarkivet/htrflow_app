@@ -4,9 +4,7 @@ from helper.examples.examples import DemoImages
 from src.htr_pipeline.gradio_backend import FastTrack, SingletonModelLoader
 
 model_loader = SingletonModelLoader()
-
 fast_track = FastTrack(model_loader)
-
 images_for_demo = DemoImages()
 
 terminate = False
@@ -21,7 +19,7 @@ with gr.Blocks() as htr_tool_tab:
                 )
 
             with gr.Row():
-                with gr.Tab("Output and Settings") as tab_output_and_setting_selector:
+                with gr.Tab("Run & Settings") as tab_output_and_setting_selector:
                     with gr.Row():
                         stop_htr_button = gr.Button(
                             value="Stop HTR",
@@ -41,10 +39,10 @@ with gr.Blocks() as htr_tool_tab:
                         label="Download output file", visible=True, scale=1, height=100, elem_id="download_file"
                     )
 
-                with gr.Tab("Image Viewer") as tab_image_viewer_selector:
+                with gr.Tab("Visualize results") as tab_image_viewer_selector:
                     with gr.Row():
                         gr.Button(
-                            value="External Image Viewer",
+                            value="Image Viewer (demo)",
                             variant="secondary",
                             link="https://huggingface.co/spaces/Riksarkivet/Viewer_demo",
                             interactive=True,
@@ -58,17 +56,34 @@ with gr.Blocks() as htr_tool_tab:
                         interactive=False, label="Text Selector", info="Select a mask on Image Viewer to return text"
                     )
 
+                with gr.Tab("(WIP) Compare runs") as tab_model_compare_selector:
+                    with gr.Box():
+                        gr.Markdown(
+                            "Compare different runs with uploaded Ground Truth and calculate CER. You will also be able to upload output format files"
+                        )
+
+                        calc_cer_button_fast = gr.Button("Calculate CER", variant="primary", visible=True)
+
         with gr.Column(scale=4):
             with gr.Box():
                 with gr.Row(visible=True) as output_and_setting_tab:
+                    with gr.Column(scale=2):
+                        fast_name_files_placeholder = gr.Markdown(visible=False)
+                        gr.Examples(
+                            examples=images_for_demo.examples_list,
+                            inputs=[fast_name_files_placeholder, fast_track_input_region_image],
+                            label="Example images",
+                            examples_per_page=5,
+                        )
+
                     with gr.Column(scale=3):
                         with gr.Row():
                             with gr.Group():
                                 gr.Markdown("  &nbsp; ⚙️ Settings ")
                                 with gr.Row():
                                     radio_file_input = gr.CheckboxGroup(
-                                        choices=["Txt", "XML"],
-                                        value=["Txt", "XML"],
+                                        choices=["Txt", "Page XML"],
+                                        value=["Txt", "Page XML"],
                                         label="Output file extension",
                                         # info="Only txt and page xml is supported for now!",
                                         scale=1,
@@ -84,54 +99,59 @@ with gr.Blocks() as htr_tool_tab:
                                         label="Output prediction threshold",
                                         info="Output XML with prediction score",
                                     )
-                                with gr.Row():
-                                    gr.Slider(
-                                        value=0.6,
-                                        minimum=0.5,
-                                        maximum=1,
-                                        label="HTR threshold",
-                                        info="Prediction score threshold for transcribed lines",
-                                        scale=1,
-                                    )
-                                    gr.Slider(
-                                        value=0.7,
-                                        minimum=0.6,
-                                        maximum=1,
-                                        label="Avg threshold",
-                                        info="Average prediction score for a region",
-                                        scale=1,
-                                    )
 
-                                htr_tool_region_segment_model_dropdown = gr.Dropdown(
-                                    choices=["Riksarkivet/rtmdet_region"],
-                                    value="Riksarkivet/rtmdet_region",
-                                    label="Region Segment models",
-                                    info="Will add more models later!",
-                                )
+                                with gr.Accordion("Models", open=False):
+                                    with gr.Group():
+                                        with gr.Row():
+                                            htr_tool_region_segment_model_dropdown = gr.Dropdown(
+                                                choices=["Riksarkivet/rtmdet_region"],
+                                                value="Riksarkivet/rtmdet_region",
+                                                label="Region segmentation models",
+                                                info="More models will be added",
+                                            )
 
-                                # with gr.Accordion("Transcribe settings:", open=False):
-                                htr_tool_line_segment_model_dropdown = gr.Dropdown(
-                                    choices=["Riksarkivet/rtmdet_lines"],
-                                    value="Riksarkivet/rtmdet_lines",
-                                    label="Line Segment models",
-                                    info="Will add more models later!",
-                                )
+                                            gr.Slider(
+                                                minimum=0.4,
+                                                maximum=1,
+                                                value=0.5,
+                                                step=0.05,
+                                                label="P-threshold",
+                                                info="""Filter confidence score for a prediction score to be considered""",
+                                            )
 
-                                htr_tool_transcriber_model_dropdown = gr.Dropdown(
-                                    choices=["Riksarkivet/satrn_htr", "microsoft/trocr-base-handwritten"],
-                                    value="Riksarkivet/satrn_htr",
-                                    label="Transcriber models",
-                                    info="Models will be continuously  updated with future additions for specific cases.",
-                                )
+                                        with gr.Row():
+                                            htr_tool_line_segment_model_dropdown = gr.Dropdown(
+                                                choices=["Riksarkivet/rtmdet_lines"],
+                                                value="Riksarkivet/rtmdet_lines",
+                                                label="Line segmentation models",
+                                                info="More models will be added",
+                                            )
 
-                    with gr.Column(scale=2):
-                        fast_name_files_placeholder = gr.Markdown(visible=False)
-                        gr.Examples(
-                            examples=images_for_demo.examples_list,
-                            inputs=[fast_name_files_placeholder, fast_track_input_region_image],
-                            label="Example images",
-                            examples_per_page=5,
-                        )
+                                            gr.Slider(
+                                                minimum=0.4,
+                                                maximum=1,
+                                                value=0.5,
+                                                step=0.05,
+                                                label="P-threshold",
+                                                info="""Filter confidence score for a prediction score to be considered""",
+                                            )
+
+                                        with gr.Row():
+                                            htr_tool_transcriber_model_dropdown = gr.Dropdown(
+                                                choices=["Riksarkivet/satrn_htr", "microsoft/trocr-base-handwritten"],
+                                                value="Riksarkivet/satrn_htr",
+                                                label="Text recognition models",
+                                                info="More models will be added",
+                                            )
+
+                                            gr.Slider(
+                                                value=0.6,
+                                                minimum=0.5,
+                                                maximum=1,
+                                                label="HTR threshold",
+                                                info="Prediction score threshold for transcribed lines",
+                                                scale=1,
+                                            )
 
                 with gr.Row(visible=False) as image_viewer_tab:
                     text_polygon_dict = gr.Variable()
@@ -139,6 +159,43 @@ with gr.Blocks() as htr_tool_tab:
                     fast_track_output_image = gr.Image(
                         label="Image Viewer", type="numpy", height=600, interactive=False
                     )
+
+                with gr.Column(visible=False) as model_compare_selector:
+                    with gr.Row():
+                        gr.Radio(
+                            choices=["Compare Page XML", "Compare different runs"],
+                            value="Compare Page XML",
+                            info="Compare different runs from HTRFLOW or with external runs, e.g with Transkibus ",
+                        )
+                    with gr.Row():
+                        gr.UploadButton(label="Run A")
+
+                        gr.UploadButton(label="Run B")
+
+                        gr.UploadButton(label="Ground Truth")
+
+                    with gr.Row():
+                        gr.HighlightedText(
+                            label="Text diff runs",
+                            combine_adjacent=True,
+                            show_legend=True,
+                            color_map={"+": "red", "-": "green"},
+                        )
+
+                    with gr.Row():
+                        gr.HighlightedText(
+                            label="Text diff ground truth",
+                            combine_adjacent=True,
+                            show_legend=True,
+                            color_map={"+": "red", "-": "green"},
+                        )
+
+                    with gr.Row():
+                        with gr.Column(scale=1):
+                            with gr.Row(equal_height=False):
+                                cer_output_fast = gr.Textbox(label="CER:")
+                        with gr.Column(scale=2):
+                            pass
 
     xml_rendered_placeholder_for_api = gr.Textbox(visible=False)
 
@@ -165,17 +222,25 @@ with gr.Blocks() as htr_tool_tab:
     )
 
     def update_selected_tab_output_and_setting():
-        return gr.update(visible=True), gr.update(visible=False)
+        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
 
     def update_selected_tab_image_viewer():
-        return gr.update(visible=False), gr.update(visible=True)
+        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
+
+    def update_selected_tab_model_compare():
+        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
 
     tab_output_and_setting_selector.select(
-        fn=update_selected_tab_output_and_setting, outputs=[output_and_setting_tab, image_viewer_tab]
+        fn=update_selected_tab_output_and_setting,
+        outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
     )
 
     tab_image_viewer_selector.select(
-        fn=update_selected_tab_image_viewer, outputs=[output_and_setting_tab, image_viewer_tab]
+        fn=update_selected_tab_image_viewer, outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector]
+    )
+
+    tab_model_compare_selector.select(
+        fn=update_selected_tab_model_compare, outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector]
     )
 
     def stop_function():
@@ -195,3 +260,5 @@ with gr.Blocks() as htr_tool_tab:
     fast_track_output_image.select(
         fast_track.get_text_from_coords, inputs=text_polygon_dict, outputs=selection_text_from_image_viewer
     )
+
+    htr_pipeline_button.click(fn=handler.store_metric_data, inputs="htr_pipeline_button")
