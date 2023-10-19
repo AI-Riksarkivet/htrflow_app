@@ -11,5 +11,10 @@ models:
     "Riksarkivet/rtmdet_lines",
     "Riksarkivet/satrn_htr",
   ]
-datasets: []
+datasets:
+  [
+    "Riksarkivet/placeholder_region_segmentation",
+    "Riksarkivet/placeholder_htr",
+    "Riksarkivet/placeholder_htr",
+  ]
 ---

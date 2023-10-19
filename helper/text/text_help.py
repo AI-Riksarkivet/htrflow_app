@@ -1,3 +1,6 @@
+from helper.text.markdown_reader import read_markdown
+
+
 class TextHowTo:
     htr_tool = """
     ## Getting Started with the HTR Tool
@@ -179,6 +182,24 @@ print(job.result())
 # Output is truncated. View as a scrollable element or open in a text editor. Adjust cell output settings...
 
                         """
+
+    text_faq = read_markdown("helper/text/help/faq.md")
+
+    text_contact = """
+
+"""
+
+    discussion = """
+    ## Get in Touch
+
+    If you have suggestions, questions, or would like to discuss our roadmap further, please don't hesitate to reach out.
+    Press badge below to open a discussion on HuggingFace.
+
+    <p align="center">
+        <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions">
+            <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-a-discussion-xl-dark.svg" alt="Badge 1">
+        </a>
+    </p>"""
 
 
 if __name__ == "__main__":

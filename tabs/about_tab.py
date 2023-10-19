@@ -31,24 +31,9 @@ with gr.Blocks() as about_tab:
             with gr.Row():
                 gr.Markdown(TextRoadmap.text_contribution)
 
-        # with gr.Tab("API & Duplicate for own use"):
-        #     with gr.Row():
-        #         with gr.Column():
-        #             gr.Markdown(TextHowTo.htr_tool_api_text)
-        #             gr.Code(
-        #                 value=TextHowTo.code_for_api,
-        #                 language="python",
-        #                 interactive=False,
-        #                 show_label=False,
-        #             )
-        #         with gr.Column():
-        #             gr.Markdown(TextHowTo.duplicatin_space_htr_text)
-        #             gr.Markdown(TextHowTo.figure_htr_hardware)
-        #             gr.Markdown(TextHowTo.duplicatin_for_privat)
-
         with gr.Tab("Changelog & Roadmap"):
             with gr.Row():
                 with gr.Column():
-                    gr.Markdown(TextRoadmap.roadmap)
+                    gr.Markdown(TextRoadmap.changelog)
                 with gr.Column():
-                    gr.Markdown(TextRoadmap.discussion)
+                    gr.Markdown(TextRoadmap.roadmap)
