@@ -46,7 +46,7 @@ with gr.Blocks() as htr_tool_tab:
                 with gr.Tab("Visualize") as tab_image_viewer_selector:
                     with gr.Row():
                         gr.Button(
-                            value="Image Viewer (demo)",
+                            value="Image viewer",
                             variant="secondary",
                             link="https://huggingface.co/spaces/Riksarkivet/Viewer_demo",
                             interactive=True,
