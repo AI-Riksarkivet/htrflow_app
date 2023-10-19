@@ -26,7 +26,7 @@ class TextRoadmap:
 
     changelog = """
 
-## App Changelog
+## Changelog
 
 ### [0.0.1] - 2023-10-19
 
@@ -36,7 +36,7 @@ class TextRoadmap:
 
 #### Fixed
 
-- ..
+- -
 
 #### Changed
 
@@ -44,7 +44,7 @@ class TextRoadmap:
 
 ### Removed
 
-- ..
+- -
 
     
 """

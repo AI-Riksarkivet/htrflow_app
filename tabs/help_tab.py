@@ -12,23 +12,40 @@ with gr.Blocks() as help_tab:
                     gr.Markdown(TextHowTo.discussion)
 
         with gr.Tab("Fast track"):
+            gr.Markdown("WIP")
             pass
         with gr.Tab("Stepwise"):
+            with gr.Row(equal_height=False):
+                gr.Markdown(TextHowTo.stepwise_htr_tool)
             with gr.Row():
-                with gr.Row(equal_height=False):
-                    gr.Markdown(TextHowTo.stepwise_htr_tool)
-                with gr.Row():
-                    gr.Markdown(TextHowTo.stepwise_htr_tool_tab_intro)
-                with gr.Row():
-                    with gr.Tabs():
-                        with gr.Tab("1. Region Segmentation"):
-                            gr.Markdown(TextHowTo.stepwise_htr_tool_tab1)
-                        with gr.Tab("2. Line Segmentation"):
-                            gr.Markdown(TextHowTo.stepwise_htr_tool_tab2)
-                        with gr.Tab("3. Transcribe Text"):
-                            gr.Markdown(TextHowTo.stepwise_htr_tool_tab3)
-                        with gr.Tab("4. Explore Results"):
-                            gr.Markdown(TextHowTo.stepwise_htr_tool_tab4)
+                gr.Markdown(TextHowTo.stepwise_htr_tool_tab_intro)
+            with gr.Row():
+                with gr.Tabs():
+                    with gr.Tab("1. Region Segmentation"):
+                        with gr.Row():
+                            with gr.Column():
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab1)
+                            with gr.Column():
+                                gr.Markdown("image")
+                    with gr.Tab("2. Line Segmentation"):
+                        with gr.Row():
+                            with gr.Column():
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab2)
+                            with gr.Column():
+                                gr.Markdown("image")
+                    with gr.Tab("3. Transcribe Text"):
+                        with gr.Row():
+                            with gr.Column():
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab3)
+                            with gr.Column():
+                                gr.Markdown("image")
+                    with gr.Tab("4. Explore Results"):
+                        with gr.Row():
+                            with gr.Column():
+                                gr.Markdown(TextHowTo.stepwise_htr_tool_tab4)
+                            with gr.Column():
+                                gr.Markdown("image")
+            with gr.Row():
                 gr.Markdown(TextHowTo.stepwise_htr_tool_end)
 
         with gr.Tab("API"):
@@ -42,7 +59,14 @@ with gr.Blocks() as help_tab:
                         show_label=False,
                     )
                 with gr.Column():
-                    gr.Markdown("output")
+                    gr.Markdown(TextHowTo.output_code_for_api_text)
+
+                    gr.Code(
+                        value=TextHowTo.output_code_for_api,
+                        language=None,
+                        interactive=False,
+                        show_label=False,
+                    )
 
             pass
         with gr.Tab("Duplicating for own use"):

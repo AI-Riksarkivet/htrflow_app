@@ -1,4 +1,6 @@
 class TextApp:
+    demo_version = """Demo version 0.0.1"""
+
     title_markdown = """
 
 

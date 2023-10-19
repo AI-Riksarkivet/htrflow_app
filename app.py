@@ -12,12 +12,11 @@ from tabs.htr_tool import htr_tool_tab
 from tabs.stepwise_htr_tool import stepwise_htr_tool_tab
 
 session_uuid = str(uuid.uuid1())
-VERSION = "Demo version 0.0.2"
 
 with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
     with gr.Row():
         with gr.Column(scale=1):
-            text_ip_output = gr.Markdown(VERSION)
+            text_ip_output = gr.Markdown(TextApp.demo_version)
         with gr.Column(scale=1):
             gr.Markdown(TextApp.title_markdown)
         with gr.Column(scale=1):

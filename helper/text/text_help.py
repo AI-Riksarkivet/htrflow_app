@@ -34,13 +34,12 @@ class TextHowTo:
     stepwise_htr_tool = """
 ## Stepwise HTR Tool
 
-The Stepwise HTR Tool is a powerful tool for performing Handwritten Text Recognition (HTR) tasks. The Stepwise version provides you with fine-grained control over each step of the HTR process, allowing for greater customization and troubleshooting capabilities. <br>
-With the Stepwise HTR Tool, you can break down the HTR process into distinct steps: region segmentation, line segmentation, text transcription, and result exploration. This tool offers a range of configuration options to tailor the HTR process to your specific needs. You can adjust settings such as P-threshold and C-threshold to fine-tune the region and line segmentation, and choose from a selection of underlying machine learning models to drive each step of the process. <br>
-The Stepwise HTR Tool also provides a dedicated Explore Results tab, allowing you to thoroughly analyze and interact with the transcriptions. You can sort and identify both bad and good predictions, helping you gain insights and make improvements to the HTR accuracy. Each step is interconnected, and the output of one step serves as the input for the next step, ensuring a seamless and efficient workflow.
-
+Here you can break down the HTR process into distinct steps: Region segmentation, Line segmentation, Text recognition, and Explore results. You can adjust the settings for each part, and choose from a selection of underlying machine learning models to drive each step of the process. Each step is interconnected, and the output of one step serves as the input for the next step, ensuring a seamless and efficient workflow.
 """
     stepwise_htr_tool_tab_intro = """
-    Follow the instructions below provided in each tab to perform the respective step of the HTR process and ensure you work through the tabs sequentially:
+Follow the instructions below:
+
+
 
 """
 
@@ -122,9 +121,9 @@ Alternatively, you can watch the instructional video below, which provides a ste
 </figure> 
 """
     duplicatin_space_htr_text = """
-## Duplicating for Private Use
+## Duplicating for own Use
 
-It's worth noting that while using any public Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
+It's worth noting that while using any poublic Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
 
 <br>
 <p align="center">
@@ -155,33 +154,44 @@ job = client.submit(
 
 print(job.result())
 
-# Loaded as API: http://127.0.0.1:7860/ ✔
-# <?xml version="1.0" encoding="UTF-8"?>
-# <PcGts xmlns="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15/pagecontent.xsd">
-#     <Metadata>
-#         <Creator>Swedish National Archives</Creator>
-#         <Created>2023-08-21, 13:28:06</Created>
-#     </Metadata>
-#     <Page imageFilename="page_xml.xml" imageWidth="4885" imageHeight="4066">
-#     <TextRegion id="region_0" custom="readingOrder {index:0;}">
-#         <Coords points="1477,265 1467,217 1440,201 1370,211 1248,203 1127,224 1067,224 1003,212 844,247 766,243 747,261 742,280 751,332 766,346 1258,341 1357,332 1439,341 1468,327"/>
-#     <TextLine id="line_region_0_0" custom="readingOrder {index:0;}">
-#                 <Coords points="1458,248 1443,222 1449,200 1412,215 1366,200 1325,207 1302,200 1241,200 1235,206 1205,200 1187,210 1085,222 957,206 795,239 769,273 771,333 783,340 1445,333 1450,324"/>
-#                                 <TextEquiv>
-#             <Unicode>År 1865.</Unicode>
-#         </TextEquiv>
-#                         <PredScore pred_score="0.9482"/>
-#             </TextLine>
-#     </TextRegion>
-#     <TextRegion id="region_1" custom="readingOrder {index:1;}">
-# ......................................
-#     </TextRegion>
-#     </Page>
-# </PcGts>
+"""
+    output_code_for_api_text = """
+### Output from the api
+
+The output from the api is currently in the format of Page XML, which can be imported into transkibus or be viewed in this [viewer](https://huggingface.co/spaces/Riksarkivet/Viewer_demo).
+
+
+"""
+
+    output_code_for_api = """
+
+
+Loaded as API: http://127.0.0.1:7860/ ✔
+<?xml version="1.0" encoding="UTF-8"?>
+<PcGts xmlns="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15 http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15/pagecontent.xsd">
+    <Metadata>
+        <Creator>Swedish National Archives</Creator>
+        <Created>2023-08-21, 13:28:06</Created>
+    </Metadata>
+    <Page imageFilename="page_xml.xml" imageWidth="4885" imageHeight="4066">
+    <TextRegion id="region_0" custom="readingOrder {index:0;}">
+        <Coords points="1477,265 1467,217 1440,201 1370,211 1248,203 1127,224 1067,224 1003,212 844,247 766,243 747,261 742,280 751,332 766,346 1258,341 1357,332 1439,341 1468,327"/>
+    <TextLine id="line_region_0_0" custom="readingOrder {index:0;}">
+                <Coords points="1458,248 1443,222 1449,200 1412,215 1366,200 1325,207 1302,200 1241,200 1235,206 1205,200 1187,210 1085,222 957,206 795,239 769,273 771,333 783,340 1445,333 1450,324"/>
+                                <TextEquiv>
+            <Unicode>År 1865.</Unicode>
+        </TextEquiv>
+                        <PredScore pred_score="0.9482"/>
+            </TextLine>
+    </TextRegion>
+    <TextRegion id="region_1" custom="readingOrder {index:1;}">
+......................................
+    </TextRegion>
+    </Page>
+</PcGts>
 
 # Output is truncated. View as a scrollable element or open in a text editor. Adjust cell output settings...
-
-                        """
+ """
 
     text_faq = read_markdown("helper/text/help/faq.md")
 
@@ -190,7 +200,7 @@ print(job.result())
 """
 
     discussion = """
-    ## Get in Touch
+    ## Discussion about the app
 
     If you have suggestions, questions, or would like to discuss our roadmap further, please don't hesitate to reach out.
     Press badge below to open a discussion on HuggingFace.
@@ -199,7 +209,15 @@ print(job.result())
         <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions">
             <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-a-discussion-xl-dark.svg" alt="Badge 1">
         </a>
-    </p>"""
+    </p>
+    
+    ## Open discussion
+    DIGG...
+
+    ## Contact us
+    email..
+
+    """
 
 
 if __name__ == "__main__":
