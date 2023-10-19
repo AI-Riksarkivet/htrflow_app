@@ -6,6 +6,7 @@ import evaluate
 import gradio as gr
 
 from helper.examples.examples import DemoImages
+from helper.utils import TrafficDataHandler
 from src.htr_pipeline.gradio_backend import CustomTrack, SingletonModelLoader
 
 model_loader = SingletonModelLoader()
@@ -67,6 +68,8 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             variant="primary",
                             elem_id="region_segment_button",
                         )
+
+                        region_segment_button_var = gr.State(value="region_segment_button")
 
                 with gr.Column(scale=2):
                     with gr.Box():
@@ -373,3 +376,5 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             image_placeholder_lines,
         ],
     )
+
+    region_segment_button.click(fn=TrafficDataHandler.store_metric_data, inputs=region_segment_button_var)

@@ -262,5 +262,5 @@ with gr.Blocks() as htr_tool_tab:
     fast_track_output_image.select(
         fast_track.get_text_from_coords, inputs=text_polygon_dict, outputs=selection_text_from_image_viewer
     )
-    gr.Variable()
+
     htr_pipeline_button.click(fn=TrafficDataHandler.store_metric_data, inputs=htr_pipeline_button_var)
