@@ -14,7 +14,7 @@ models:
 datasets:
   [
     "Riksarkivet/placeholder_region_segmentation",
-    "Riksarkivet/placeholder_htr",
+    "Riksarkivet/placeholder_line_segmentation",
     "Riksarkivet/placeholder_htr",
   ]
 ---

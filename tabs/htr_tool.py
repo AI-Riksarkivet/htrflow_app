@@ -22,15 +22,15 @@ with gr.Blocks() as htr_tool_tab:
                 )
 
             with gr.Row():
-                with gr.Tab("Run & Settings") as tab_output_and_setting_selector:
+                with gr.Tab("HTRFLOW") as tab_output_and_setting_selector:
                     with gr.Row():
                         stop_htr_button = gr.Button(
-                            value="Stop HTR",
+                            value="Stop run",
                             variant="stop",
                         )
 
                         htr_pipeline_button = gr.Button(
-                            "Run HTR",
+                            "Run ",
                             variant="primary",
                             visible=True,
                             elem_id="run_pipeline_button",
@@ -43,7 +43,7 @@ with gr.Blocks() as htr_tool_tab:
                         label="Download output file", visible=True, scale=1, height=100, elem_id="download_file"
                     )
 
-                with gr.Tab("Visualize results") as tab_image_viewer_selector:
+                with gr.Tab("Visualize") as tab_image_viewer_selector:
                     with gr.Row():
                         gr.Button(
                             value="Image Viewer (demo)",
@@ -60,7 +60,7 @@ with gr.Blocks() as htr_tool_tab:
                         interactive=False, label="Text Selector", info="Select a mask on Image Viewer to return text"
                     )
 
-                with gr.Tab("(WIP) Compare runs") as tab_model_compare_selector:
+                with gr.Tab("Compare") as tab_model_compare_selector:
                     with gr.Box():
                         gr.Markdown(
                             "Compare different runs with uploaded Ground Truth and calculate CER. You will also be able to upload output format files"
