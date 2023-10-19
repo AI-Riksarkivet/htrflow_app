@@ -1,3 +1,4 @@
+import os
 import uuid
 
 import gradio as gr
@@ -35,9 +36,9 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
         with gr.Tab("About"):
             about_tab.render()
 
-    # SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
-    # if SECRET_KEY:
-    demo.load(fn=TrafficDataHandler.onload_store_metric_data, inputs=None, outputs=None)
+    SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+    if SECRET_KEY:
+        demo.load(fn=TrafficDataHandler.onload_store_metric_data, inputs=None, outputs=None)
 
 
 demo.queue(concurrency_count=2, max_size=2)
