@@ -1,3 +1,5 @@
+import os
+
 import gradio as gr
 
 from helper.examples.examples import DemoImages
@@ -263,4 +265,6 @@ with gr.Blocks() as htr_tool_tab:
         fast_track.get_text_from_coords, inputs=text_polygon_dict, outputs=selection_text_from_image_viewer
     )
 
-    htr_pipeline_button.click(fn=TrafficDataHandler.store_metric_data, inputs=htr_pipeline_button_var)
+    SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+    if SECRET_KEY:
+        htr_pipeline_button.click(fn=TrafficDataHandler.store_metric_data, inputs=htr_pipeline_button_var)

@@ -377,4 +377,6 @@ with gr.Blocks() as stepwise_htr_tool_tab:
         ],
     )
 
-    region_segment_button.click(fn=TrafficDataHandler.store_metric_data, inputs=region_segment_button_var)
+    SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+    if SECRET_KEY:
+        region_segment_button.click(fn=TrafficDataHandler.store_metric_data, inputs=region_segment_button_var)
