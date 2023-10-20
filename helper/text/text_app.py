@@ -6,7 +6,7 @@ class TextApp:
 
     <h1><center> HTRFLOW </center></h1>
 
-    <p><center>Explore AI models for historical HTR developed by the Swedish National Archives </center></p>"""
+    <p><center>Explore AI models for Handwritten Text Recogntion developed by the Swedish National Archives </center></p>"""
 
     title_markdown_img = """
     <a href="https://riksarkivet.se">
