@@ -24,7 +24,8 @@ class GradioConfig:
 
         #download_file > div.empty.svelte-lk9eg8.large.unpadded_box  {min-height: 100px;}
         #gallery_lines > div.preview.svelte-1b19cri > div.thumbnails.scroll-hide.svelte-1b19cri {display: none;}
-
+        
+        .tr-head.svelte-13hsdno>.svelte-13hsdno+.svelte-13hsdno {display: none;} 
                 """
 
     def generate_tooltip_css(self):
