@@ -58,7 +58,7 @@ with gr.Blocks() as htr_tool_tab:
                         )
 
                     selection_text_from_image_viewer = gr.Textbox(
-                        interactive=False, label="Text Selector", info="Select a mask on Image Viewer to return text"
+                        interactive=False, label="Text Selector", info="Select a line on Image Viewer to return text"
                     )
 
                 with gr.Tab("Compare") as tab_model_compare_selector:

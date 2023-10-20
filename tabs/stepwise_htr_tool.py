@@ -197,7 +197,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                                 )
 
                     with gr.Row():
-                        copy_textarea = gr.Button("Copy Text", variant="secondary", visible=True, scale=1)
+                        copy_textarea = gr.Button("Copy text", variant="secondary", visible=True, scale=1)
 
                         transcribe_button = gr.Button("Run", variant="primary", visible=True, scale=1)
 
@@ -259,14 +259,14 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                         )
 
                     with gr.Row(equal_height=False):
-                        cer_output = gr.Textbox(label="CER:")
+                        cer_output = gr.Textbox(label="Character Error Rate")
                         gr.Markdown("")
                         calc_cer_button = gr.Button("Calculate CER", variant="primary", visible=True)
 
                 with gr.Column(scale=1, visible=True):
                     mapping_dict = gr.Variable()
                     transcribed_text_df_finish = gr.Dataframe(
-                        headers=["Transcribed text", "Pred score"],
+                        headers=["Transcribed text", "Prediction score"],
                         max_rows=14,
                         col_count=(2, "fixed"),
                         wrap=True,
