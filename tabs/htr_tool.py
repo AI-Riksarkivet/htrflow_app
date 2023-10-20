@@ -45,12 +45,13 @@ with gr.Blocks() as htr_tool_tab:
 
                 with gr.Tab("Visualize") as tab_image_viewer_selector:
                     with gr.Row():
-                        gr.Button(
-                            value="Image viewer",
-                            variant="secondary",
-                            link="https://huggingface.co/spaces/Riksarkivet/Viewer_demo",
-                            interactive=True,
-                        )
+                        gr.Markdown("")
+                        #     gr.Button(
+                        #     value="Image viewer",
+                        #     variant="secondary",
+                        #     link="https://huggingface.co/spaces/Riksarkivet/Viewer_demo",
+                        #     interactive=True,
+                        # )
 
                         run_image_visualizer_button = gr.Button(
                             value="Visualize results", variant="primary", interactive=True
@@ -63,7 +64,12 @@ with gr.Blocks() as htr_tool_tab:
                 with gr.Tab("Compare") as tab_model_compare_selector:
                     with gr.Box():
                         gr.Markdown(
-                            "Compare different runs with uploaded Ground Truth and calculate CER. You will also be able to upload output format files"
+                            """
+                            **Work in progress**
+
+                            Compare different runs with uploaded Ground Truth and calculate CER. You will also be able to upload output format files
+
+                            """
                         )
 
                         calc_cer_button_fast = gr.Button("Calculate CER", variant="primary", visible=True)
@@ -80,82 +86,85 @@ with gr.Blocks() as htr_tool_tab:
                             examples_per_page=5,
                         )
 
+                        gr.Markdown("&nbsp;")
+
                     with gr.Column(scale=3):
-                        with gr.Row():
-                            with gr.Group():
-                                gr.Markdown("  &nbsp; ⚙️ Settings ")
-                                with gr.Row():
-                                    radio_file_input = gr.CheckboxGroup(
-                                        choices=["Txt", "Page XML"],
-                                        value=["Txt", "Page XML"],
-                                        label="Output file extension",
-                                        # info="Only txt and page xml is supported for now!",
-                                        scale=1,
-                                    )
-                                with gr.Row():
-                                    gr.Checkbox(
-                                        value=True,
-                                        label="Binarize image",
-                                        info="Binarize image to reduce background noise",
-                                    )
-                                    gr.Checkbox(
-                                        value=True,
-                                        label="Output prediction threshold",
-                                        info="Output XML with prediction score",
-                                    )
+                        with gr.Group():
+                            gr.Markdown("  &nbsp; ⚙️ Settings ")
+                            with gr.Row():
+                                radio_file_input = gr.CheckboxGroup(
+                                    choices=["Txt", "Page XML"],
+                                    value=["Txt", "Page XML"],
+                                    label="Output file extension",
+                                    info="JSON and ALTO-XML will be added",
+                                    scale=1,
+                                )
+                            with gr.Row():
+                                gr.Checkbox(
+                                    value=True,
+                                    label="Binarize image",
+                                    info="Binarize image to reduce background noise",
+                                )
+                                gr.Checkbox(
+                                    value=True,
+                                    label="Output prediction threshold",
+                                    info="Output XML with prediction score",
+                                )
 
-                                with gr.Accordion("Models", open=False):
-                                    with gr.Group():
-                                        with gr.Row():
-                                            htr_tool_region_segment_model_dropdown = gr.Dropdown(
-                                                choices=["Riksarkivet/rtmdet_region"],
-                                                value="Riksarkivet/rtmdet_region",
-                                                label="Region segmentation models",
-                                                info="More models will be added",
-                                            )
+                            with gr.Accordion("Advanced settings", open=False):
+                                with gr.Group():
+                                    with gr.Row():
+                                        htr_tool_region_segment_model_dropdown = gr.Dropdown(
+                                            choices=["Riksarkivet/rtmdet_region"],
+                                            value="Riksarkivet/rtmdet_region",
+                                            label="Region segmentation models",
+                                            info="More models will be added",
+                                        )
 
-                                            gr.Slider(
-                                                minimum=0.4,
-                                                maximum=1,
-                                                value=0.5,
-                                                step=0.05,
-                                                label="P-threshold",
-                                                info="""Filter confidence score for a prediction score to be considered""",
-                                            )
+                                        gr.Slider(
+                                            minimum=0.4,
+                                            maximum=1,
+                                            value=0.5,
+                                            step=0.05,
+                                            label="P-threshold",
+                                            info="""Filter confidence score for a prediction score to be considered""",
+                                        )
 
-                                        with gr.Row():
-                                            htr_tool_line_segment_model_dropdown = gr.Dropdown(
-                                                choices=["Riksarkivet/rtmdet_lines"],
-                                                value="Riksarkivet/rtmdet_lines",
-                                                label="Line segmentation models",
-                                                info="More models will be added",
-                                            )
+                                    with gr.Row():
+                                        htr_tool_line_segment_model_dropdown = gr.Dropdown(
+                                            choices=["Riksarkivet/rtmdet_lines"],
+                                            value="Riksarkivet/rtmdet_lines",
+                                            label="Line segmentation models",
+                                            info="More models will be added",
+                                        )
 
-                                            gr.Slider(
-                                                minimum=0.4,
-                                                maximum=1,
-                                                value=0.5,
-                                                step=0.05,
-                                                label="P-threshold",
-                                                info="""Filter confidence score for a prediction score to be considered""",
-                                            )
+                                        gr.Slider(
+                                            minimum=0.4,
+                                            maximum=1,
+                                            value=0.5,
+                                            step=0.05,
+                                            label="P-threshold",
+                                            info="""Filter confidence score for a prediction score to be considered""",
+                                        )
 
-                                        with gr.Row():
-                                            htr_tool_transcriber_model_dropdown = gr.Dropdown(
-                                                choices=["Riksarkivet/satrn_htr", "microsoft/trocr-base-handwritten"],
-                                                value="Riksarkivet/satrn_htr",
-                                                label="Text recognition models",
-                                                info="More models will be added",
-                                            )
+                                    with gr.Row():
+                                        htr_tool_transcriber_model_dropdown = gr.Dropdown(
+                                            choices=["Riksarkivet/satrn_htr", "microsoft/trocr-base-handwritten"],
+                                            value="Riksarkivet/satrn_htr",
+                                            label="Text recognition models",
+                                            info="More models will be added",
+                                        )
 
-                                            gr.Slider(
-                                                value=0.6,
-                                                minimum=0.5,
-                                                maximum=1,
-                                                label="HTR threshold",
-                                                info="Prediction score threshold for transcribed lines",
-                                                scale=1,
-                                            )
+                                        gr.Slider(
+                                            value=0.6,
+                                            minimum=0.5,
+                                            maximum=1,
+                                            label="HTR threshold",
+                                            info="Prediction score threshold for transcribed lines",
+                                            scale=1,
+                                        )
+                                    with gr.Row():
+                                        gr.Markdown("  &nbsp; More settings will be added")
 
                 with gr.Row(visible=False) as image_viewer_tab:
                     text_polygon_dict = gr.Variable()
@@ -169,7 +178,7 @@ with gr.Blocks() as htr_tool_tab:
                         gr.Radio(
                             choices=["Compare Page XML", "Compare different runs"],
                             value="Compare Page XML",
-                            info="Compare different runs from HTRFLOW or with external runs, e.g with Transkibus ",
+                            info="Compare different runs from HTRFLOW or with external runs.",
                         )
                     with gr.Row():
                         gr.UploadButton(label="Run A")

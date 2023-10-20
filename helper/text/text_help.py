@@ -46,8 +46,16 @@ Follow the instructions below:
     htr_tool_api_text = """
 ## Usage of Client API
 
-For those interested in testing out the demo, it's available to run as a Gradio Python client. To facilitate this, there's a lightweight package called ´gradio_client´ that you can easily install via pip.
-        """
+If you prefer to run **Fast track** programmatically, we offer an API for that purpose.
+
+- Docuemtnation for gradio client with [python](https://www.gradio.app/guides/getting-started-with-the-python-client) 
+- Docuemtnation for gradio client with [javascript](https://www.gradio.app/guides/getting-started-with-the-js-client)
+
+**Note**: More extensive APIs and documentation can be added in the future upon request.
+
+See example below for usage of API in python:
+        
+          """
 
     stepwise_htr_tool_tab1 = """
 ### Tab 1: Region Segmentation
@@ -121,16 +129,18 @@ Alternatively, you can watch the instructional video below, which provides a ste
 </figure> 
 """
     duplicatin_space_htr_text = """
-## Duplicating for own Use
+## Duplicating for own use
 
-It's worth noting that while using any poublic Space as an API is possible, there's a catch. Hugging Face might rate limit you if you send an excessive number of requests in a short period. However, there's a workaround for those who need to make frequent API calls. By duplicating a public Space, you can create your own private Space. This private version allows you to make unlimited requests without any restrictions. So, if you're planning on heavy usage duplicate space:
+Please be aware of certain limitations when using the application:
+- Primarily, this application is designed for demonstration purposes and is not intended for mass HTR.
+- Currently, the Swedish National Archives has constraints on sharing hardware, leading to a queue system for high demand.
+- The demo is hosted on Hugging Face domains, and they may rate-limit you if there's an excessive number of requests in a short timeframe, especially when using the API.
 
-<br>
-<p align="center">
-    <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo?duplicate=true">
-        <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/duplicate-this-space-xl-dark.svg" alt="Badge 1">
-    </a>
-</p>
+For those requiring heavy usage, you can conveniently duplicate the application.
+- Duplicate [application](https://huggingface.co/spaces/Riksarkivet/htr_demo?duplicate=true). 
+
+By doing so, you'll create your own private app, which allows for unlimited requests without any restrictions. The image below shows the minimum hardware you need to use if you don't have access to hardware youself:
+
 """
 
     duplicatin_for_privat = """
@@ -158,7 +168,7 @@ print(job.result())
     output_code_for_api_text = """
 ### Output from the api
 
-The output from the api is currently in the format of Page XML, which can be imported into transkibus or be viewed in this [viewer](https://huggingface.co/spaces/Riksarkivet/Viewer_demo).
+The output from the api is currently in the format of Page XML, which can be imported into this [viewer](https://huggingface.co/spaces/Riksarkivet/Viewer_demo).
 
 
 """
@@ -193,31 +203,13 @@ Loaded as API: http://127.0.0.1:7860/ ✔
 # Output is truncated. View as a scrollable element or open in a text editor. Adjust cell output settings...
  """
 
-    text_faq = read_markdown("helper/text/help/faq.md")
+    text_faq = read_markdown("helper/text/help/faq_discussion/faq.md")
 
     text_contact = """
 
 """
 
-    discussion = """
-    ## Discussion about the app
-
-    If you have suggestions, questions, or would like to discuss our roadmap further, please don't hesitate to reach out.
-    Press badge below to open a discussion on HuggingFace.
-
-    <p align="center">
-        <a href="https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions">
-            <img src="https://huggingface.co/datasets/huggingface/badges/raw/main/open-a-discussion-xl-dark.svg" alt="Badge 1">
-        </a>
-    </p>
-    
-    ## Open discussion
-    DIGG...
-
-    ## Contact us
-    email..
-
-    """
+    text_discussion = read_markdown("helper/text/help/faq_discussion/discussion.md")
 
 
 if __name__ == "__main__":

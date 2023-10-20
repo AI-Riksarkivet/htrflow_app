@@ -141,12 +141,12 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                                         info="More models will be added",
                                     )
                     with gr.Row():
-                        clear_line_segment_button = gr.Button(
-                            " ",
-                            variant="Secondary",
-                            # elem_id="center_button",
-                            scale=1,
-                        )
+                        # placeholder_line_button = gr.Button(
+                        #     "",
+                        #     variant="secondary",
+                        #     scale=1,
+                        # )
+                        gr.Markdown("&nbsp;")
 
                         line_segment_button = gr.Button(
                             "Run",
@@ -156,8 +156,6 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                         )
 
                 with gr.Column(scale=3):
-                    # gr.Markdown("""lorem ipsum""")
-
                     output_line_from_region = gr.Image(
                         label="Segmented lines", type="numpy", interactive="False", height=600
                     )
@@ -199,7 +197,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                                 )
 
                     with gr.Row():
-                        clear_transcribe_button = gr.Button(" ", variant="Secondary", visible=True, scale=1)
+                        copy_textarea = gr.Button("Copy Text", variant="secondary", visible=True, scale=1)
 
                         transcribe_button = gr.Button("Run", variant="primary", visible=True, scale=1)
 
@@ -211,6 +209,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
                             lines=26,
                             value="",
                             show_copy_button=True,
+                            elem_id="textarea_stepwise_3",
                         )
 
         #####################################
@@ -261,6 +260,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
 
                     with gr.Row(equal_height=False):
                         cer_output = gr.Textbox(label="CER:")
+                        gr.Markdown("")
                         calc_cer_button = gr.Button("Calculate CER", variant="primary", visible=True)
 
                 with gr.Column(scale=1, visible=True):
@@ -283,7 +283,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
 
     def compute_cer(dataframe_text_index, gt_text_index):
         if gt_text_index is not None and gt_text_index.strip() != "":
-            return cer_metric.compute(predictions=[dataframe_text_index], references=[gt_text_index])
+            return round(cer_metric.compute(predictions=[dataframe_text_index], references=[gt_text_index]), 4)
         else:
             return "Ground truth not provided"
 
@@ -323,6 +323,8 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             control_htr,
         ],
     )
+
+    copy_textarea.click(fn=None, _js="""document.querySelector("#textarea_stepwise_3 > label > button").click()""")
 
     transcribe_button.click(
         custom_track.transcribe_text,

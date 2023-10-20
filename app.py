@@ -7,7 +7,6 @@ from helper.gradio_config import css, theme
 from helper.text.text_app import TextApp
 from helper.utils import TrafficDataHandler
 from tabs.about_tab import about_tab
-from tabs.help_tab import help_tab
 from tabs.htr_tool import htr_tool_tab
 from tabs.stepwise_htr_tool import stepwise_htr_tool_tab
 
@@ -17,7 +16,7 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
     with gr.Row():
         with gr.Column(scale=1):
             text_ip_output = gr.Markdown(TextApp.demo_version)
-        with gr.Column(scale=1):
+        with gr.Column(scale=2):
             gr.Markdown(TextApp.title_markdown)
         with gr.Column(scale=1):
             gr.Markdown(TextApp.title_markdown_img)
@@ -29,10 +28,7 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
         with gr.Tab("Stepwise"):
             stepwise_htr_tool_tab.render()
 
-        with gr.Tab("Help"):
-            help_tab.render()
-
-        with gr.Tab("About"):
+        with gr.Tab("Documentation"):
             about_tab.render()
 
     SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
