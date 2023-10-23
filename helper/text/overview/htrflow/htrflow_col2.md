@@ -4,7 +4,7 @@ Please fork and leave a star on Github if you like it! The code for this project
 
 - [Github](https://github.com/Riksarkivet/HTRFLOW)
 
-**Note**: We will in the future package all of the code for mass htr (batch inference on multi-GPU setup), but the code is still work in progress.
+**Note**: We will in the future package all of the code for mass HTR (batch inference on multi-GPU setup), but the code is still work in progress.
 
 ## Models
 
