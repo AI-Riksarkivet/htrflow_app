@@ -12,4 +12,4 @@ jobs:
       - name: Push to riksarkivet
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://Riksarkivet:$HF_TOKEN@https://github.com/Riksarkivet/HTRFLOW main
+        run: git push --force https://Riksarkivet:$HF_TOKEN@github.com/Riksarkivet/HTRFLOW main
