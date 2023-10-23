@@ -2,7 +2,7 @@
 
 Please be aware of certain limitations when using the application:
 
-- Primarily, this application is designed for demonstration purposes and is not intended for mass HTR.
+- This application is primarily designed for demonstration purposes and is not intended for scaling up HTR.
 - Currently, the Swedish National Archives has constraints on sharing hardware, leading to a queue system for high demand.
 - The demo is hosted on Hugging Face domains, and they may rate-limit you if there's an excessive number of requests in a short timeframe, especially when using the API.
 

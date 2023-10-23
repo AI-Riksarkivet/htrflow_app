@@ -17,6 +17,7 @@ class TextOverview:
 
     # Contributions
     contributions = read_markdown("helper/text/overview/contributions/contributions.md")
+    huminfra_image = read_markdown("helper/text/overview/contributions/huminfra_image.md")
 
     # Changelog & Roadmap
     changelog = read_markdown("helper/text/overview/changelog_roadmap/changelog.md")

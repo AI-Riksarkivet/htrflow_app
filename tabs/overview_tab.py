@@ -23,16 +23,11 @@ with gr.Blocks() as overview:
                     with gr.Tab("Text recognition"):
                         gr.Markdown(TextOverview.htrflow_tab4)
 
-        with gr.Tab("FAQ & Discussion"):
-            with gr.Row():
-                with gr.Column():
-                    gr.Markdown(TextOverview.text_faq)
-                with gr.Column():
-                    gr.Markdown(TextOverview.text_discussion)
-
         with gr.Tab("Contributions"):
             with gr.Row():
-                gr.Markdown(TextOverview.contributions)
+                with gr.Column():
+                    gr.Markdown(TextOverview.contributions)
+                    gr.Markdown(TextOverview.huminfra_image)
 
         with gr.Tab("Duplicating for own use & API"):
             with gr.Row():
@@ -63,3 +58,10 @@ with gr.Blocks() as overview:
                     gr.Markdown(TextOverview.changelog)
                 with gr.Column():
                     gr.Markdown(TextOverview.roadmap)
+
+        with gr.Tab("FAQ & Discussion"):
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown(TextOverview.text_faq)
+                with gr.Column():
+                    gr.Markdown(TextOverview.text_discussion)
