@@ -2,12 +2,13 @@
 
 Please fork and leave a star on Github if you like it! The code for this project can be found here:
 
-- [Github](https://github.com/Borg93/htr_gradio)
-  **Note**: We will in the future package all of the code for mass htr (batch inference on multi-GPU setup), but the code is still work in progress.
+- [Github](https://github.com/Riksarkivet/HTRFLOW)
+
+**Note**: We will in the future package all of the code for mass htr (batch inference on multi-GPU setup), but the code is still work in progress.
 
 ## Models
 
-The models within this pipeline will be subject to continual retraining and updates as more data becomes accessible. For detailed information about all the models used in this project, please refer to the model cards available on Hugging Face:
+The models used in this demo are very much a work in progress, and as more data, and new architectures, becomes available, they will be retrained and reevaluated. For more information about the models, please refer to their model-cards on Huggingface.
 
 - [Riksarkivet/rtmdet_regions](https://huggingface.co/Riksarkivet/rtmdet_regions)
 - [Riksarkivet/rtmdet_lines](https://huggingface.co/Riksarkivet/rtmdet_lines)
@@ -15,7 +16,7 @@ The models within this pipeline will be subject to continual retraining and upda
 
 ## Datasets
 
-Both train and evaluation datasets for the models will be released in the future here:
+Train and testsets created by the Swedish National Archives will be released here:
 
 - [Riksarkivet/placeholder_region_segmentation](https://huggingface.co/datasets/Riksarkivet/placeholder_region_segmentation)
 - [Riksarkivet/placeholder_line_segmentation](https://huggingface.co/datasets/Riksarkivet/placeholder_line_segmentation)

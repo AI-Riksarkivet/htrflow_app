@@ -1,11 +1,7 @@
-## Discussion about the app
+## Contact us
 
-If you have suggestions, questions, or would like to discuss improvemnts for the app, please don't hesitate to reach out.
+If you have any questions, or suggestions for features or improvements, please don’t hesitate to contact us.
 
 - Open a discussion on [HuggingFace](https://huggingface.co/spaces/Riksarkivet/htr_demo/discussions).
 
-## Contact us
-
-If you prefer email or your question is more sensitive please email.
-
-- Send it to forskning@riksarkivet.se
+- Send an email to: forskning@riksarkivet.se

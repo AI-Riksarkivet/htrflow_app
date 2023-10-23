@@ -1,27 +1,33 @@
-## Project Contributions
+## HTRFLOW – Contributions
 
-We extend our deepest gratitude to the individuals and organizations who have made this project possible through their invaluable contributions, especially in providing datasets for training the models. Their generosity and collaboration have significantly propelled the project forward.
+The AI models used in HTRFLOW is the result of a collaborative effort, involving the National Archives in both Sweden and Finland, in partnership with the Stockholm City Archives, Jämtlands läns fornskriftsällskap, citizen science volunteers and researchers from Stockholm and Uppsala Universities.
 
-### Datasets Contributors
+Several datasets have been created by participants through Citizen Science using the Handwritten Text Recognition (HTR) software, Transkribus, provided by [READ-COOP SCE](https://readcoop.eu/) .
 
-- [Name/Organization]: Provided [Name of Dataset] which was instrumental in training [Specify Model].
-- [Name/Organization]: Contributed [Name of Dataset] that greatly enhanced the performance of [Specify Model].
-- [Name/Organization]: Generously shared [Name of Dataset] enabling us to refine [Specify Model].
-- ... (continue listing contributors as necessary)
+### Archives used to train models for HTRFLOW
 
-### Other Contributions
+[Svea hovrätt (Renskrivna protokoll), 1713–1735](https://sok.riksarkivet.se/arkiv/H2hpDbNn14scxjzdWqAaJ1)
 
-- [Name/Organization]: For [description of contribution, e.g., code, testing, design].
-- ... (continue listing contributors as necessary)
+[Bergmästaren i Nora m fl bergslag (Hammartingsprotokoll), 1698–1765](https://sok.riksarkivet.se/arkiv/M5Fe2TT9rH6cxG02H087k3)
 
-### Special Mentions
+[Trolldomskommissionen, mainly 1670s](https://sok.riksarkivet.se/trolldomskommissionen)
 
-- ... (mention any other individuals/organizations that played a significant role)
+[Bergskollegium, 1718–1758](https://sok.riksarkivet.se/arkiv/SMFky31ekQ80Qsk0UCZZE2)
 
-We are immensely thankful for the collective effort and dedication that has significantly contributed to the progress of this project. The open collaboration and sharing of resources underscore the community’s commitment to advancing the field.
+[Jämtlands domsaga, 1647–1688](https://sok.riksarkivet.se/arkiv/2l4NYFT8rH6cxG02H087k3)
 
-For further details on contributions or if you are interested in contributing, please refer to our Contribution Guidelines or contact [Your Contact Information].
+[Stockholms domkapitel, 1728–1759](https://sok.riksarkivet.se/arkiv/etg1tyeEaIPMBzKbUKTjw1)
 
-Thank you!
+[Politikollegiet, 1729–1759](https://sok.riksarkivet.se/arkiv/1lQnXIDiKaYxRLBlK1dGF3)
 
-// Riksarkivet
+[Göteborgs poliskammare före 1900 (Detektiva polisens rapportböcker), 1868–1901](https://sok.riksarkivet.se/arkiv/oLTOi9yxweZJUG018W43t3)
+
+[Renovated Court Records, the National Archives of Finland, 1800s](https://tuomiokirjat.kansallisarkisto.fi/)
+
+### Ongoing research collaborations
+
+[Transcription node Sweden – machine interpretation and citizen research combined](https://riksarkivet.se/forskning), Swedish National Archives and University of Gothenburg, funded by the Swedish National Heritage Board.
+
+[Mapping the geographies of early modern mining knowledge. A digital history of the study tours of the Swedish Bureau of Mines, 1691–1826](https://www.idehist.uu.se/forskning/projekt/den-tidigmoderna-bergsvetenskapens-geografier), Uppsala University and Stockholm University, funded by the Swedish Research Council.
+
+The Swedish National Archives' research and development on HTR is part of the Swedish national infrastructure Huminfra. [Click here](https://riksarkivet.se/huminfra) for more information.
