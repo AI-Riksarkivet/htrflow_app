@@ -4,7 +4,7 @@ The Swedish National Archives introduces a demonstrational end-to-end HTR (Handw
 
 ## Usage
 
-It needs to be emphasized that this application is intended mainly for demo-purposes. It’s aim is to showcase our pipeline for transcribing historical, running-text documents, not to put the pipeline into large-scale production.
+It needs to be emphasized that this application is intended mainly for demo-purposes. Its aim is to showcase our pipeline for transcribing historical, running-text documents, not to put the pipeline into large-scale production.
 **Note**: In the future we’ll optimize the code to suit a production scenario with multi-GPU, batch-inference, but this is still a work in progress. <br>
 
 For an insight into the upcoming features we are working on:
