@@ -174,6 +174,7 @@ with gr.Blocks() as htr_tool_tab:
                     )
 
                 with gr.Column(visible=False) as model_compare_selector:
+                    gr.Markdown("**Work in progress:**")
                     with gr.Row():
                         gr.Radio(
                             choices=["Compare Page XML", "Compare different runs"],

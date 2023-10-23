@@ -6,8 +6,8 @@ import gradio as gr
 from helper.gradio_config import css, theme
 from helper.text.text_app import TextApp
 from helper.utils import TrafficDataHandler
-from tabs.about_tab import about_tab
 from tabs.htr_tool import htr_tool_tab
+from tabs.overview_tab import overview
 from tabs.stepwise_htr_tool import stepwise_htr_tool_tab
 
 session_uuid = str(uuid.uuid1())
@@ -28,8 +28,8 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
         with gr.Tab("Stepwise"):
             stepwise_htr_tool_tab.render()
 
-        with gr.Tab("Documentation"):
-            about_tab.render()
+        with gr.Tab("Overview"):
+            overview.render()
 
     SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
     if SECRET_KEY:
