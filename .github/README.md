@@ -11,3 +11,8 @@ At the moment HTRFLOW is mainly a demo-application. It’s not intended for prod
 All code is open-source, all our models are on [Hugging Face](https://huggingface.co/collections/Riksarkivet/models-for-handwritten-text-recognition-652692c6871f915e766de688) and are free to use, and all data will be made available for download and use on [Hugging Face](https://huggingface.co/datasets/Riksarkivet/placeholder_htr) as well.
 
 HTRFLOW is more than just a demo; it's a testament to the advancement of open source development of HTR. As we progress, the app will be renamed into HTRFLOW.app and HTRFLOW will evolve into multiple parts. HTRFLOW will become our foundational library that will serve as the backbone for a range of applications in the transcription domain. Note that the backend (src) for the app will be rewritten and packaged to be more optimized under the project name [HTR_SVEA](https://github.com/Borg93/htr_svea) (possibly renamed into HTRFLOW.core).
+
+
+### Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Riksarkivet/HTRFLOW&type=Date)](https://star-history.com/#Riksarkivet/HTRFLOW&Date)
