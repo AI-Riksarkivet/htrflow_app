@@ -59,7 +59,7 @@ with gr.Blocks() as overview:
                 with gr.Column():
                     gr.Markdown(TextOverview.roadmap)
 
-        with gr.Tab("FAQ & Discussion"):
+        with gr.Tab("FAQ & Contact"):
             with gr.Row():
                 with gr.Column():
                     gr.Markdown(TextOverview.text_faq)

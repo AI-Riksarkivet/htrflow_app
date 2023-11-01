@@ -46,13 +46,6 @@ with gr.Blocks() as htr_tool_tab:
                 with gr.Tab("Visualize") as tab_image_viewer_selector:
                     with gr.Row():
                         gr.Markdown("")
-                        #     gr.Button(
-                        #     value="Image viewer",
-                        #     variant="secondary",
-                        #     link="https://huggingface.co/spaces/Riksarkivet/Viewer_demo",
-                        #     interactive=True,
-                        # )
-
                         run_image_visualizer_button = gr.Button(
                             value="Visualize results", variant="primary", interactive=True
                         )
@@ -211,19 +204,22 @@ with gr.Blocks() as htr_tool_tab:
                         with gr.Column(scale=2):
                             pass
 
-    xml_rendered_placeholder_for_api = gr.Textbox(visible=False)
+        xml_rendered_placeholder_for_api = gr.Textbox(placeholder="XML", visible=False)
 
     htr_event_click_event = htr_pipeline_button.click(
         fast_track.segment_to_xml,
         inputs=[fast_track_input_region_image, radio_file_input],
         outputs=[fast_file_downlod, fast_file_downlod],
+        queue=False,
+        api_name=False,
     )
 
     htr_pipeline_button_api.click(
         fast_track.segment_to_xml_api,
         inputs=[fast_track_input_region_image],
         outputs=[xml_rendered_placeholder_for_api],
-        api_name="predict",
+        queue=False,
+        api_name="run_htr_pipeline",
     )
 
     def dummy_update_htr_tool_transcriber_model_dropdown(htr_tool_transcriber_model_dropdown):
@@ -233,6 +229,8 @@ with gr.Blocks() as htr_tool_tab:
         fn=dummy_update_htr_tool_transcriber_model_dropdown,
         inputs=htr_tool_transcriber_model_dropdown,
         outputs=htr_tool_transcriber_model_dropdown,
+        queue=False,
+        api_name=False,
     )
 
     def update_selected_tab_output_and_setting():
@@ -247,14 +245,22 @@ with gr.Blocks() as htr_tool_tab:
     tab_output_and_setting_selector.select(
         fn=update_selected_tab_output_and_setting,
         outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
+        queue=False,
+        api_name=False,
     )
 
     tab_image_viewer_selector.select(
-        fn=update_selected_tab_image_viewer, outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector]
+        fn=update_selected_tab_image_viewer,
+        outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
+        queue=False,
+        api_name=False,
     )
 
     tab_model_compare_selector.select(
-        fn=update_selected_tab_model_compare, outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector]
+        fn=update_selected_tab_model_compare,
+        outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
+        queue=False,
+        api_name=False,
     )
 
     def stop_function():
@@ -263,18 +269,34 @@ with gr.Blocks() as htr_tool_tab:
         pipeline_inferencer.terminate = True
         gr.Info("The HTR execution was halted")
 
-    stop_htr_button.click(fn=stop_function, inputs=None, outputs=None, cancels=[htr_event_click_event])
+    stop_htr_button.click(
+        fn=stop_function,
+        inputs=None,
+        outputs=None,
+        queue=False,
+        api_name=False,
+        # cancels=[htr_event_click_event],
+    )
 
     run_image_visualizer_button.click(
         fn=fast_track.visualize_image_viewer,
         inputs=fast_track_input_region_image,
         outputs=[fast_track_output_image, text_polygon_dict],
+        queue=False,
+        api_name=False,
     )
 
     fast_track_output_image.select(
-        fast_track.get_text_from_coords, inputs=text_polygon_dict, outputs=selection_text_from_image_viewer
+        fast_track.get_text_from_coords,
+        inputs=text_polygon_dict,
+        outputs=selection_text_from_image_viewer,
+        queue=False,
+        api_name=False,
     )
 
-    SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+    SECRET_KEY = os.environ.get("HUB_TOKEN", False)
     if SECRET_KEY:
-        htr_pipeline_button.click(fn=TrafficDataHandler.store_metric_data, inputs=htr_pipeline_button_var)
+        htr_pipeline_button.click(
+            fn=TrafficDataHandler.store_metric_data,
+            inputs=htr_pipeline_button_var,
+        )
