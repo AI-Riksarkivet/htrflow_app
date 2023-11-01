@@ -22,12 +22,6 @@ COPY ./requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-# # mim openmmlabs installs (quick fix..)
-# RUN mim install mmengine 
-# RUN mim install mmcv 
-# RUN mim install mmdet 
-# RUN mim install mmocr
-
 # Set up a new user named "user" with user ID 1000
 RUN useradd -m -u 1000 user
 

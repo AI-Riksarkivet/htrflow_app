@@ -27,16 +27,6 @@ With pip:
 pip install -r requirements.txt
 ```
 
-and
-
-```
-!pip install -U openmim
-!mim install mmengine
-!mim install mmcv
-!mim install mmdet
-!mim install mmocr
-```
-
 Run app with:
 
 ```
@@ -58,7 +48,7 @@ docker build --tag htrflow/htrflow-app .
 Run container:
 
 ```
-docker run -it -d --name htrflow-app -p 7000:7000  htrflow/htrflow-app:latest
+docker run -it -d --name htrflow-app -p 7860:7860  htrflow/htrflow-app:latest
 ```
 
 ### Run with Docker with HF
