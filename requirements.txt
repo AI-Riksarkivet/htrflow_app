@@ -16,14 +16,9 @@ jiwer
 evaluate
 # pillow==9.5.0
 
+mmengine==0.7.4
+mmcv==2.0.1
+mmdet==3.0.0
+mmocr==1.0.0
 
-
-
-
-# make install_openmmlab (they are excuted in dockerfile)
-# !pip install -U openmim
-# !mim install mmengine
-# !mim install mmcv
-# !mim install mmdet
-# !mim install mmocr
 
