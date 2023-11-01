@@ -26,10 +26,10 @@ install_openmmlab_with_mim:
 
 install_openmmlab:
 	@echo "Running Openmmlab requirements install"
-	pip install mmengine
-	pip install mmcv
-	pip install mmdet
-	pip install mmocr
+	pip install mmengine==0.7.4
+	pip install mmcv==2.0.1
+	pip install mmdet==3.0.0
+	pip install mmocr==1.0.0
 
 build:
 	pip install -e .
