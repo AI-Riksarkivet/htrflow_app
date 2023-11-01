@@ -31,13 +31,17 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
         with gr.Tab("Overview"):
             overview.render()
 
-    SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
+    SECRET_KEY = os.environ.get("HUB_TOKEN", False)
     if SECRET_KEY:
-        demo.load(fn=TrafficDataHandler.onload_store_metric_data, inputs=None, outputs=None)
+        demo.load(
+            fn=TrafficDataHandler.onload_store_metric_data,
+            inputs=None,
+            outputs=None,
+        )
 
 
 demo.queue(concurrency_count=2, max_size=2)
 
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, show_api=False, show_error=True)
+    demo.launch(server_name="0.0.0.0", server_port=7860, show_api=False, show_error=False)

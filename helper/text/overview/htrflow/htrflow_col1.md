@@ -10,3 +10,9 @@ It needs to be emphasized that this application is intended mainly for demo-purp
 For an insight into the upcoming features we are working on:
 
 - Navigate to the > **Overview** > **Changelog & Roadmap**.
+
+## Limitations
+
+The demo, hosted on Huggingface and assigned a T4 GPU, can only handle two users submissions at a time. If you experience long wait times or unresponsiveness, this is the reason. In the future, we plan to host this solution ourselves, with a better server for an improved user experience, optimized code, and multiple model options. Exciting developments are on the horizon!
+
+It's also important to note that the models work on running text, not text in table format.

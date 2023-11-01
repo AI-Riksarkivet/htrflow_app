@@ -2,6 +2,23 @@
 
 All notable changes to HTRFLOW will be documented here.
 
+### [0.0.2] - 2023-11-01
+
+#### Added
+
+- Better documentation for API, see **Overview** > **Duplicating for own use & API**
+- Better documentation for restrictions of app, see **Overview** > **HTRFLOW**
+
+#### Fixed
+
+- Fixed bug for API, [issue](https://github.com/Riksarkivet/HTRFLOW/issues/2)
+
+#### Changed
+
+- Changed named for **FAQ & Discussion** to **FAQ & Contact**
+
+---
+
 ### [0.0.1] - 2023-10-23
 
 #### Added
