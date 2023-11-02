@@ -48,7 +48,7 @@ docker build --tag htrflow/htrflow-app .
 Run container:
 
 ```
-docker run -it -d --name htrflow-app -p 7860:7860  htrflow/htrflow-app:latest
+docker run -it -d --name htrflow-app -p 7000:7860  htrflow/htrflow-app:latest
 ```
 
 ### Run with Docker with HF
