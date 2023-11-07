@@ -21,6 +21,8 @@ class TextOverview:
 
     # Changelog & Roadmap
     changelog = read_markdown("helper/text/overview/changelog_roadmap/changelog.md")
+    old_changelog = read_markdown("helper/text/overview/changelog_roadmap/old_changelog.md")
+
     roadmap = read_markdown("helper/text/overview/changelog_roadmap/roadmap.md")
 
     # duplicate & api

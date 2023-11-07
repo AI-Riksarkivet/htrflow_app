@@ -287,24 +287,39 @@ with gr.Blocks() as stepwise_htr_tool_tab:
         else:
             return "Ground truth not provided"
 
-    calc_cer_button.click(compute_cer, inputs=[dataframe_text_index, gt_text_index], outputs=cer_output)
+    calc_cer_button.click(
+        compute_cer,
+        inputs=[dataframe_text_index, gt_text_index],
+        outputs=cer_output,
+        api_name=False,
+    )
 
-    calc_cer_button.click(diff_texts, inputs=[dataframe_text_index, gt_text_index], outputs=[diff_token_output])
+    calc_cer_button.click(
+        diff_texts,
+        inputs=[dataframe_text_index, gt_text_index],
+        outputs=[diff_token_output],
+        api_name=False,
+    )
 
     region_segment_button.click(
         custom_track.region_segment,
         inputs=[input_region_image, reg_pred_score_threshold_slider, reg_containments_threshold_slider],
         outputs=[output_region_image, regions_cropped_gallery, image_placeholder_lines, control_line_segment],
+        api_name=False,
     )
 
     regions_cropped_gallery.select(
-        custom_track.get_select_index_image, regions_cropped_gallery, input_region_from_gallery
+        custom_track.get_select_index_image,
+        regions_cropped_gallery,
+        input_region_from_gallery,
+        api_name=False,
     )
 
     transcribed_text_df_finish.select(
         fn=custom_track.get_select_index_df,
         inputs=[transcribed_text_df_finish, mapping_dict],
         outputs=[gallery_inputs_lines_to_transcribe, dataframe_text_index],
+        api_name=False,
     )
 
     line_segment_button.click(
@@ -322,9 +337,14 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             image_placeholder_htr,
             control_htr,
         ],
+        api_name=False,
     )
 
-    copy_textarea.click(fn=None, _js="""document.querySelector("#textarea_stepwise_3 > label > button").click()""")
+    copy_textarea.click(
+        fn=None,
+        _js="""document.querySelector("#textarea_stepwise_3 > label > button").click()""",
+        api_name=False,
+    )
 
     transcribe_button.click(
         custom_track.transcribe_text,
@@ -337,6 +357,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             control_results_transcribe,
             image_placeholder_explore_results,
         ],
+        api_name=False,
     )
 
     clear_button.click(
@@ -377,6 +398,7 @@ with gr.Blocks() as stepwise_htr_tool_tab:
             image_placeholder_explore_results,
             image_placeholder_lines,
         ],
+        api_name=False,
     )
 
     SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)

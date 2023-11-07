@@ -4,7 +4,16 @@ import gradio as gr
 
 from helper.examples.examples import DemoImages
 from helper.utils import TrafficDataHandler
-from src.htr_pipeline.gradio_backend import FastTrack, SingletonModelLoader
+from src.htr_pipeline.gradio_backend import (
+    FastTrack,
+    SingletonModelLoader,
+    compare_diff_runs_highlight,
+    compute_cer_a_and_b_with_gt,
+    update_selected_tab_image_viewer,
+    update_selected_tab_model_compare,
+    update_selected_tab_output_and_setting,
+    upload_file,
+)
 
 model_loader = SingletonModelLoader()
 fast_track = FastTrack(model_loader)
@@ -55,17 +64,14 @@ with gr.Blocks() as htr_tool_tab:
                     )
 
                 with gr.Tab("Compare") as tab_model_compare_selector:
-                    with gr.Box():
-                        gr.Markdown(
-                            """
-                            **Work in progress**
-
-                            Compare different runs with uploaded Ground Truth and calculate CER. You will also be able to upload output format files
-
-                            """
-                        )
-
+                    with gr.Row():
+                        diff_runs_button = gr.Button("Compare runs", variant="primary", visible=True)
                         calc_cer_button_fast = gr.Button("Calculate CER", variant="primary", visible=True)
+                    with gr.Row():
+                        cer_output_fast = gr.Textbox(
+                            label="Character Error Rate:",
+                            info="The percentage of characters that have been transcribed incorrectly",
+                        )
 
         with gr.Column(scale=4):
             with gr.Box():
@@ -142,7 +148,11 @@ with gr.Blocks() as htr_tool_tab:
 
                                     with gr.Row():
                                         htr_tool_transcriber_model_dropdown = gr.Dropdown(
-                                            choices=["Riksarkivet/satrn_htr", "microsoft/trocr-base-handwritten"],
+                                            choices=[
+                                                "Riksarkivet/satrn_htr",
+                                                "microsoft/trocr-base-handwritten",
+                                                "pstroe/bullinger-general-model",
+                                            ],
                                             value="Riksarkivet/satrn_htr",
                                             label="Text recognition models",
                                             info="More models will be added",
@@ -167,50 +177,62 @@ with gr.Blocks() as htr_tool_tab:
                     )
 
                 with gr.Column(visible=False) as model_compare_selector:
-                    gr.Markdown("**Work in progress:**")
                     with gr.Row():
-                        gr.Radio(
-                            choices=["Compare Page XML", "Compare different runs"],
-                            value="Compare Page XML",
-                            info="Compare different runs from HTRFLOW or with external runs.",
-                        )
+                        gr.Markdown("Compare different runs (Page XML output) with Ground Truth (GT)")
                     with gr.Row():
-                        gr.UploadButton(label="Run A")
+                        with gr.Group():
+                            upload_button_run_a = gr.UploadButton("A", file_types=[".xml"], file_count="single")
+                            file_input_xml_run_a = gr.File(
+                                label=None,
+                                file_count="single",
+                                height=100,
+                                elem_id="download_file",
+                                interactive=False,
+                                visible=False,
+                            )
 
-                        gr.UploadButton(label="Run B")
+                        with gr.Group():
+                            upload_button_run_b = gr.UploadButton("B", file_types=[".xml"], file_count="single")
+                            file_input_xml_run_b = gr.File(
+                                label=None,
+                                file_count="single",
+                                height=100,
+                                elem_id="download_file",
+                                interactive=False,
+                                visible=False,
+                            )
 
-                        gr.UploadButton(label="Ground Truth")
-
-                    with gr.Row():
-                        gr.HighlightedText(
-                            label="Text diff runs",
+                        with gr.Group():
+                            upload_button_run_gt = gr.UploadButton("GT", file_types=[".xml"], file_count="single")
+                            file_input_xml_run_gt = gr.File(
+                                label=None,
+                                file_count="single",
+                                height=100,
+                                elem_id="download_file",
+                                interactive=False,
+                                visible=False,
+                            )
+                    with gr.Tab("Comparing run A with B"):
+                        text_diff_runs = gr.HighlightedText(
+                            label="A with B",
                             combine_adjacent=True,
                             show_legend=True,
                             color_map={"+": "red", "-": "green"},
                         )
-
-                    with gr.Row():
-                        gr.HighlightedText(
-                            label="Text diff ground truth",
+                    with gr.Tab("Compare run A with Ground Truth"):
+                        text_diff_gt = gr.HighlightedText(
+                            label="A with GT",
                             combine_adjacent=True,
                             show_legend=True,
                             color_map={"+": "red", "-": "green"},
                         )
-
-                    with gr.Row():
-                        with gr.Column(scale=1):
-                            with gr.Row(equal_height=False):
-                                cer_output_fast = gr.Textbox(label="CER:")
-                        with gr.Column(scale=2):
-                            pass
 
         xml_rendered_placeholder_for_api = gr.Textbox(placeholder="XML", visible=False)
 
     htr_event_click_event = htr_pipeline_button.click(
         fast_track.segment_to_xml,
-        inputs=[fast_track_input_region_image, radio_file_input],
+        inputs=[fast_track_input_region_image, radio_file_input, htr_tool_transcriber_model_dropdown],
         outputs=[fast_file_downlod, fast_file_downlod],
-        queue=False,
         api_name=False,
     )
 
@@ -222,44 +244,21 @@ with gr.Blocks() as htr_tool_tab:
         api_name="run_htr_pipeline",
     )
 
-    def dummy_update_htr_tool_transcriber_model_dropdown(htr_tool_transcriber_model_dropdown):
-        return gr.update(value="Riksarkivet/satrn_htr")
-
-    htr_tool_transcriber_model_dropdown.change(
-        fn=dummy_update_htr_tool_transcriber_model_dropdown,
-        inputs=htr_tool_transcriber_model_dropdown,
-        outputs=htr_tool_transcriber_model_dropdown,
-        queue=False,
-        api_name=False,
-    )
-
-    def update_selected_tab_output_and_setting():
-        return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
-
-    def update_selected_tab_image_viewer():
-        return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
-
-    def update_selected_tab_model_compare():
-        return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
-
     tab_output_and_setting_selector.select(
         fn=update_selected_tab_output_and_setting,
         outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
-        queue=False,
         api_name=False,
     )
 
     tab_image_viewer_selector.select(
         fn=update_selected_tab_image_viewer,
         outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
-        queue=False,
         api_name=False,
     )
 
     tab_model_compare_selector.select(
         fn=update_selected_tab_model_compare,
         outputs=[output_and_setting_tab, image_viewer_tab, model_compare_selector],
-        queue=False,
         api_name=False,
     )
 
@@ -273,7 +272,6 @@ with gr.Blocks() as htr_tool_tab:
         fn=stop_function,
         inputs=None,
         outputs=None,
-        queue=False,
         api_name=False,
         # cancels=[htr_event_click_event],
     )
@@ -282,7 +280,6 @@ with gr.Blocks() as htr_tool_tab:
         fn=fast_track.visualize_image_viewer,
         inputs=fast_track_input_region_image,
         outputs=[fast_track_output_image, text_polygon_dict],
-        queue=False,
         api_name=False,
     )
 
@@ -290,7 +287,32 @@ with gr.Blocks() as htr_tool_tab:
         fast_track.get_text_from_coords,
         inputs=text_polygon_dict,
         outputs=selection_text_from_image_viewer,
-        queue=False,
+        api_name=False,
+    )
+
+    upload_button_run_a.upload(
+        upload_file, inputs=upload_button_run_a, outputs=[file_input_xml_run_a, file_input_xml_run_a], api_name=False
+    )
+
+    upload_button_run_b.upload(
+        upload_file, inputs=upload_button_run_b, outputs=[file_input_xml_run_b, file_input_xml_run_b], api_name=False
+    )
+
+    upload_button_run_gt.upload(
+        upload_file, inputs=upload_button_run_gt, outputs=[file_input_xml_run_gt, file_input_xml_run_gt], api_name=False
+    )
+
+    diff_runs_button.click(
+        fn=compare_diff_runs_highlight,
+        inputs=[file_input_xml_run_a, file_input_xml_run_b, file_input_xml_run_gt],
+        outputs=[text_diff_runs, text_diff_gt],
+        api_name=False,
+    )
+
+    calc_cer_button_fast.click(
+        fn=compute_cer_a_and_b_with_gt,
+        inputs=[file_input_xml_run_a, file_input_xml_run_b, file_input_xml_run_gt],
+        outputs=cer_output_fast,
         api_name=False,
     )
 

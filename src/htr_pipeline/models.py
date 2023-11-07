@@ -11,25 +11,27 @@ from mmocr.apis import TextRecInferencer
 class HtrModels:
     def __init__(self, local_run=False):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        SECRET_KEY = os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False)
 
         model_folder = "./models"
         self.region_config = f"{model_folder}/RmtDet_regions/rtmdet_m_textregions_2_concat.py"
+        self.region_checkpoint = f"{model_folder}/RmtDet_regions/epoch_12.pth"
 
         self.line_config = f"{model_folder}/RmtDet_lines/rtmdet_m_textlines_2_concat.py"
         self.line_checkpoint = f"{model_folder}/RmtDet_lines/epoch_12.pth"
-        self.mmocr_config = f"{model_folder}/SATRN/_base_satrn_shallow_concat.py"
 
-        if SECRET_KEY:
+        self.mmocr_config = f"{model_folder}/SATRN/_base_satrn_shallow_concat.py"
+        self.mmocr_checkpoint = f"{model_folder}/SATRN/epoch_5.pth"
+
+        # Check if model files exist at the specified paths, if not, get the config
+        if not (
+            os.path.exists(self.region_checkpoint)
+            and os.path.exists(self.line_checkpoint)
+            and os.path.exists(self.mmocr_checkpoint)
+        ):
             config_path = self.get_config()
             self.region_checkpoint = config_path["region_checkpoint"]
             self.line_checkpoint = config_path["line_checkpoint"]
             self.mmocr_checkpoint = config_path["mmocr_checkpoint"]
-
-        else:
-            self.region_checkpoint = f"{model_folder}/RmtDet_regions/epoch_12.pth"
-            self.line_checkpoint = f"{model_folder}/RmtDet_lines/epoch_12.pth"
-            self.mmocr_checkpoint = f"{model_folder}/SATRN/epoch_5.pth"
 
     def load_region_model(self):
         # build the model from a config file and a checkpoint file

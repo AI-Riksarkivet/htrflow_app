@@ -29,3 +29,10 @@ TODO.md
 traffic_data.db
 ip_data.csv
 data/
+
+#mlflow
+mlruns/
+test.ipynb
+
+#models
+models--Riksarkivet--HTR_pipeline_models/

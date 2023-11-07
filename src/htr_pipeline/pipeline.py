@@ -23,6 +23,7 @@ class Pipeline:
     def running_htr_pipeline(
         self,
         input_image: np.ndarray,
+        htr_tool_transcriber_model_dropdown,
         pred_score_threshold_regions: float = 0.4,
         pred_score_threshold_lines: float = 0.4,
         containments_threshold: float = 0.5,
@@ -31,7 +32,12 @@ class Pipeline:
         image = mmcv.imread(input_image)
 
         rendered_xml = self.pipeline_inferencer.image_to_page_xml(
-            image, pred_score_threshold_regions, pred_score_threshold_lines, containments_threshold, self.inferencer
+            image,
+            htr_tool_transcriber_model_dropdown,
+            pred_score_threshold_regions,
+            pred_score_threshold_lines,
+            containments_threshold,
+            self.inferencer,
         )
 
         return rendered_xml

@@ -1,5 +1,5 @@
 class TextApp:
-    demo_version = """<em>Version 0.0.2</em>"""
+    demo_version = """<em>Version 0.0.3</em>"""
 
     title_markdown = """
 

@@ -4,7 +4,7 @@ from helper.text.text_overview import TextOverview
 
 with gr.Blocks() as overview:
     with gr.Tabs():
-        with gr.Tab("HTRFLOW"):
+        with gr.Tab("About"):
             with gr.Row():
                 with gr.Column():
                     gr.Markdown(TextOverview.htrflow_col1)
@@ -56,6 +56,8 @@ with gr.Blocks() as overview:
             with gr.Row():
                 with gr.Column():
                     gr.Markdown(TextOverview.changelog)
+                    with gr.Accordion("Previous changes", open=False):
+                        gr.Markdown(TextOverview.old_changelog)
                 with gr.Column():
                     gr.Markdown(TextOverview.roadmap)
 

@@ -15,6 +15,13 @@ HTRFLOW is more than just a demo; it's a testament to the advancement of open so
 
 ## Run app
 
+Use virtual env.
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
 Install libraries with Makefile:
 
 ```
