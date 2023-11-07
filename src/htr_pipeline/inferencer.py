@@ -3,6 +3,8 @@ from typing import Protocol, Tuple
 import gradio as gr
 import mmcv
 import numpy as np
+import torch
+from transformers import AutoImageProcessor, TrOCRProcessor, VisionEncoderDecoderModel
 
 from src.htr_pipeline.models import HtrModels
 from src.htr_pipeline.utils.filter_segmask import FilterSegMask
@@ -116,20 +118,28 @@ class Inferencer:
         result_rec = self.htr_model_inferencer(line_cropped)
         return result_rec["predictions"][0]["text"], round(result_rec["predictions"][0]["scores"], 4)
 
-    # def transcribe_different_model(self, image):
-    #     processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
-    #     model = VisionEncoderDecoderModel.from_pretrained("microsoft/trocr-base-handwritten")
+    @timer_func
+    def transcribe_different_model(self, image, htr_tool_transcriber_model_dropdown):
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    #     # prepare image
-    #     pixel_values = processor(image, return_tensors="pt").pixel_values
+        if htr_tool_transcriber_model_dropdown == "pstroe/bullinger-general-model":
+            processor = TrOCRProcessor.from_pretrained("microsoft/trocr-base-handwritten")
+            image_processor = AutoImageProcessor.from_pretrained("pstroe/bullinger-general-model")
+            model = VisionEncoderDecoderModel.from_pretrained("pstroe/bullinger-general-model")
+            pixel_values = image_processor(image, return_tensors="pt").pixel_values.to(device)
 
-    #     # generate (no beam search)
-    #     generated_ids = model.generate(pixel_values)
+        else:
+            processor = TrOCRProcessor.from_pretrained(htr_tool_transcriber_model_dropdown)
+            model = VisionEncoderDecoderModel.from_pretrained(htr_tool_transcriber_model_dropdown)
+            pixel_values = processor(image, return_tensors="pt").pixel_values.to(device)
 
-    #     # decode
-    #     generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        model.to(device)
 
-    #     return generated_text
+        generated_ids = model.generate(pixel_values)
+
+        generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+        return generated_text, 1.0
 
 
 class InferencerInterface(Protocol):

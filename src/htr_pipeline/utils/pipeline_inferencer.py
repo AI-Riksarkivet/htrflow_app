@@ -15,8 +15,17 @@ class PipelineInferencer:
         self.xml_helper = xml_helper
 
     def image_to_page_xml(
-        self, image, pred_score_threshold_regions, pred_score_threshold_lines, containments_threshold, inferencer
+        self,
+        image,
+        htr_tool_transcriber_model_dropdown,
+        pred_score_threshold_regions,
+        pred_score_threshold_lines,
+        containments_threshold,
+        inferencer,
     ):
+        # temporary solutions.. for trocr..
+        self.htr_tool_transcriber_model_dropdown = htr_tool_transcriber_model_dropdown
+
         template_data = self.xml_helper.prepare_template_data(self.xml_helper.xml_file_name, image)
         template_data["textRegions"] = self._process_regions(
             image, inferencer, pred_score_threshold_regions, pred_score_threshold_lines, containments_threshold
@@ -121,7 +130,14 @@ class PipelineInferencer:
     def _create_line_data(self, line, line_pol, index, region_id, inferencer, htr_threshold):
         line_data = {"id": f"line_{region_id}_{index}", "boundary": line_pol}
 
-        transcribed_text, htr_score = inferencer.transcribe(line)
+        # temporary solution..
+        if self.htr_tool_transcriber_model_dropdown == "Riksarkivet/satrn_htr":
+            transcribed_text, htr_score = inferencer.transcribe(line)
+        else:
+            transcribed_text, htr_score = inferencer.transcribe_different_model(
+                line, self.htr_tool_transcriber_model_dropdown
+            )
+
         line_data["unicode"] = self.xml_helper.escape_xml_chars(transcribed_text)
         line_data["pred_score"] = round(htr_score, 4)
 

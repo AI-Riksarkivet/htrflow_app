@@ -31,6 +31,21 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
         with gr.Tab("Overview"):
             overview.render()
 
+        with gr.Tab("How to use"):
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown("## Fast track")
+                    gr.Video(
+                        value="https://github.com/Borg93/htr_gradio_file_placeholder/blob/main/eating_spaghetti.mp4",
+                        format="mp4",
+                    )
+                with gr.Column():
+                    gr.Markdown("## Stepwise")
+                    gr.Video(
+                        "https://github.com/Borg93/htr_gradio_file_placeholder/blob/main/htr_tool_media_cut.mp4",
+                        format="mp4",
+                    )
+
     SECRET_KEY = os.environ.get("HUB_TOKEN", False)
     if SECRET_KEY:
         demo.load(

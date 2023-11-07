@@ -1,6 +1,9 @@
 import os
+import xml.etree.ElementTree as ET
+from difflib import Differ
 
 import cv2
+import evaluate
 import gradio as gr
 import numpy as np
 import pandas as pd
@@ -36,7 +39,7 @@ class FastTrack:
     def __init__(self, model_loader):
         self.pipeline: PipelineInterface = model_loader.pipeline
 
-    def segment_to_xml(self, image, radio_button_choices):
+    def segment_to_xml(self, image, radio_button_choices, htr_tool_transcriber_model_dropdown):
         handling_callback_stop_inferencer()
 
         gr.Info("Excuting HTR on image")
@@ -46,7 +49,9 @@ class FastTrack:
         if os.path.exists(f"./{xml_xml}"):
             os.remove(f"./{xml_xml}")
 
-        rendered_xml = self.pipeline.running_htr_pipeline(image)
+        htr_tool_transcriber_model_dropdown
+
+        rendered_xml = self.pipeline.running_htr_pipeline(image, htr_tool_transcriber_model_dropdown)
 
         with open(xml_xml, "w") as f:
             f.write(rendered_xml)
@@ -172,13 +177,83 @@ class CustomTrack:
 
         return file_name, gr.update(visible=True)
 
-    # def transcribe_text_another_model(self, df, images):
-    #     transcription_temp_list = []
-    #     for image in images:
-    #         transcribed_text = inferencer.transcribe_different_model(image)
-    #         transcription_temp_list.append(transcribed_text)
-    #         df_trans = pd.DataFrame(transcription_temp_list, columns=["Transcribed_text"])
-    #         yield df_trans, df_trans, gr.update(visible=False)
+
+# Temporary structured here...
+
+
+def upload_file(files):
+    return files.name, gr.update(visible=True)
+
+
+def diff_texts(text1, text2):
+    d = Differ()
+    return [(token[2:], token[0] if token[0] != " " else None) for token in d.compare(text1, text2)]
+
+
+def compute_cer_a_and_b_with_gt(run_a, run_b, run_gt):
+    text_run_a, text_run_b, text_run_gt = reading_xml_files_string(run_a, run_b, run_gt)
+
+    cer_metric = evaluate.load("cer")
+
+    if text_run_a == text_run_gt:
+        return "No Ground Truth was provided."
+
+    elif text_run_a == text_run_b:
+        return f"A & B -> GT: {round(cer_metric.compute(predictions=[text_run_a], references=[text_run_gt]), 4)}"
+
+    else:
+        return f"A -> GT: {round(cer_metric.compute(predictions=[text_run_a], references=[text_run_gt]), 4)}, B -> GT {round(cer_metric.compute(predictions=[text_run_b], references=[text_run_gt]), 4)}"
+
+
+def temporary_xml_parser(page_xml):
+    tree = ET.parse(page_xml, parser=ET.XMLParser(encoding="utf-8"))
+    root = tree.getroot()
+    namespace = "{http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15}"
+    text_list = []
+    for textregion in root.findall(f".//{namespace}TextRegion"):
+        for textline in textregion.findall(f".//{namespace}TextLine"):
+            text = textline.find(f"{namespace}TextEquiv").find(f"{namespace}Unicode").text
+            text_list.append(text)
+    return " ".join(text_list)
+
+
+def compare_diff_runs_highlight(run_a, run_b, run_gt):
+    text_run_a, text_run_b, text_run_gt = reading_xml_files_string(run_a, run_b, run_gt)
+
+    diff_runs = diff_texts(text_run_a, text_run_b)
+    diff_gt = diff_texts(text_run_a, text_run_gt)
+
+    return diff_runs, diff_gt
+
+
+def reading_xml_files_string(run_a, run_b, run_gt):
+    if run_a is None:
+        return
+
+    if run_gt is None:
+        gr.Warning("No GT was provided, setting GT to A")
+        run_gt = run_a
+
+    if run_b is None:
+        gr.Warning("No B was provided, setting B to A")
+        run_b = run_a
+
+    text_run_a = temporary_xml_parser(run_a.name)
+    text_run_b = temporary_xml_parser(run_b.name)
+    text_run_gt = temporary_xml_parser(run_gt.name)
+    return text_run_a, text_run_b, text_run_gt
+
+
+def update_selected_tab_output_and_setting():
+    return gr.update(visible=True), gr.update(visible=False), gr.update(visible=False)
+
+
+def update_selected_tab_image_viewer():
+    return gr.update(visible=False), gr.update(visible=True), gr.update(visible=False)
+
+
+def update_selected_tab_model_compare():
+    return gr.update(visible=False), gr.update(visible=False), gr.update(visible=True)
 
 
 if __name__ == "__main__":
