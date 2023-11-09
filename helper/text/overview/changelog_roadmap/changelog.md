@@ -2,7 +2,7 @@
 
 All notable changes to HTRFLOW will be documented here.
 
-### [0.0.3] - 2023-11-06
+### [0.1.0] - 2023-11-08
 
 #### Added
 
