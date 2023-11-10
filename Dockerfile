@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:2.0.0-cuda11.7-cudnn8-devel
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -21,6 +21,12 @@ WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+
+RUN mim install mmdet 
+RUN mim install mmocr
+RUN mim install mmcv==2.0.1
+RUN mim install mmengine 
+
 
 # Set up a new user named "user" with user ID 1000
 RUN useradd -m -u 1000 user

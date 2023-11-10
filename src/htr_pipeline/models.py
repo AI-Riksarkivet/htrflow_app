@@ -10,7 +10,7 @@ from mmocr.apis import TextRecInferencer
 
 class HtrModels:
     def __init__(self, local_run=False):
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         model_folder = "./models"
         self.region_config = f"{model_folder}/RmtDet_regions/rtmdet_m_textregions_2_concat.py"

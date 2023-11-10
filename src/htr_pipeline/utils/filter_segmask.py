@@ -88,7 +88,7 @@ class FilterSegMask:
         yB = min(box_a[1] + box_a[3], box_b[1] + box_b[3])  # min y1
 
         box_a_area = box_a[2] * box_a[3]
-        box_b_area = box_b[2] * box_b[3]
+        # box_b_area = box_b[2] * box_b[3]
 
         intersection_area = max(0, xB - xA + 1) * max(0, yB - yA + 1)
         containment = intersection_area / box_a_area if box_a_area > 0 else 0
