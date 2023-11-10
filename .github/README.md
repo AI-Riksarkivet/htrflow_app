@@ -1,6 +1,6 @@
 # htrflow_app: A demo app for htrflow
 
-We're thrilled to introduce [HTRFLOW](https://huggingface.co/spaces/Riksarkivet/htr_demo), our demonstration platform that brings to life the process of transcribing Swedish handwritten documents from the 17th to the 19th century.
+We're thrilled to introduce [htrflow](https://huggingface.co/spaces/Riksarkivet/htr_demo), our demonstration platform that brings to life the process of transcribing Swedish handwritten documents from the 17th to the 19th century.
 
 <p align="center">
   <img src="https://github.com/Borg93/htr_gradio_file_placeholder/blob/main/htrflow_background_dalle3.png?raw=true" alt="HTRFLOW Image" width=40%>
