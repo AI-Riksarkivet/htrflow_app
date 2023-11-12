@@ -1,11 +1,15 @@
 import os
+SECRET_KEY = os.environ.get("HUB_TOKEN", False)
+if SECRET_KEY:
+    from helper.utils import TrafficDataHandler
+    
 import uuid
 
 import gradio as gr
 
 from helper.gradio_config import css, theme
 from helper.text.text_app import TextApp
-from helper.utils import TrafficDataHandler
+
 from tabs.htr_tool import htr_tool_tab
 from tabs.overview_tab import overview
 from tabs.stepwise_htr_tool import stepwise_htr_tool_tab
@@ -46,7 +50,6 @@ with gr.Blocks(title="Riksarkivet", theme=theme, css=css) as demo:
                         format="mp4",
                     )
 
-    SECRET_KEY = os.environ.get("HUB_TOKEN", False)
     if SECRET_KEY:
         demo.load(
             fn=TrafficDataHandler.onload_store_metric_data,
