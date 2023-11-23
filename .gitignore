@@ -7,7 +7,6 @@ __pycache__/
 *.py[cod]
 
 vis_data/
-notebooks/
 output/
 my_xml_filename.xml
 models/RmtDet_regions/epoch_12.pth
@@ -32,7 +31,6 @@ data/
 
 #mlflow
 mlruns/
-test.ipynb
 
 #models
 models--Riksarkivet--HTR_pipeline_models/

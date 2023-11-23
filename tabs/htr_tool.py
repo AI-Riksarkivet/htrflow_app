@@ -1,8 +1,5 @@
 import os
-SECRET_KEY = os.environ.get("HUB_TOKEN", False)
-if SECRET_KEY:
-    from helper.utils import TrafficDataHandler
-    
+
 import gradio as gr
 
 from helper.examples.examples import DemoImages
@@ -16,6 +13,11 @@ from src.htr_pipeline.gradio_backend import (
     update_selected_tab_output_and_setting,
     upload_file,
 )
+
+SECRET_KEY = os.environ.get("HUB_TOKEN", False)
+if SECRET_KEY:
+    from helper.utils import TrafficDataHandler
+
 
 model_loader = SingletonModelLoader()
 fast_track = FastTrack(model_loader)
@@ -240,7 +242,7 @@ with gr.Blocks() as htr_tool_tab:
 
     htr_pipeline_button_api.click(
         fast_track.segment_to_xml_api,
-        inputs=[fast_track_input_region_image],
+        inputs=[fast_track_input_region_image, htr_tool_transcriber_model_dropdown],
         outputs=[xml_rendered_placeholder_for_api],
         queue=False,
         api_name="run_htr_pipeline",

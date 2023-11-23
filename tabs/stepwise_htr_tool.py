@@ -1,8 +1,4 @@
 import os
-SECRET_KEY = os.environ.get("HUB_TOKEN", False)
-if SECRET_KEY:
-    from helper.utils import TrafficDataHandler
-    
 import shutil
 from difflib import Differ
 
@@ -11,6 +7,11 @@ import gradio as gr
 
 from helper.examples.examples import DemoImages
 from src.htr_pipeline.gradio_backend import CustomTrack, SingletonModelLoader
+
+SECRET_KEY = os.environ.get("HUB_TOKEN", False)
+if SECRET_KEY:
+    from helper.utils import TrafficDataHandler
+
 
 model_loader = SingletonModelLoader()
 

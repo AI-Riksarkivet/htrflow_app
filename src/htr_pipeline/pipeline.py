@@ -62,6 +62,7 @@ class PipelineInterface(Protocol):
     def running_htr_pipeline(
         self,
         input_image: np.ndarray,
+        htr_tool_transcriber_model_dropdown: str,
         pred_score_threshold_regions: float = 0.4,
         pred_score_threshold_lines: float = 0.4,
         containments_threshold: float = 0.5,
