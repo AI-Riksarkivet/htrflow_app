@@ -1,11 +1,11 @@
 # .github/
-__pycache__
-*.pyc
-*.pyo
-*.pyd
+
+**pycache**
+_.pyc
+_.pyo
+\*.pyd
 .Python
 env
 .env
 page_txt.txt
 page_xml.xml
-src/tests/

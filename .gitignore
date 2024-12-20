@@ -16,6 +16,8 @@ helper/examples/images/*.jpg
 flagged_data_points/
 src/htr_pipeline.egg-info/
 
+.gradio/
+
 # 
 page_xml.xml
 page_txt.txt
@@ -34,3 +36,4 @@ mlruns/
 
 #models
 models--Riksarkivet--HTR_pipeline_models/
+app/assets/images/*.jpg
