@@ -1,0 +1,14 @@
+
+TODO: laang, shoulde perhaps est to do it with change event. and update the value on each component. Also we should find a nice way to keep lang stae if we update, e.g. use browser state.
+TODO: graph viz of pipeline
+TODO: Seperate analysis tab, https://www.gradio.app/docs/gradio/highlightedtext,https://huggingface.co/spaces/pngwn/gradio_imageslider
+TODO: Seperate "fiftyone tab", använd https://www.gradio.app/docs/gradio/gallery
+TODO: add support for batch inference and you can load image trough filepath or s3.
+TODO: support hämta från iiif-lb för att köra inference på custom run.
+TODO: accordin on sidetab
+TODO: alot of documentation / tutorials
+TODO: toggle dark and light mode: https://github.com/gradio-app/gradio/issues/7384
+TODO: ssr mode: https://www.gradio.app/docs/gradio/blocks
+TODO: enable monitoring and test api mode: https://www.gradio.app/docs/gradio/blocks
+TODO: tes usage of modal: https://www.gradio.app/custom-components/gallery
+TODO: new docker container..  https://huggingface.co/spaces/pngwn/gradio-docker/blob/main/Dockerfile, need cuda and uv stuff..

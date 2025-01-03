@@ -1,5 +1,6 @@
 import gradio as gr
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader
 
 from app.assets.examples import DemoImages
 
@@ -58,53 +59,61 @@ def get_yaml_button_fn(
     nested_segment_model_2_type=None,
     nested_htr_model_type=None,
 ):
-    if method == "Simple layout":
-        yaml_value = f"""steps:
-  - step: Segmentation
-    settings:
-      model: {simple_htr_model_type}
-      model_settings:
-        model: {simple_segment_model}
-  - step: TextRecognition
-    settings:
-      model: {simple_segment_model_type}
-      model_settings:
-        model: {simple_htr_model}
-  - step: OrderLines
-"""
-    elif method == "Nested segmentation":
-        yaml_value = f"""steps:
-  - step: Segmentation
-    settings:
-      model: {nested_segment_model_1_type}
-      model_settings:
-        model: {nested_segment_model_1}
-  - step: Segmentation
-    settings:
-      model: {nested_segment_model_2_type}
-      model_settings:
-        model: {nested_segment_model_2}
-  - step: TextRecognition
-    settings:
-      model: {nested_htr_model_type}
-      model_settings:
-        model: {nested_htr_model}
-  - step: OrderLines
-"""
-    else:
-        return gr.Error("Invalid method or not yet supported.")
+    env = Environment(loader=FileSystemLoader("app/templates"))
 
-    export_steps = ""
-    for output_format in output_formats:
-        export_steps += f"""  - step: Export
-    settings:
-      format: {output_format}
-      dest: {output_format}-outputs
-"""
+    template_name = "steps_template.yaml.j2"
+    try:
+        if method == "Simple layout":
+            steps = [
+                {
+                    "step": "Segmentation",
+                    "model": simple_htr_model_type,
+                    "model_settings": {"model": simple_segment_model},
+                },
+                {
+                    "step": "TextRecognition",
+                    "model": simple_segment_model_type,
+                    "model_settings": {"model": simple_htr_model},
+                },
+                {"step": "OrderLines"},
+            ]
+        elif method == "Nested segmentation":
+            steps = [
+                {
+                    "step": "Segmentation",
+                    "model": nested_segment_model_1_type,
+                    "model_settings": {"model": nested_segment_model_1},
+                },
+                {
+                    "step": "Segmentation",
+                    "model": nested_segment_model_2_type,
+                    "model_settings": {"model": nested_segment_model_2},
+                },
+                {
+                    "step": "TextRecognition",
+                    "model": nested_htr_model_type,
+                    "model_settings": {"model": nested_htr_model},
+                },
+                {"step": "OrderLines"},
+            ]
+        else:
+            return "Invalid method or not yet supported."
 
-    yaml_value += export_steps
+        steps.extend(
+            {
+                "step": "Export",
+                "settings": {"format": format, "dest": f"{format}-outputs"},
+            }
+            for format in output_formats
+        )
 
-    return yaml_value
+        template = env.get_template(template_name)
+
+        yaml_value = template.render(steps=steps)
+        return yaml_value
+
+    except Exception as e:
+        return f"Error generating YAML: {str(e)}"
 
 
 output_image_placehholder = gr.Image(label="Output image", height=500, show_share_button=True)
@@ -214,14 +223,14 @@ with gr.Blocks() as htrflow_pipeline:
         with gr.Column():
             # gr.Markdown("<h2>Output Panel</h2>")
             with gr.Tabs():
-                with gr.Tab("Viewer"): #interactive=False, elem_id="htrflowouttab"
+                with gr.Tab("Viewer"):  # interactive=False, elem_id="htrflowouttab"
                     with gr.Group():
                         with gr.Row():
                             output_image_placehholder.render()
                         with gr.Row():
                             markdown_selected_option.render()
                         with gr.Row():
-                            output_dataframe_pipeline = gr.Textbox(label="Click text",info="click on image bla bla..")
+                            output_dataframe_pipeline = gr.Textbox(label="Click text", info="click on image bla bla..")
                 with gr.Tab("Table") as htrflow_output_table_tab:
                     with gr.Group():
                         with gr.Row():
@@ -280,11 +289,8 @@ with gr.Blocks() as htrflow_pipeline:
         outputs=[output_yaml_code],
     ).then(dummy_revealer, inputs=output_yaml_code, outputs=output_yaml_code)
 
-# TODO : hide the tab when selected for yaml code
-# htrflow_output_table_tab.select(dummy_revealer, inputs=output_yaml_code, outputs=output_yaml_code)
-
-template_method_radio.select(
-    lambda choice: toggle_visibility_default_templates(choice),
-    inputs=template_method_radio,
-    outputs=[simple_pipeline, nested_pipeline, table_pipeline, selected_option],
-)
+    template_method_radio.select(
+        lambda choice: toggle_visibility_default_templates(choice),
+        inputs=template_method_radio,
+        outputs=[simple_pipeline, nested_pipeline, table_pipeline, selected_option],
+    )

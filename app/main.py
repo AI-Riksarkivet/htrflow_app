@@ -3,50 +3,70 @@ import gradio as gr
 from app.gradio_config import css, theme
 from app.tabs.adv_htrflow_tab import adv_htrflow_pipeline
 from app.tabs.htrflow_tab import htrflow_pipeline
-from app.tabs.overview_tab import overview
-from app.texts_langs.text_app import TextApp
+from app.tabs.overview_tab import overview, overview_language
+from app.utils.lang_helper import get_tab_updates
+from app.utils.md_helper import load_markdown
+
+TAB_LABELS = {
+    "ENG": ["Home", "Simple HTR", "Custom HTR"],
+    "SWE": ["Hem", "Enkel HTR", "Anpassad HTR"],
+}
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     with gr.Row():
+        local_language = gr.BrowserState(default_value="ENG", storage_key="selected_language")
+        main_language = gr.State(value="ENG")
+
         with gr.Column(scale=1):
-            radio = gr.Dropdown(
+            language_selector = gr.Dropdown(
                 choices=["ENG", "SWE"], value="ENG", container=False, min_width=50, scale=0, elem_id="langdropdown"
             )
 
         with gr.Column(scale=2):
-            gr.Markdown(TextApp.title_markdown)
+            gr.Markdown(load_markdown(None, "main_title"))
         with gr.Column(scale=1):
-            gr.Markdown(TextApp.title_markdown_img)
+            gr.Markdown(load_markdown(None, "main_sub_title"))
 
     with gr.Tabs(elem_classes="top-navbar") as navbar:
-        with gr.Tab("Home"):
+        with gr.Tab(label="Home") as tab_home:
             overview.render()
 
-        with gr.Tab("Simple HTR"):
+        with gr.Tab(label="Simple HTR") as tab_simple_htr:
             htrflow_pipeline.render()
 
-        with gr.Tab("Custom HTR"):
+        with gr.Tab(label="Custom HTR") as tab_custom_htr:
             adv_htrflow_pipeline.render()
 
-    # radio.change(
-    #     None,
-    #     inputs=radio,
-    #     js="""
-    #     (data) => {
-    #     window.localStorage.setItem('data', JSON.stringify(data))
-    #     }
-    #     """,
-    # )
+    @demo.load(inputs=[local_language], outputs=[language_selector, main_language, overview_language])
+    def load_language(saved_values):
+        return (saved_values,) * 3
 
-    demo.load(
-        None,
-        inputs=radio,
-        js="""
-        (data) => {
-        window.localStorage.setItem('data', JSON.stringify(data))
-        }
-        """,
+    @language_selector.change(
+        inputs=[language_selector],
+        outputs=[
+            local_language,
+            main_language,
+            overview_language,
+        ],
     )
+    def save_language_to_browser(selected_language):
+        return (selected_language,) * 3
+
+    @main_language.change(
+        inputs=[main_language],
+        outputs=[
+            tab_home,
+            tab_simple_htr,
+            tab_custom_htr,
+        ],
+    )
+    def update_main_tabs(selected_language):
+        return (*get_tab_updates(selected_language, TAB_LABELS),)
+
+    @main_language.change(inputs=[main_language])
+    def on_language_change(selected_language):
+        print(f"Language changed to: {selected_language}")
+
 
 demo.queue()
 

@@ -1,0 +1,16 @@
+steps:
+{% for step in steps -%}
+  - step: {{ step.step }}
+    {% if step.model -%}
+    settings:
+      model: {{ step.model }}
+      model_settings:
+        model: {{ step.model_settings.model }}
+    {% endif -%}
+    {% if step.settings -%}
+    settings:
+      {% for key, value in step.settings.items() -%}
+      {{ key }}: {{ value }}
+      {% endfor -%}
+    {% endif -%}
+{% endfor %}

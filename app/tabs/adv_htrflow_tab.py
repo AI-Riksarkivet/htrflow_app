@@ -11,24 +11,7 @@ with gr.Blocks() as adv_htrflow_pipeline:
             with gr.Group():
                 with gr.Row(visible=True) as yaml_pipeline:
                     custom_template_yaml = gr.Code(
-                        value="""
-    steps:
-    - step: Segmentation
-        settings:
-        model: yolo
-        model_settings:
-            model: Riksarkivet/yolov9-lines-within-regions-1
-    - step: TextRecognition
-        settings:
-        model: TrOCR
-        model_settings:
-            model: Riksarkivet/trocr-base-handwritten-hist-swe-2
-    - step: OrderLines
-    - step: Export
-        settings:
-        format: txt
-        dest: outputs
-                                    """,
+                        value="Paste your custom pipeline here",
                         language="yaml",
                         label="yaml",
                         interactive=True,
@@ -47,6 +30,8 @@ with gr.Blocks() as adv_htrflow_pipeline:
                     )
 
                     gr.Image()
+                with gr.Tab("Graph Excution"):
+                    pass
                 with gr.Tab("Table"):
                     pass
                 with gr.Tab("Analysis"):
