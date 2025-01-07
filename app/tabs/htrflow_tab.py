@@ -1,5 +1,6 @@
 import gradio as gr
 import pandas as pd
+from gradio_modal import Modal
 from jinja2 import Environment, FileSystemLoader
 
 from app.assets.examples import DemoImages
@@ -35,14 +36,6 @@ def submit_button_pipeline_fn(method, input_image, yaml_str):
     )
 
     return f"Selected Option: {method}", input_image, serialized_files, gr.update(visible=True), df
-
-
-def htr_image_placehholder(txt, method, image):
-    needs_yaml_to_forward_tohtrflow_ = """steps:
-"""
-    print(method)
-
-    return txt, method, image
 
 
 def get_yaml_button_fn(
@@ -116,7 +109,7 @@ def get_yaml_button_fn(
         return f"Error generating YAML: {str(e)}"
 
 
-output_image_placehholder = gr.Image(label="Output image", height=500, show_share_button=True)
+output_image_placehholder = gr.Image(label="Output image", height=400, show_share_button=True)
 markdown_selected_option = gr.Markdown(container=True)
 
 inital_state_selection_option = "Simple layout"
@@ -125,105 +118,84 @@ with gr.Blocks() as htrflow_pipeline:
     with gr.Row(variant="panel"):
         with gr.Column():
             # gr.Markdown("<h2>Control Panel</h2>")
-            with gr.Tabs():
-                with gr.Tab("Templates"):
-                    with gr.Group():
-                        example_text_input_placeholder = gr.Markdown(visible=False, container=False)
-                        example_method_input_placeholder = gr.Markdown(visible=False, container=False)
-                        example_text_output_placeholder = gr.Markdown(visible=False, container=False)
 
-                        selected_option = gr.State(inital_state_selection_option)
-                        dummy_none = gr.State(0)
+            with gr.Group():
+                example_text_input_placeholder = gr.Markdown(visible=False, container=False)
+                example_method_input_placeholder = gr.Markdown(visible=False, container=False)
+                example_text_output_placeholder = gr.Markdown(visible=False, container=False)
 
-                        user_image_input = gr.Image(
-                            interactive=True, sources=["upload", "clipboard"], label="Input image", height=300
-                        )
+                selected_option = gr.State(inital_state_selection_option)
+                dummy_none = gr.State(0)
 
-                        template_method_radio = gr.Dropdown(
-                            [inital_state_selection_option, "Nested segmentation", "Tables"],
-                            value=inital_state_selection_option,
-                            label="Select template",
-                            info="Will add more templates later!",
-                        )
+                user_image_input = gr.Image(
+                    interactive=True, sources=["upload", "clipboard"], label="Input image", height=300
+                )
 
-                        with gr.Row() as simple_pipeline:
-                            with gr.Column():
-                                with gr.Row():
-                                    simple_segment_model = gr.Textbox(
-                                        "model1", label="Segmentation", info="Info about the Segmentation model"
-                                    )
-                                    simple_segment_model_type = gr.Dropdown(
-                                        choices=["yolo"], value="yolo", label="Segmentation", info="Model"
-                                    )
-                                with gr.Row():
-                                    simple_htr_model = gr.Textbox(
-                                        "model1", label="HTR", info="Info about the HTR model"
-                                    )
-                                    simple_htr_model_type = gr.Dropdown(
-                                        choices=["TrOCR"], value="TrOCR", label="HTR", info="Model"
-                                    )
+                template_method_radio = gr.Dropdown(
+                    [inital_state_selection_option, "Nested segmentation", "Tables"],
+                    value=inital_state_selection_option,
+                    label="Select template",
+                    info="Will add more templates later!",
+                )
 
-                        with gr.Row(visible=False) as nested_pipeline:
-                            with gr.Column():
-                                with gr.Row():
-                                    nested_segment_model_1 = gr.Textbox(
-                                        "model1", label="Segmentation", info="Info about the Segmentation model"
-                                    )
-                                    nested_segment_model_1_type = gr.Dropdown(
-                                        choices=["yolo"], value="yolo", label="Segmentation", info="Model"
-                                    )
-                                with gr.Row():
-                                    nested_segment_model_2 = gr.Textbox(
-                                        "model2", label="Segmentation", info="Info about the Segmentation model"
-                                    )
-                                    nested_segment_model_2_type = gr.Dropdown(
-                                        choices=["yolo"], value="yolo", label="Segmentation", info="Model"
-                                    )
-                                with gr.Row():
-                                    nested_htr_model = gr.Textbox(
-                                        "model1", label="HTR", info="Info about the HTR model"
-                                    )
-                                    nested_htr_model_type = gr.Dropdown(
-                                        choices=["TrOCR"], value="TrOCR", label="HTR", info="Model"
-                                    )
+                with gr.Accordion(label="Pipeline", open=False):
+                    with gr.Row() as simple_pipeline:
+                        with gr.Column():
+                            with gr.Row(): # TODO: use dynamic rendering instead to make it more clean :https://www.youtube.com/watch?v=WhAMvOEOWJw&ab_channel=HuggingFace
+                                simple_segment_model = gr.Textbox(
+                                    "model1", label="Segmentation", info="Info about the Segmentation model"
+                                )
+                                simple_segment_model_type = gr.Dropdown(
+                                    choices=["yolo"], value="yolo", label="Segmentation", info="Model"
+                                )
+                            with gr.Row():
+                                simple_htr_model = gr.Textbox("model1", label="HTR", info="Info about the HTR model")
+                                simple_htr_model_type = gr.Dropdown(
+                                    choices=["TrOCR"], value="TrOCR", label="HTR", info="Model"
+                                )
 
-                        with gr.Row(visible=False) as table_pipeline:
-                            with gr.Column():
-                                gr.Textbox("WIP")
-                        with gr.Row():
-                            output_formats = gr.Dropdown(
-                                choices=["txt", "alto", "page"],
-                                value="txt",
-                                multiselect=True,
-                                label="Serialized Output",
-                                info="Supported format are: ...",
-                            )
+                    with gr.Row(visible=False) as nested_pipeline:
+                        with gr.Column():
+                            with gr.Row():
+                                nested_segment_model_1 = gr.Textbox(
+                                    "model1", label="Segmentation", info="Info about the Segmentation model"
+                                )
+                                nested_segment_model_1_type = gr.Dropdown(
+                                    choices=["yolo"], value="yolo", label="Segmentation", info="Model"
+                                )
+                            with gr.Row():
+                                nested_segment_model_2 = gr.Textbox(
+                                    "model2", label="Segmentation", info="Info about the Segmentation model"
+                                )
+                                nested_segment_model_2_type = gr.Dropdown(
+                                    choices=["yolo"], value="yolo", label="Segmentation", info="Model"
+                                )
+                            with gr.Row():
+                                nested_htr_model = gr.Textbox("model1", label="HTR", info="Info about the HTR model")
+                                nested_htr_model_type = gr.Dropdown(
+                                    choices=["TrOCR"], value="TrOCR", label="HTR", info="Model"
+                                )
 
-                    with gr.Row():
-                        submit_button_pipeline = gr.Button("Submit", variant="primary", scale=0)
-                        get_yaml_button = gr.Button("Get Yaml", variant="secondary", scale=0)
-
-                with gr.Tab("Examples") as examples_tab:
-                    # TODO:  Perhaps we should move examples to a seperate tab for simplicity?
-                    gr.Examples(
-                        fn=htr_image_placehholder,
-                        examples=images_for_demo.examples_list,
-                        inputs=[
-                            example_text_input_placeholder,
-                            example_method_input_placeholder,
-                            user_image_input,
-                        ],
-                        outputs=[example_text_output_placeholder, markdown_selected_option, output_image_placehholder],
-                        cache_examples=True,
-                        cache_mode="lazy",
-                        label="Example images",
-                        examples_per_page=7,
+                    with gr.Row(visible=False) as table_pipeline:
+                        with gr.Column():
+                            gr.Textbox("WIP")
+                with gr.Row():
+                    output_formats = gr.Dropdown(
+                        choices=["txt", "alto", "page"],
+                        value="txt",
+                        multiselect=True,
+                        label="Serialized Output",
+                        info="Supported format are: ...",
                     )
 
+            with gr.Row():
+                submit_button_pipeline = gr.Button("Submit", variant="primary", scale=0)
+                get_yaml_button = gr.Button("Get Yaml", variant="secondary", scale=0)
+                output_files_pipeline = gr.Files(label="Output files", height=100, visible=False)
+
         with gr.Column():
-            # gr.Markdown("<h2>Output Panel</h2>")
             with gr.Tabs():
-                with gr.Tab("Viewer"):  # interactive=False, elem_id="htrflowouttab"
+                with gr.Tab("Viewer"):
                     with gr.Group():
                         with gr.Row():
                             output_image_placehholder.render()
@@ -238,8 +210,14 @@ with gr.Blocks() as htrflow_pipeline:
                         with gr.Row():
                             output_dataframe_pipeline = gr.Dataframe(label="Output image", col_count=2)
 
-            output_files_pipeline = gr.Files(label="Output files", height=100, visible=False)
-            output_yaml_code = gr.Code(language="yaml", label="yaml", interactive=True, visible=False)
+            with Modal(visible=False) as yaml_modal:
+                with gr.Row():
+                    with gr.Column(scale=0):
+                        gr.Markdown("")
+                    with gr.Column(scale=4):
+                        output_yaml_code = gr.Code(language="yaml", label="yaml", interactive=True, visible=False)
+                    with gr.Column(scale=0):
+                        gr.Markdown("")
 
     submit_button_pipeline.click(
         get_yaml_button_fn,
@@ -268,7 +246,7 @@ with gr.Blocks() as htrflow_pipeline:
             output_files_pipeline,
             output_dataframe_pipeline,
         ],
-    ).then(dummy_revealer, inputs=dummy_none, outputs=output_yaml_code)
+    )
 
     get_yaml_button.click(
         get_yaml_button_fn,
@@ -294,3 +272,5 @@ with gr.Blocks() as htrflow_pipeline:
         inputs=template_method_radio,
         outputs=[simple_pipeline, nested_pipeline, table_pipeline, selected_option],
     )
+
+    get_yaml_button.click(lambda: Modal(visible=True), None, yaml_modal)

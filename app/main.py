@@ -1,16 +1,25 @@
+import logging
+
 import gradio as gr
 
 from app.gradio_config import css, theme
 from app.tabs.adv_htrflow_tab import adv_htrflow_pipeline
+from app.tabs.data_explorer_tab import data_explorer
+from app.tabs.examples_tab import examples
 from app.tabs.htrflow_tab import htrflow_pipeline
 from app.tabs.overview_tab import overview, overview_language
 from app.utils.lang_helper import get_tab_updates
 from app.utils.md_helper import load_markdown
 
+logger = logging.getLogger("gradio_log")
+
+
 TAB_LABELS = {
-    "ENG": ["Home", "Simple HTR", "Custom HTR"],
-    "SWE": ["Hem", "Enkel HTR", "Anpassad HTR"],
+    "ENG": ["Home", "Simple HTR", "Custom HTR", "Examples"],
+    "SWE": ["Hem", "Enkel HTR", "Anpassad HTR", "Exempel"],
 }
+
+LANG_CHOICES = ["ENG", "SWE"]
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     with gr.Row():
@@ -19,7 +28,7 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
 
         with gr.Column(scale=1):
             language_selector = gr.Dropdown(
-                choices=["ENG", "SWE"], value="ENG", container=False, min_width=50, scale=0, elem_id="langdropdown"
+                choices=LANG_CHOICES, value="ENG", container=False, min_width=50, scale=0, elem_id="langdropdown"
             )
 
         with gr.Column(scale=2):
@@ -36,6 +45,12 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
 
         with gr.Tab(label="Custom HTR") as tab_custom_htr:
             adv_htrflow_pipeline.render()
+
+        with gr.Tab(label="Examples") as tab_examples:
+            examples.render()
+
+        with gr.Tab(label="Data Explorer") as tab_data_explorer:
+            data_explorer.render()
 
     @demo.load(inputs=[local_language], outputs=[language_selector, main_language, overview_language])
     def load_language(saved_values):
@@ -64,8 +79,8 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         return (*get_tab_updates(selected_language, TAB_LABELS),)
 
     @main_language.change(inputs=[main_language])
-    def on_language_change(selected_language):
-        print(f"Language changed to: {selected_language}")
+    def log_on_language_change(selected_language):
+        logger.info(f"Language changed to: {selected_language}")
 
 
 demo.queue()

@@ -12,3 +12,6 @@ TODO: ssr mode: https://www.gradio.app/docs/gradio/blocks
 TODO: enable monitoring and test api mode: https://www.gradio.app/docs/gradio/blocks
 TODO: tes usage of modal: https://www.gradio.app/custom-components/gallery
 TODO: new docker container..  https://huggingface.co/spaces/pngwn/gradio-docker/blob/main/Dockerfile, need cuda and uv stuff..
+- use https://www.gradio.app/docs/gradio/set_static_paths
+- https://huggingface.co/spaces/Wauplin/space_to_dataset_saver
+- https://www.freddyboulton.com/blog/gradio-logfire
