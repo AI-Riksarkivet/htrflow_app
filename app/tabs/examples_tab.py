@@ -12,7 +12,7 @@ output_image_placehholder = gr.Image(
     height=400,
     show_share_button=True,
 )
-markdown_selected_option = gr.Markdown(container=True)
+markdown_selected_option = gr.Markdown(value="&nbsp;", container=True)
 
 
 def htr_image_placehholder(txt, method, image):

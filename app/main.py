@@ -15,17 +15,15 @@ logger = logging.getLogger("gradio_log")
 
 
 TAB_LABELS = {
-    "ENG": ["Home", "Simple HTR", "Custom HTR", "Examples"],
-    "SWE": ["Hem", "Enkel HTR", "Anpassad HTR", "Exempel"],
+    "ENG": ["Home", "Simple", "Advanced", "Examples"],
+    "SWE": ["Hem", "Enkel", "Avancerad", "Exempel"],
 }
 
 LANG_CHOICES = ["ENG", "SWE"]
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     with gr.Row():
-        local_language = gr.BrowserState(
-            default_value="ENG", storage_key="selected_language"
-        )
+        local_language = gr.BrowserState(default_value="ENG", storage_key="selected_language")
         main_language = gr.State(value="ENG")
 
         with gr.Column(scale=1):
@@ -47,17 +45,17 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         with gr.Tab(label="Home") as tab_home:
             overview.render()
 
-        with gr.Tab(label="Simple HTR") as tab_simple_htr:
+        with gr.Tab(label="Simple") as tab_simple_htr:
             htrflow_pipeline.render()
 
-        with gr.Tab(label="Custom HTR") as tab_custom_htr:
+        with gr.Tab(label="Advanced") as tab_custom_htr:
             adv_htrflow_pipeline.render()
 
         with gr.Tab(label="Examples") as tab_examples:
             examples.render()
 
-        with gr.Tab(label="Data Explorer") as tab_data_explorer:
-            data_explorer.render()
+        # with gr.Tab(label="Data Explorer") as tab_data_explorer:
+        #     data_explorer.render()
 
     @demo.load(
         inputs=[local_language],

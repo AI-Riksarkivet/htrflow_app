@@ -41,6 +41,7 @@ def submit_button_pipeline_fn(method, input_image, yaml_str):
 def get_yaml_button_fn(
     method,
     output_formats,
+    reading_order,
     simple_segment_model=None,
     simple_htr_model=None,
     simple_htr_model_type=None,
@@ -54,21 +55,23 @@ def get_yaml_button_fn(
 ):
     env = Environment(loader=FileSystemLoader("app/templates"))
 
+    if output_formats is None:
+        output_formats = ["txt"]
+
     template_name = "steps_template.yaml.j2"
     try:
         if method == "Simple layout":
             steps = [
                 {
                     "step": "Segmentation",
-                    "model": simple_htr_model_type,
+                    "model": simple_segment_model_type,
                     "model_settings": {"model": simple_segment_model},
                 },
                 {
                     "step": "TextRecognition",
-                    "model": simple_segment_model_type,
+                    "model": simple_htr_model_type,
                     "model_settings": {"model": simple_htr_model},
                 },
-                {"step": "OrderLines"},
             ]
         elif method == "Nested segmentation":
             steps = [
@@ -87,10 +90,11 @@ def get_yaml_button_fn(
                     "model": nested_htr_model_type,
                     "model_settings": {"model": nested_htr_model},
                 },
-                {"step": "OrderLines"},
             ]
         else:
             return "Invalid method or not yet supported."
+
+        steps.append({"step": reading_order})
 
         steps.extend(
             {
@@ -116,7 +120,7 @@ inital_state_selection_option = "Simple layout"
 
 with gr.Blocks() as htrflow_pipeline:
     with gr.Row(variant="panel"):
-        with gr.Column():
+        with gr.Column(scale=2):
             # gr.Markdown("<h2>Control Panel</h2>")
 
             with gr.Group():
@@ -180,6 +184,13 @@ with gr.Blocks() as htrflow_pipeline:
                         with gr.Column():
                             gr.Textbox("WIP")
                 with gr.Row():
+                    reading_order = gr.Dropdown(
+                        choices=["OrderLines", "ReadingOrderMarginalia"],
+                        value="OrderLines",
+                        multiselect=False,
+                        label="Reading Order",
+                        info="Supported format are: ...",
+                    )
                     output_formats = gr.Dropdown(
                         choices=["txt", "alto", "page"],
                         value="txt",
@@ -193,7 +204,7 @@ with gr.Blocks() as htrflow_pipeline:
                 get_yaml_button = gr.Button("Get Yaml", variant="secondary", scale=0)
                 output_files_pipeline = gr.Files(label="Output files", height=100, visible=False)
 
-        with gr.Column():
+        with gr.Column(scale=2):
             with gr.Tabs():
                 with gr.Tab("Viewer"):
                     with gr.Group():
@@ -224,6 +235,7 @@ with gr.Blocks() as htrflow_pipeline:
         inputs=[
             template_method_radio,
             output_formats,
+            reading_order,
             simple_segment_model,
             simple_htr_model,
             simple_htr_model_type,
@@ -253,6 +265,7 @@ with gr.Blocks() as htrflow_pipeline:
         inputs=[
             template_method_radio,
             output_formats,
+            reading_order,
             simple_segment_model,
             simple_htr_model,
             simple_htr_model_type,

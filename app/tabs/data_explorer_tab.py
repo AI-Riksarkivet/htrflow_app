@@ -1,63 +1,28 @@
 import gradio as gr
-import pandas as pd
-from gradio_modal import Modal
-
-output_image_placehholder = gr.Image(label="Output image", height=400, show_share_button=True)
 
 
-def show_warning(selection: gr.SelectData):
-    gr.Warning(f"Your choice is #{selection.index}, with image: {selection.value['image']['path']}!")
+def display_dataset(dataset_repo):
+    return gr.HTML(f"""<iframe
+    src="https://huggingface.co/datasets/{dataset_repo}/embed/viewer/default/train"
+    frameborder="0"
+    width="100%"
+    height="700px"
+></iframe>""")
 
 
 with gr.Blocks() as data_explorer:
     with gr.Row(variant="panel"):
-        with gr.Column(scale=1):
-            output_dataframe_pipeline = gr.Textbox(label="Path", info="path s3 or path, hf-dataset.")
-            with gr.Group():
-                (
-                    gr.Dropdown(
-                        ["ran", "swam", "ate", "slept"],
-                        value=["swam", "slept"],
-                        multiselect=True,
-                        label="Activity",
-                        info="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed auctor, nisl eget ",
-                    ),
-                )
-                gr.Slider(2, 20, value=4, label="Count", info="Choose between 2 and 20")
-                gr.Slider(2, 20, value=4, label="Another", info="Choose between 2 and 20")
-            output_dataframe_pipeline = gr.Textbox(label="search", info="search image bla bla..")
-            gr.Button("Search", variant="primary", scale=0)
-        with gr.Column(scale=4):
-            with gr.Tabs():
-                with gr.Tab("Gallery"):
-                    image_gallery = gr.Gallery(
-                        [
-                            "https://unsplash.com/photos/4oaDBgVROGo/download?ixid=M3wxMjA3fDB8MXxhbGx8NHx8fHx8fDJ8fDE3MTA0NjI1MzZ8&force=true&w=640",
-                            "https://unsplash.com/photos/4oaDBgVROGo/download?ixid=M3wxMjA3fDB8MXxhbGx8NHx8fHx8fDJ8fDE3MTA0NjI1MzZ8&force=true&w=640",
-                            "https://unsplash.com/photos/4oaDBgVROGo/download?ixid=M3wxMjA3fDB8MXxhbGx8NHx8fHx8fDJ8fDE3MTA0NjI1MzZ8&force=true&w=640",
-                            "https://unsplash.com/photos/4oaDBgVROGo/download?ixid=M3wxMjA3fDB8MXxhbGx8NHx8fHx8fDJ8fDE3MTA0NjI1MzZ8&force=true&w=640",
-                        ]
-                        * 10,
-                        allow_preview=False,
-                        label="Image Gallery",
-                        preview=False,
-                        columns=[7],
-                        rows=[10],
-                        show_download_button=True,
-                        show_share_button=True,
-                    )
-                with gr.Tab("Embeddings"):
-                    pass
-                    # TODO: add a embedding plot here
-                    # user needs to login hf and get a datasets with embeddings
+        with gr.Column(scale=0, min_width=160):
+            input_datasets_path = gr.Textbox(
+                label="HF datasets", placeholder="Gabriel/linkoping", scale=0, container=False
+            )
+            view_dataset = gr.Button("View dataseet", variant="primary", scale=0)
+            gr.LoginButton("Login to HF", variant="secondary", scale=0)
+        with gr.Column():
+            iframe_output = gr.HTML()
 
-        with Modal(visible=False) as gallery_modal:
-            with gr.Row():
-                with gr.Column(scale=0):
-                    gr.Markdown("")
-                with gr.Column(scale=4):
-                    gr.Image()
-                with gr.Column(scale=0):
-                    gr.Markdown("")
-
-            image_gallery.select(fn=show_warning, inputs=None).then(lambda: Modal(visible=True), None, gallery_modal)
+        view_dataset.click(
+            fn=display_dataset,
+            inputs=input_datasets_path,
+            outputs=[iframe_output],
+        )
