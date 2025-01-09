@@ -9,6 +9,7 @@ with gr.Blocks() as adv_htrflow_pipeline:
             # TODO: For the viewer we should be able to select from the output of the model what for values we want to
             # TODO: add batch predictions here..
             # TODO: add load from s3, local, hf daasets( however everything could go through hf_datasets).
+            # TODO: send a crop from the user
 
             image_mask = gr.ImageMask(interactive=True)
 
@@ -22,7 +23,7 @@ with gr.Blocks() as adv_htrflow_pipeline:
                             interactive=True,
                         )
                     test = gr.Dropdown(  # TODO: This should be a dropdown to decide input image or mask or s3 or local path
-                        ["Upload", "Draw", "s3", "local"],
+                        ["Upload", "Draw", "s3", "local", "crop"],
                         value="Upload",
                         multiselect=False,
                         label="Upload method",

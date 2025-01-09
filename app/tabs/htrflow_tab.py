@@ -141,7 +141,7 @@ with gr.Blocks() as htrflow_pipeline:
                 with gr.Accordion(label="Pipeline", open=False):
                     with gr.Row() as simple_pipeline:
                         with gr.Column():
-                            with gr.Row(): # TODO: use dynamic rendering instead to make it more clean :https://www.youtube.com/watch?v=WhAMvOEOWJw&ab_channel=HuggingFace
+                            with gr.Row():  # TODO: use dynamic rendering instead to make it more clean :https://www.youtube.com/watch?v=WhAMvOEOWJw&ab_channel=HuggingFace
                                 simple_segment_model = gr.Textbox(
                                     "model1", label="Segmentation", info="Info about the Segmentation model"
                                 )

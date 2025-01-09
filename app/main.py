@@ -23,12 +23,19 @@ LANG_CHOICES = ["ENG", "SWE"]
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     with gr.Row():
-        local_language = gr.BrowserState(default_value="ENG", storage_key="selected_language")
+        local_language = gr.BrowserState(
+            default_value="ENG", storage_key="selected_language"
+        )
         main_language = gr.State(value="ENG")
 
         with gr.Column(scale=1):
             language_selector = gr.Dropdown(
-                choices=LANG_CHOICES, value="ENG", container=False, min_width=50, scale=0, elem_id="langdropdown"
+                choices=LANG_CHOICES,
+                value="ENG",
+                container=False,
+                min_width=50,
+                scale=0,
+                elem_id="langdropdown",
             )
 
         with gr.Column(scale=2):
@@ -52,7 +59,10 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         with gr.Tab(label="Data Explorer") as tab_data_explorer:
             data_explorer.render()
 
-    @demo.load(inputs=[local_language], outputs=[language_selector, main_language, overview_language])
+    @demo.load(
+        inputs=[local_language],
+        outputs=[language_selector, main_language, overview_language],
+    )
     def load_language(saved_values):
         return (saved_values,) * 3
 
@@ -86,4 +96,4 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, enable_monitoring=False)
+    demo.launch(server_name="0.0.0.0", server_port=7861, enable_monitoring=False)
