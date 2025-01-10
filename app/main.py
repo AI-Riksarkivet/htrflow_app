@@ -23,7 +23,9 @@ LANG_CHOICES = ["ENG", "SWE"]
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     with gr.Row():
-        local_language = gr.BrowserState(default_value="ENG", storage_key="selected_language")
+        local_language = gr.BrowserState(
+            default_value="ENG", storage_key="selected_language"
+        )
         main_language = gr.State(value="ENG")
 
         with gr.Column(scale=1):
@@ -94,4 +96,4 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7861, enable_monitoring=False)
+    demo.launch(server_name="0.0.0.0", server_port=7862, enable_monitoring=False)

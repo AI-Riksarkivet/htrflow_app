@@ -6,7 +6,13 @@ with gr.Blocks() as adv_htrflow_pipeline:
     with gr.Row(variant="panel"):
         with gr.Column(scale=2):
             image_mask2 = gr.ImageEditor(
-                label="Uploaded image", interactive=True, layers=False, eraser=False, brush=False, height=400
+                label="Uploaded image",
+                interactive=True,
+                layers=False,
+                eraser=False,
+                brush=False,
+                height=500,
+                canvas_size=(300, 300),
             )
 
             image_mask = gr.Gallery(
@@ -20,12 +26,14 @@ with gr.Blocks() as adv_htrflow_pipeline:
 
             with gr.Group():
                 with gr.Row(visible=True) as yaml_pipeline:
-                    with gr.Accordion(label="Insert Yaml", open=False):
+                    with gr.Accordion(label="Insert Yaml here:", open=True):
                         custom_template_yaml = gr.Code(
                             value="Paste your custom pipeline here",
                             language="yaml",
                             label="yaml",
+                            # show_label=False,
                             interactive=True,
+                            lines=3,
                         )
                     gr.Checkbox(value=True, label="Batch", container=True, scale=0)
 
