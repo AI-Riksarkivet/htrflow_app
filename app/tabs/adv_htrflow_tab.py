@@ -4,15 +4,19 @@ import gradio as gr
 
 with gr.Blocks() as adv_htrflow_pipeline:
     with gr.Row(variant="panel"):
-        with gr.Column(scale=2):
+        with gr.Column(scale=3):
+
             image_mask2 = gr.ImageEditor(
                 label="Uploaded image",
+                sources="upload",
                 interactive=True,
                 layers=False,
                 eraser=False,
                 brush=False,
-                height=500,
-                canvas_size=(300, 300),
+                height=400,
+                transforms="crop",
+                crop_size="16,5",
+                visible=False,
             )
 
             image_mask = gr.Gallery(
@@ -23,43 +27,28 @@ with gr.Blocks() as adv_htrflow_pipeline:
                 object_fit="cover",
                 columns=5,
             )
-
-            with gr.Group():
-                with gr.Row(visible=True) as yaml_pipeline:
-                    with gr.Accordion(label="Insert Yaml here:", open=True):
-                        custom_template_yaml = gr.Code(
-                            value="Paste your custom pipeline here",
-                            language="yaml",
-                            label="yaml",
-                            # show_label=False,
-                            interactive=True,
-                            lines=3,
-                        )
-                    gr.Checkbox(value=True, label="Batch", container=True, scale=0)
-
-                    # input_files_format_dropdown = gr.Dropdown(
-                    #     ["Upload", "Batch", "Crop"],
-                    #     value="Upload",
-                    #     multiselect=False,
-                    #     label="Upload method",
-                    #     container=False,
-                    #     scale=0,
-                    #     interactive=True,
-                    # )
+            with gr.Row(visible=True) as yaml_pipeline:
+                with gr.Accordion(label="Run Template", open=False):
+                    gr.Checkbox(value=True, label="Batch", container=False, scale=0)
+                    custom_template_yaml = gr.Code(
+                        value="Paste your custom pipeline here",
+                        language="yaml",
+                        label="yaml",
+                        # show_label=False,
+                        interactive=True,
+                        lines=5,
+                    )
 
             with gr.Row():
                 run_button = gr.Button("Submit", variant="primary", scale=0)
-                cancel_button = gr.Button("stop", variant="stop", scale=0)
+                cancel_button = gr.Button(
+                    "stop", variant="stop", scale=0, visible=False
+                )
                 d = gr.DownloadButton(
-                    "Download the file", visible=True, scale=0
+                    "Download the file", visible=False, scale=0
                 )  # TODO: This should be hidden until the run button is clicked
 
-                textbox = gr.Textbox(
-                    scale=0
-                )  # This is for debugging runnr when run button is clicked and the stop button is clicked
-
-                # TODO: add a upload to hf datasets
-                # TODO: add a hf login button to login to upload datasets
+                textbox_ = gr.Textbox(scale=0, visible=False)
 
         with gr.Column(scale=3):
             with gr.Tabs():
@@ -69,7 +58,7 @@ with gr.Blocks() as adv_htrflow_pipeline:
                         info="Checkboxgroup should be basedon output structure from htrflow",
                     )
 
-                    gr.Image()
+                    gr.Image(interactive=False)
 
                 with gr.Tab("Table"):
                     pass
@@ -77,12 +66,34 @@ with gr.Blocks() as adv_htrflow_pipeline:
                     # TODO add https://www.gradio.app/docs/gradio/highlightedtext and graph of run graph
                     pass
 
-        # input_files_format_dropdown.select(lambda: gr.update(visible=True), None, image_mask)
-
         def foo():
-            for i in range(300):
-                yield i
-                time.sleep(0.5)
+            return gr.update(visible=True), "test"
 
-        click_event = run_button.click(fn=foo, inputs=None, outputs=textbox)
-        cancel_button.click(fn=None, inputs=None, outputs=None, cancels=[click_event])
+        click_event = run_button.click(
+            fn=foo, inputs=None, outputs=[cancel_button, textbox_]
+        ).then(fn=lambda: gr.update(visible=False), inputs=None, outputs=cancel_button)
+
+        cancel_button.click(
+            fn=lambda: gr.update(visible=False),
+            inputs=None,
+            outputs=cancel_button,
+            cancels=[click_event],
+        )
+
+        image_mask2.upload(
+            fn=None,
+            inputs=None,
+            outputs=None,
+            js="""
+            () => {
+                // Target the button using its attributes
+                const button = document.querySelector('button[aria-label="Transform button"][title="Transform button"]');
+                if (button) {
+                    button.click(); // Simulate a click
+                    console.log('Transform button clicked.');
+                } else {
+                    console.error('Transform button not found.');
+                }
+            }
+            """,
+        ).then(fn=lambda: gr.update(crop=None), inputs=None, outputs=image_mask2)
