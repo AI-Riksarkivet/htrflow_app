@@ -2,6 +2,7 @@ import gradio as gr
 
 from app.gradio_config import css, theme
 from app.tabs.adv_htrflow_tab import adv_htrflow_pipeline
+from app.tabs.submit import submit
 from app.tabs.examples_tab import examples
 from app.tabs.templating import (
     templating_block,
@@ -27,8 +28,8 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         with gr.Tab(label="Templating") as tab_templating:
             templating_block.render()
 
-        with gr.Tab(label="Submit Job") as tab_submit_job:
-            adv_htrflow_pipeline.render()
+        with gr.Tab(label="Submit Job") as tab_submit:
+            submit.render()
 
         with gr.Tab(label="Output & Visualize") as tab_examples:
             examples.render()
