@@ -79,12 +79,7 @@ labels:
 """
 
 with gr.Blocks() as submit:
-    # Row 1: Please upload the image message
-    #with gr.Row():
-    #    docs_link = gr.HTML(
-    #        value=''
-    #    )
-#
+
     # Row 2: Image Upload and Editor
     with gr.Row(variant="panel"):
         image_editor = gr.ImageEditor(
