@@ -13,12 +13,5 @@ theme = gr.themes.Default(
 )
 
 css = """
-body > gradio-app > div > div > div.wrap.svelte-1rjryqp > footer > a {
-    display: none !important;
-}
-body > gradio-app > div > div > div.wrap.svelte-1rjryqp > footer > div {
-    display: none !important;
-}
-#langdropdown {width: 100px;}
 
 """

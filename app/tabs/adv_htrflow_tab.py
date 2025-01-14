@@ -1,35 +1,22 @@
-import time
-
 import gradio as gr
+
 
 with gr.Blocks() as adv_htrflow_pipeline:
     with gr.Row(variant="panel"):
         with gr.Column(scale=3):
 
-            image_mask2 = gr.ImageEditor(
-                label="Uploaded image",
-                sources="upload",
-                interactive=True,
-                layers=False,
-                eraser=False,
-                brush=False,
-                height=400,
-                transforms="crop",
-                crop_size="16,5",
-                visible=False,
-            )
-
-            image_mask = gr.Gallery(
+            image_batch_input = gr.Gallery(
                 file_types=["image"],
                 label="Upload images",
                 interactive=True,
-                height=400,
                 object_fit="cover",
+                preview=True,
                 columns=5,
             )
+
             with gr.Row(visible=True) as yaml_pipeline:
                 with gr.Accordion(label="Run Template", open=False):
-                    gr.Checkbox(value=True, label="Batch", container=False, scale=0)
+
                     custom_template_yaml = gr.Code(
                         value="Paste your custom pipeline here",
                         language="yaml",
@@ -58,7 +45,11 @@ with gr.Blocks() as adv_htrflow_pipeline:
                         info="Checkboxgroup should be basedon output structure from htrflow",
                     )
 
-                    gr.Image(interactive=False)
+                    gr.Image(
+                        interactive=False,
+                        show_fullscreen_button=True,
+                        show_share_button=True,
+                    )
 
                 with gr.Tab("Table"):
                     pass
@@ -67,6 +58,7 @@ with gr.Blocks() as adv_htrflow_pipeline:
                     pass
 
         def foo():
+            gr.Info("hello morgan")
             return gr.update(visible=True), "test"
 
         click_event = run_button.click(
@@ -79,21 +71,3 @@ with gr.Blocks() as adv_htrflow_pipeline:
             outputs=cancel_button,
             cancels=[click_event],
         )
-
-        image_mask2.upload(
-            fn=None,
-            inputs=None,
-            outputs=None,
-            js="""
-            () => {
-                // Target the button using its attributes
-                const button = document.querySelector('button[aria-label="Transform button"][title="Transform button"]');
-                if (button) {
-                    button.click(); // Simulate a click
-                    console.log('Transform button clicked.');
-                } else {
-                    console.error('Transform button not found.');
-                }
-            }
-            """,
-        ).then(fn=lambda: gr.update(crop=None), inputs=None, outputs=image_mask2)

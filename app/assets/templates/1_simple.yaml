@@ -1,0 +1,16 @@
+steps:
+- step: Segmentation
+  settings:
+    model: yolo
+    model_settings:
+      model: Riksarkivet/yolov9-lines-within-regions-1
+- step: TextRecognition
+  settings:
+    model: TrOCR
+    model_settings:
+      model: Riksarkivet/trocr-base-handwritten-hist-swe-2
+- step: OrderLines
+- step: Export
+  settings:
+    format: txt
+    dest: outputs
