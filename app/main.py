@@ -5,13 +5,13 @@ from app.tabs.adv_htrflow_tab import adv_htrflow_pipeline
 from app.tabs.examples_tab import examples
 from app.tabs.templating import (
     templating_block,
-    template_image_folder,
-    template_yaml_folder,
+    TEMPLATE_IMAGE_FOLDER,
+    TEMPLATE_YAML_FOLDER,
 )
 from app.utils.md_helper import load_markdown
 
-gr.set_static_paths(paths=[template_image_folder])
-gr.set_static_paths(paths=[template_yaml_folder])
+gr.set_static_paths(paths=[TEMPLATE_IMAGE_FOLDER])
+gr.set_static_paths(paths=[TEMPLATE_YAML_FOLDER])
 
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
