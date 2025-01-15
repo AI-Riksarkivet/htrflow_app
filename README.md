@@ -19,4 +19,5 @@ datasets:
   ]
 license: mit
 short_description: Transform research papers and mathematical concepts into stu
+header: mini
 ---
