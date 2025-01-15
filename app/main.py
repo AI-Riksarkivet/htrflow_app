@@ -1,13 +1,13 @@
 import gradio as gr
 
 from app.gradio_config import css, theme
-from app.tabs.adv_htrflow_tab import adv_htrflow_pipeline
-from app.tabs.submit import submit
+from app.tabs.submit import submit, custom_template_yaml
 from app.tabs.examples_tab import examples
 from app.tabs.templating import (
     templating_block,
     TEMPLATE_IMAGE_FOLDER,
     TEMPLATE_YAML_FOLDER,
+    template_output_yaml_code,
 )
 from app.utils.md_helper import load_markdown
 
@@ -34,8 +34,36 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         with gr.Tab(label="Output & Visualize") as tab_examples:
             examples.render()
 
+    @demo.load(
+        inputs=[template_output_yaml_code],
+        outputs=[template_output_yaml_code],
+    )
+    def inital_yaml_code(template_output_yaml_code):
+        return template_output_yaml_code
+
+    def sync_yaml_state(input_value, state_value):
+        """Synchronize the YAML state if there is a mismatch."""
+        return input_value if input_value != state_value else gr.skip()
+
+    tab_submit.select(
+        inputs=[template_output_yaml_code, custom_template_yaml],
+        outputs=[custom_template_yaml],
+        fn=sync_yaml_state,
+    )
+
+    tab_templating.select(
+        inputs=[custom_template_yaml, template_output_yaml_code],
+        outputs=[template_output_yaml_code],
+        fn=sync_yaml_state,
+    )
+
 
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7862, enable_monitoring=False)
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7862,
+        enable_monitoring=False,
+        show_error=True,
+    )
