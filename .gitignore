@@ -42,4 +42,3 @@ mlruns/
 
 #models
 models--Riksarkivet--HTR_pipeline_models/
-app/assets/images/*.jpg
