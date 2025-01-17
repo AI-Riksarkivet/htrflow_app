@@ -8,14 +8,13 @@ ENV PYTHONUNBUFFERED=1 \
     GRADIO_NUM_PORTS=1 \
     GRADIO_SERVER_NAME=0.0.0.0 \
     GRADIO_THEME=huggingface \
-    GRADIO_SERVER_PORT=7860 \
-    GRADIO_SSR_MODE="True" \
     SYSTEM=spaces \
     AM_I_IN_A_DOCKER_CONTAINER=Yes \
     PYTHONPATH=/home/appuser/app \
     HF_HOME=/home/appuser/.cache \
     TORCH_HOME=/home/appuser/.cache \
     TMP_DIR=/home/appuser/tmp \
+    TRANSFORMERS_CACHE=/home/appuser/.cache/transformers \
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=compute,utility
 
@@ -48,6 +47,7 @@ COPY --chown=appuser pyproject.toml uv.lock LICENSE README.md ./
 RUN uv sync --frozen --no-cache \
     && chown -R appuser:appuser /home/appuser/app/.venv \
     && rm -rf /root/.cache /home/appuser/.cache
+
 
 # Copy application code
 COPY --chown=appuser app app
