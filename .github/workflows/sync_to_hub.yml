@@ -5,11 +5,23 @@ jobs:
   sync-to-hub:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-          lfs: true
-      - name: Push to hub
+          fetch-depth: 0  
+          lfs: true       
+
+      - name: Install Git LFS
+        run: git lfs install
+
+      - name: Debug LFS Tracking
+        run: |
+          cat .gitattributes
+          git lfs ls-files
+
+      - name: Push to Hugging Face
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push --force https://Riksarkivet:$HF_TOKEN@huggingface.co/spaces/Riksarkivet/htr_demo main
+        run: |
+          git lfs push --all https://Riksarkivet:$HF_TOKEN@huggingface.co/spaces/Riksarkivet/htr_demo
+          git push --force https://Riksarkivet:$HF_TOKEN@huggingface.co/spaces/Riksarkivet/htr_demo main
