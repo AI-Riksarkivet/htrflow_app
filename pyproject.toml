@@ -23,6 +23,7 @@ dependencies = [
     "pandas>=2.2.3",
     "jinja2>=3.1.4",
     "gradio-modal>=0.0.4",
+    "fastapi[standard]>=0.115.6",
 ]
 
 [project.urls]
