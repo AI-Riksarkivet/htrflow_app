@@ -37,17 +37,17 @@ dev-dependencies = [
     "uv>=0.4.12",
 ]
 
-[project.optional-dependencies]
-openmmlab = [
-    "openmim==0.3.9",
-    "mmengine==0.7.4",
-    "mmcv==2.0.1",
-    "mmdet==3.0.0",
-    "mmocr==1.0.0"
-]
-teklia = [
-    "pylaia==1.1.2"
-]
+# [project.optional-dependencies]
+# openmmlab = [
+#     "openmim==0.3.9",
+#     "mmengine==0.7.4",
+#     "mmcv==2.0.1",
+#     "mmdet==3.0.0",
+#     "mmocr==1.0.0"
+# ]
+# teklia = [
+#     "pylaia==1.1.2"
+# ]
 
 
 [build-system]
