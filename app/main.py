@@ -20,6 +20,9 @@ from htrflow.models.huggingface.trocr import TrOCR
 gr.set_static_paths(paths=[TEMPLATE_IMAGE_FOLDER])
 gr.set_static_paths(paths=[TEMPLATE_YAML_FOLDER])
 
+# TODO: fix api/ endpoints..
+# TODO add colab
+# TDOO addd eexmaple for api
 
 def load_markdown(language, section, content_dir="app/content"):
     """Load markdown content from files."""
