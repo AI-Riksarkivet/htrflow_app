@@ -852,18 +852,6 @@ wheels = [
 ]
 
 [[package]]
-name = "gradio-modal"
-version = "0.0.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "gradio" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/e2/fd/3b383f9ee8d60625e9e26871ba4adcacbedeab132041b94290758e02e543/gradio_modal-0.0.4.tar.gz", hash = "sha256:717ae699072a171648cfa1b84bc153be84e92d04e9ad58c1bc59af68ef332726", size = 1180812 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/3d/76f454de84ae1dccbf2b7023e933afb8dde5fdd89e9476786726ef770737/gradio_modal-0.0.4-py3-none-any.whl", hash = "sha256:d96e817d2e934d9e1b835b06474f45fd349b5ccea499d1536bfb4bd38f62dedb", size = 1106241 },
-]
-
-[[package]]
 name = "h11"
 version = "0.14.0"
 source = { registry = "https://pypi.org/simple" }
@@ -905,10 +893,10 @@ dependencies = [
     { name = "datasets" },
     { name = "fastapi", extra = ["standard"] },
     { name = "gradio" },
-    { name = "gradio-modal" },
     { name = "htrflow" },
-    { name = "jinja2" },
     { name = "pandas" },
+    { name = "pillow" },
+    { name = "tqdm" },
 ]
 
 [package.optional-dependencies]
@@ -933,15 +921,15 @@ requires-dist = [
     { name = "datasets", specifier = ">=3.2.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.6" },
     { name = "gradio", specifier = ">=5.11.0" },
-    { name = "gradio-modal", specifier = ">=0.0.4" },
     { name = "htrflow", specifier = "==0.1.3" },
-    { name = "jinja2", specifier = ">=3.1.4" },
     { name = "mmcv", marker = "extra == 'openmmlab'", specifier = "==2.0.1" },
     { name = "mmdet", marker = "extra == 'openmmlab'", specifier = "==3.0.0" },
     { name = "mmengine", marker = "extra == 'openmmlab'", specifier = "==0.7.4" },
     { name = "mmocr", marker = "extra == 'openmmlab'", specifier = "==1.0.0" },
     { name = "openmim", marker = "extra == 'openmmlab'", specifier = "==0.3.9" },
     { name = "pandas", specifier = ">=2.2.3" },
+    { name = "pillow", specifier = ">=11.1.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [package.metadata.requires-dev]

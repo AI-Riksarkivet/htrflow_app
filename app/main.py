@@ -1,18 +1,37 @@
 import gradio as gr
-
+import os
 from app.gradio_config import css, theme
-from app.tabs.submit import submit, custom_template_yaml
-from app.tabs.examples_tab import examples
+from app.tabs.submit import (
+    submit,
+    custom_template_yaml,
+    collection_submit_state,
+    batch_image_gallery,
+)
+from app.tabs.visualizer import visualizer, collection_viz_state, viz_image_gallery
 from app.tabs.templating import (
     templating_block,
     TEMPLATE_IMAGE_FOLDER,
     TEMPLATE_YAML_FOLDER,
     template_output_yaml_code,
 )
-from app.utils.md_helper import load_markdown
+
+from htrflow.models.huggingface.trocr import TrOCR
 
 gr.set_static_paths(paths=[TEMPLATE_IMAGE_FOLDER])
 gr.set_static_paths(paths=[TEMPLATE_YAML_FOLDER])
+
+
+def load_markdown(language, section, content_dir="app/content"):
+    """Load markdown content from files."""
+    if language is None:
+        file_path = os.path.join(content_dir, f"{section}.md")
+    else:
+        file_path = os.path.join(content_dir, language, f"{section}.md")
+
+    if os.path.exists(file_path):
+        with open(file_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return f"## Content missing for {file_path} in {language}"
 
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
@@ -31,8 +50,8 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         with gr.Tab(label="Submit Job") as tab_submit:
             submit.render()
 
-        with gr.Tab(label="Output & Visualize") as tab_examples:
-            examples.render()
+        with gr.Tab(label="Visualize Result") as tab_visualizer:
+            visualizer.render()
 
     @demo.load(
         inputs=[template_output_yaml_code],
@@ -41,20 +60,41 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     def inital_yaml_code(template_output_yaml_code):
         return template_output_yaml_code
 
-    def sync_yaml_state(input_value, state_value):
+    @demo.load()
+    def inital_trocr_load():
+        return TrOCR("Riksarkivet/trocr-base-handwritten-hist-swe-2")
+
+    def sync_gradio_objects(input_value, state_value):
         """Synchronize the YAML state if there is a mismatch."""
         return input_value if input_value != state_value else gr.skip()
 
-    tab_submit.select(
-        inputs=[template_output_yaml_code, custom_template_yaml],
-        outputs=[custom_template_yaml],
-        fn=sync_yaml_state,
-    )
+    def sync_gradio_object_state(input_value, state_value):
+        """Synchronize the Collection."""
+        state_value = input_value
+        return state_value if state_value is not None else gr.skip()
 
     tab_templating.select(
         inputs=[custom_template_yaml, template_output_yaml_code],
         outputs=[template_output_yaml_code],
-        fn=sync_yaml_state,
+        fn=sync_gradio_objects,
+    )
+
+    tab_submit.select(
+        inputs=[template_output_yaml_code, custom_template_yaml],
+        outputs=[custom_template_yaml],
+        fn=sync_gradio_objects,
+    )
+
+    # tab_visualizer.select(
+    #     inputs=[batch_image_gallery, viz_image_gallery],
+    #     outputs=[viz_image_gallery],
+    #     fn=sync_gradio_objects,
+    # )
+
+    tab_visualizer.select(
+        inputs=[collection_submit_state, collection_viz_state],
+        outputs=[collection_viz_state],
+        fn=sync_gradio_object_state,
     )
 
 
@@ -63,7 +103,7 @@ demo.queue()
 if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7862,
+        server_port=7864,
         enable_monitoring=False,
-        show_error=True,
+        # show_error=True,
     )
