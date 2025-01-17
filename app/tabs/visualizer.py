@@ -68,6 +68,8 @@ def load_visualize_state_from_submit(col: Collection, progress):
 
     return results
 
+#TODO missing to able to click on left gallery and return respecitive mask.... i.e check if sselection is inside the polygons.. to the gallery on the right
+
 
 with gr.Blocks() as visualizer:
     with gr.Column(variant="panel"):
