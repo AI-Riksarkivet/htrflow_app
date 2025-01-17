@@ -35,6 +35,9 @@ build:
 	pip install -e .
 	gradio app.py
 
+docker_build:
+    docker build -t htrflow-app -f .docker/Dockerfile .
+
 # clean_for_actions:
 # 	git lfs prune
 # 	git filter-branch --force --index-filter "git rm --cached --ignore-unmatch helper/text/videos/eating_spaghetti.mp4" --prune-empty --tag-name-filter cat -- --all

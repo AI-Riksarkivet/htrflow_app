@@ -103,7 +103,8 @@ demo.queue()
 if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7864,
-        enable_monitoring=False,
+        server_port=7860,
+        enable_monitoring=True,
+        ssr_mode=True
         # show_error=True,
     )
