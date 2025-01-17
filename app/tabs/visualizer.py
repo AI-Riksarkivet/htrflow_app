@@ -42,15 +42,21 @@ def load_visualize_state_from_submit(col: Collection, progress):
             if not seg:
                 continue
 
-            cropped_line_img = imgproc.crop(page_image, seg.bbox)
+            polygon = (
+                seg.polygon.move(page_node.coord) if page_node.coord else seg.polygon
+            )
+            bbox = seg.bbox.move(page_node.coord) if page_node.coord else seg.bbox
+
+            cropped_line_img = imgproc.crop(page_image, bbox)
             cropped_line_img = np.clip(cropped_line_img, 0, 255).astype(np.uint8)
             line_crops.append(cropped_line_img)
 
-            if seg.polygon is not None:
-                line_polygons.append(seg.polygon)
+            if polygon is not None:
+                line_polygons.append(polygon)
 
         annotated_image = draw_polygons(page_image, line_polygons)
         annotated_page_node = np.clip(annotated_image, 0, 255).astype(np.uint8)
+
         results.append(
             {
                 "page_image": page_node,
