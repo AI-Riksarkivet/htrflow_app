@@ -6,11 +6,7 @@ import re
 def get_sorted_files(folder, extensions):
     """Retrieve sorted files by numeric value in their names."""
     return sorted(
-        [
-            os.path.join(folder, file)
-            for file in os.listdir(folder)
-            if file.lower().endswith(extensions)
-        ],
+        [os.path.join(folder, file) for file in os.listdir(folder) if file.lower().endswith(extensions)],
         key=lambda x: (
             int(re.search(r"\d+", os.path.basename(x)).group())
             if re.search(r"\d+", os.path.basename(x))
@@ -49,9 +45,7 @@ TEMPLATE_IMAGE_FOLDER = "app/assets/images"
 TEMPLATE_YAML_FOLDER = "app/assets/templates"
 
 # File Retrieval
-image_files = get_sorted_files(
-    TEMPLATE_IMAGE_FOLDER, (".png", ".jpg", ".jpeg", ".webp")
-)
+image_files = get_sorted_files(TEMPLATE_IMAGE_FOLDER, (".png", ".jpg", ".jpeg", ".webp"))
 yaml_files = get_sorted_files(TEMPLATE_YAML_FOLDER, (".yaml",))
 
 # Categorize YAML Files
@@ -96,11 +90,8 @@ with gr.Blocks() as templating_block:
             with gr.Group():
                 with gr.Row():
                     with gr.Column(scale=1):
-                        template_image = gr.Image(
-                            label="Example Templates", value=image_files[0], height=400
-                        )
+                        template_image = gr.Image(label="Example Templates", value=image_files[0], height=400)
                     with gr.Column(scale=1):
-
                         template_output_yaml_code = gr.Code(
                             language="yaml",
                             label="Pipeline",
@@ -108,7 +99,7 @@ with gr.Blocks() as templating_block:
                             visible=True,
                         )
     docs_link = gr.HTML(
-        value='<p><a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines" target="_blank">📚 Click here 📚</a> for a detailed description on how to customize the configuration</p>',
+        value='<p><a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines" target="_blank">📚 Click here 📚</a> for a detailed description on how to customize the configuration for HTRflow</p>',
         visible=True,
     )
 
@@ -121,7 +112,6 @@ with gr.Blocks() as templating_block:
         ],
     )
     def on_template_select(dropdown_selection_template):
-
         if dropdown_selection_template == "Simple":
             yaml_content = get_yaml_content(yaml_files_numbered[0])
             return image_files[0], yaml_content, gr.update(visible=False)
@@ -132,9 +122,7 @@ with gr.Blocks() as templating_block:
             yaml_content = get_yaml_content(yaml_files_c_letter[0])
             return image_files[2], yaml_content, gr.update(visible=True)
         else:
-            return gr.Error(
-                f"{dropdown_selection_template} - is not a valid Template selection"
-            )
+            return gr.Error(f"{dropdown_selection_template} - is not a valid Template selection")
 
     @custom_dropdown_selection_template.select(
         inputs=custom_dropdown_selection_template,
@@ -147,9 +135,7 @@ with gr.Blocks() as templating_block:
             yaml_content = get_yaml_content(yaml_path)
             return yaml_content
         else:
-            return gr.Error(
-                f"{custom_template_selection} - is not a valid Custom Template selection"
-            )
+            return gr.Error(f"{custom_template_selection} - is not a valid Custom Template selection")
 
     @dropdown_selection_template.select(
         inputs=dropdown_selection_template,

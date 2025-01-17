@@ -2,6 +2,10 @@ venv/
 .vscode/
 .cache/
 outputs/
+alto-outputs/
+page-outputs/
+text-outputs/
+tmp/
 
 # Byte-compiled / optimized / DLL files
 */__pycache__
