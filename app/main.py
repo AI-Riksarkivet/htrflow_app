@@ -1,3 +1,4 @@
+import shutil
 import gradio as gr
 import os
 from app.gradio_config import css, theme
@@ -5,7 +6,6 @@ from app.tabs.submit import (
     submit,
     custom_template_yaml,
     collection_submit_state,
-    batch_image_gallery,
 )
 from app.tabs.visualizer import visualizer, collection_viz_state, viz_image_gallery
 from app.tabs.templating import (
@@ -53,6 +53,12 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         with gr.Tab(label="Visualize Result") as tab_visualizer:
             visualizer.render()
 
+    @demo.load()
+    def inital_yaml_code():
+        tmp_dir = "tmp/"
+        if os.path.exists(tmp_dir) and os.path.isdir(tmp_dir):
+            shutil.rmtree(tmp_dir)
+
     @demo.load(
         inputs=[template_output_yaml_code],
         outputs=[template_output_yaml_code],
@@ -84,12 +90,6 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         outputs=[custom_template_yaml],
         fn=sync_gradio_objects,
     )
-
-    # tab_visualizer.select(
-    #     inputs=[batch_image_gallery, viz_image_gallery],
-    #     outputs=[viz_image_gallery],
-    #     fn=sync_gradio_objects,
-    # )
 
     tab_visualizer.select(
         inputs=[collection_submit_state, collection_viz_state],

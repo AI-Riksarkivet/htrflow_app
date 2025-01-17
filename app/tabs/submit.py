@@ -93,6 +93,8 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
     progress(0, desc="HTRflow: Starting")
     time.sleep(0.3)
 
+    print(temp_config)
+
     if batch_image_gallery is None:
         gr.Warning("HTRflow: You must upload atleast 1 image or more")
 
@@ -134,6 +136,8 @@ def tracking_exported_files(tmp_output_paths):
     accepted_extensions = {".txt", ".xml", ".json"}
 
     exported_files = set()
+
+    print(tmp_output_paths)
 
     for tmp_folder in tmp_output_paths:
         for ext in accepted_extensions:
