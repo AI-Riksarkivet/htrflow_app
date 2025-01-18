@@ -45,10 +45,7 @@ def load_visualize_state_from_submit2_serial(col: Collection, progress):
 
         annotated_image = draw_polygons(
             image=page_image,
-            polygons=line_polygons,
-            color=Colors.BLUE,
-            thickness=3,
-            alpha=0.2
+            polygons=line_polygons
         )
         annotated_page_node = np.clip(annotated_image, 0, 255).astype(np.uint8)
 
