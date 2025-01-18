@@ -11,7 +11,7 @@ from htrflow.utils import imgproc
 from htrflow.results import Segment
 
 
-def load_visualize_state_from_submit2_serial(col: Collection, progress):
+def load_visualize_state_from_submit(col: Collection, progress):
     results = []
 
     total_steps = len(col.pages)
