@@ -1,75 +1,75 @@
 import gradio as gr
 import pandas as pd
 import numpy as np
-from htrflow.volume.volume import Collection
+import time
+from collections import defaultdict
+from typing import List, Dict, Any
+
+from htrflow.volume.volume import Collection, ImageNode, PageNode
 from htrflow.utils.draw import draw_polygons
 from htrflow.utils import imgproc
-import time
 from htrflow.results import Segment
 
 
-def load_visualize_state_from_submit(col: Collection, progress):
+def load_visualize_state_from_submit2_serial(col: Collection, progress):
     results = []
-
-    time.sleep(1)
 
     total_steps = len(col.pages)
 
     for page_idx, page_node in enumerate(col):
+        page_node.to_original_size()
         page_image = page_node.image.copy()
 
-        progress((page_idx + 1) / total_steps, desc=f"Running Visualizer")
-
-        lines = list(page_node.traverse(lambda node: node.is_line()))
-
-        recog_conf_values = {
-            i: list(zip(tr.texts, tr.scores)) if (tr := ln.text_result) else []
-            for i, ln in enumerate(lines)
-        }
-
-        recog_df = pd.DataFrame(
-            [
-                {"Transcription": text, "Confidence Score": f"{score:.4f}"}
-                for values in recog_conf_values.values()
-                for text, score in values
-            ]
-        )
+        progress((page_idx + 1) / total_steps, desc="Running Visualizer")
 
         line_polygons = []
         line_crops = []
-        for ln in lines:
-            seg: Segment = ln.data.get("segment")
-            if not seg:
+        recog_conf_values = {}
+
+        for i, node in enumerate(page_node.traverse(filter=lambda n: n.is_line())):
+            if node.polygon:
+                line_polygons.append(node.polygon)
+
+            try:
+                cropped_line_img = imgproc.crop(page_image, node.bbox)
+                cropped_line_img = np.clip(cropped_line_img, 0, 255).astype(np.uint8)
+                line_crops.append(cropped_line_img)
+            except Exception:
                 continue
 
-            polygon = (
-                seg.polygon.move(page_node.coord) if page_node.coord else seg.polygon
-            )
-            bbox = seg.bbox.move(page_node.coord) if page_node.coord else seg.bbox
+            if node.text_result:
+                recog_conf_values[i] = list(zip(
+                    node.text_result.texts,
+                    node.text_result.scores
+                ))
 
-            cropped_line_img = imgproc.crop(page_image, bbox)
-            cropped_line_img = np.clip(cropped_line_img, 0, 255).astype(np.uint8)
-            line_crops.append(cropped_line_img)
-
-            if polygon is not None:
-                line_polygons.append(polygon)
-
-        annotated_image = draw_polygons(page_image, line_polygons)
+        annotated_image = draw_polygons(
+            image=page_image,
+            polygons=line_polygons,
+            color=Colors.BLUE,
+            thickness=3,
+            alpha=0.2
+        )
         annotated_page_node = np.clip(annotated_image, 0, 255).astype(np.uint8)
 
-        results.append(
-            {
-                "page_image": page_node,
-                "annotated_page_node": annotated_page_node,
-                "line_crops": line_crops,
-                "recog_conf_values": recog_df,
-            }
-        )
+        results.append({
+            "page_image": page_node,
+            "annotated_page_node": annotated_page_node,
+            "line_crops": line_crops,
+            "recog_conf_values": _convert_conf_values_to_df(recog_conf_values),
+        })
 
     return results
 
-#TODO missing to able to click on left gallery and return respecitive mask.... i.e check if sselection is inside the polygons.. to the gallery on the right
-
+def _convert_conf_values_to_df(conf_values: Dict[int, List[tuple[str, float]]]) -> pd.DataFrame:
+    """Convert recognition confidence values to a pandas DataFrame."""
+    return pd.DataFrame(
+        [
+            {"Transcription": text, "Confidence Score": f"{score:.4f}"}
+            for values in conf_values.values()
+            for text, score in values
+        ]
+    )
 
 with gr.Blocks() as visualizer:
     with gr.Column(variant="panel"):
