@@ -38,27 +38,28 @@ def load_visualize_state_from_submit(col: Collection, progress):
                 continue
 
             if node.text_result:
-                recog_conf_values[i] = list(zip(
-                    node.text_result.texts,
-                    node.text_result.scores
-                ))
+                recog_conf_values[i] = list(
+                    zip(node.text_result.texts, node.text_result.scores)
+                )
 
-        annotated_image = draw_polygons(
-            image=page_image,
-            polygons=line_polygons
-        )
+        annotated_image = draw_polygons(image=page_image, polygons=line_polygons)
         annotated_page_node = np.clip(annotated_image, 0, 255).astype(np.uint8)
 
-        results.append({
-            "page_image": page_node,
-            "annotated_page_node": annotated_page_node,
-            "line_crops": line_crops,
-            "recog_conf_values": _convert_conf_values_to_df(recog_conf_values),
-        })
+        results.append(
+            {
+                "page_image": page_node,
+                "annotated_page_node": annotated_page_node,
+                "line_crops": line_crops,
+                "recog_conf_values": _convert_conf_values_to_df(recog_conf_values),
+            }
+        )
 
     return results
 
-def _convert_conf_values_to_df(conf_values: Dict[int, List[tuple[str, float]]]) -> pd.DataFrame:
+
+def _convert_conf_values_to_df(
+    conf_values: Dict[int, List[tuple[str, float]]]
+) -> pd.DataFrame:
     """Convert recognition confidence values to a pandas DataFrame."""
     return pd.DataFrame(
         [
@@ -67,6 +68,7 @@ def _convert_conf_values_to_df(conf_values: Dict[int, List[tuple[str, float]]]) 
             for text, score in values
         ]
     )
+
 
 with gr.Blocks() as visualizer:
     with gr.Column(variant="panel"):
@@ -85,7 +87,7 @@ with gr.Blocks() as visualizer:
                 )
 
                 visualize_button = gr.Button(
-                    "Visualize", scale=0, min_width=200, variant="secondary"
+                    "Visualize", scale=0, min_width=200, variant="primary"
                 )
 
                 progress_bar = gr.Textbox(visible=False, show_label=False)
@@ -95,7 +97,7 @@ with gr.Blocks() as visualizer:
                     interactive=False,
                     preview=True,
                     label="Cropped Polygons",
-                    height=200,
+                    height=400,
                 )
                 df_for_cropped_images = gr.Dataframe(
                     label="Cropped Transcriptions",

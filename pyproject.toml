@@ -23,6 +23,7 @@ dependencies = [
     "pandas>=2.2.3",
     "tqdm>=4.67.1",
     "pillow>=11.1.0",
+    "gradio-modal>=0.0.4",
 ]
 
 [project.urls]

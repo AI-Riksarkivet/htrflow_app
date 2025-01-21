@@ -14,6 +14,7 @@ from app.tabs.templating import (
     TEMPLATE_YAML_FOLDER,
     template_output_yaml_code,
 )
+from gradio_modal import Modal
 
 from htrflow.models.huggingface.trocr import TrOCR
 
@@ -23,6 +24,7 @@ gr.set_static_paths(paths=[TEMPLATE_YAML_FOLDER])
 # TODO: fix api/ endpoints..
 # TODO add colab
 # TDOO addd eexmaple for api
+
 
 def load_markdown(language, section, content_dir="app/content"):
     """Load markdown content from files."""
@@ -37,10 +39,29 @@ def load_markdown(language, section, content_dir="app/content"):
     return f"## Content missing for {file_path} in {language}"
 
 
-with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
+matomo = """
+<!-- Matomo Tag Manager -->
+<script>
+var _mtm = window._mtm = window._mtm || [];
+_mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
+(function() {
+var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+g.async=true; g.src='https://matomo.riksarkivet.se/js/container_pWJwXoXG.js';; s.parentNode.insertBefore(g,s);
+})();
+</script>
+<!-- End Matomo Tag Manager -->
+"""
+
+with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
     with gr.Row():
         with gr.Column(scale=1):
-            pass
+            help_button = gr.Button("Help", scale=0)
+            with Modal(visible=False) as help_modal:
+                with gr.Tab("How to use App"):
+                    gr.Markdown("# How it works")
+                with gr.Tab("Contact"):
+                    pass
+
         with gr.Column(scale=2):
             gr.Markdown(load_markdown(None, "main_title"))
         with gr.Column(scale=1):
@@ -57,6 +78,10 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
             visualizer.render()
 
     @demo.load()
+    def inital_trocr_load():
+        TrOCR("Riksarkivet/trocr-base-handwritten-hist-swe-2")
+
+    @demo.load()
     def inital_yaml_code():
         tmp_dir = "tmp/"
         if os.path.exists(tmp_dir) and os.path.isdir(tmp_dir):
@@ -68,10 +93,6 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
     )
     def inital_yaml_code(template_output_yaml_code):
         return template_output_yaml_code
-
-    @demo.load()
-    def inital_trocr_load():
-        return TrOCR("Riksarkivet/trocr-base-handwritten-hist-swe-2")
 
     def sync_gradio_objects(input_value, state_value):
         """Synchronize the YAML state if there is a mismatch."""
@@ -100,6 +121,7 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css) as demo:
         fn=sync_gradio_object_state,
     )
 
+    help_button.click(lambda: Modal(visible=True), None, help_modal)
 
 demo.queue()
 
@@ -108,6 +130,5 @@ if __name__ == "__main__":
         server_name="0.0.0.0",
         server_port=7860,
         enable_monitoring=True,
-        ssr_mode=True
         # show_error=True,
     )

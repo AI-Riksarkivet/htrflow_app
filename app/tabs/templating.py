@@ -70,7 +70,7 @@ with gr.Blocks() as templating_block:
             with gr.Row():
                 dropdown_selection_template = gr.Dropdown(
                     label="Choose template",
-                    info="template info",
+                    info="Choice a suitable template for your material",
                     value="Simple",
                     choices=["Simple", "Nested", "Custom"],
                     multiselect=False,
