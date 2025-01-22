@@ -17,7 +17,12 @@ class PipelineWithProgress(Pipeline):
     @classmethod
     def from_config(cls, config: dict[str, str]):
         """Init pipeline from config, ensuring the correct subclass is instantiated."""
-        return cls([init_step(step["step"], step.get("settings", {})) for step in config["steps"]])
+        return cls(
+            [
+                init_step(step["step"], step.get("settings", {}))
+                for step in config["steps"]
+            ]
+        )
 
     def run(self, collection, start=0, progress=None):
         """
@@ -103,7 +108,9 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
     pipe = PipelineWithProgress.from_config(temp_config)
     collections = auto_import(images)
 
-    gr.Info(f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}.")
+    gr.Info(
+        f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}."
+    )
     progress(0.1, desc="HTRflow: Processing")
 
     for collection in collections:
@@ -138,6 +145,8 @@ def tracking_exported_files(tmp_output_paths):
     exported_files = set()
 
     print(tmp_output_paths)
+
+    # TODO: fix so that we get the file extension for page and alto...
 
     for tmp_folder in tmp_output_paths:
         for ext in accepted_extensions:
@@ -175,7 +184,9 @@ with gr.Blocks() as submit:
         with gr.Row():
             run_button = gr.Button("Submit", variant="primary", scale=0, min_width=200)
             progess_bar = gr.Textbox(visible=False, show_label=False)
-            collection_output_files = gr.Files(label="Output Files", scale=0, min_width=400, visible=False)
+            collection_output_files = gr.Files(
+                label="Output Files", scale=0, min_width=400, visible=False
+            )
 
     @batch_image_gallery.upload(
         inputs=batch_image_gallery,
@@ -198,3 +209,6 @@ with gr.Blocks() as submit:
         lambda: (gr.update(visible=False), gr.update(visible=True)),
         outputs=[progess_bar, collection_output_files],
     )
+
+# TODO: valudate yaml before submitting...?
+# TODO: Add toast gr.Warning: Lose previues run...

@@ -57,8 +57,9 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
         with gr.Column(scale=1):
             help_button = gr.Button("Help", scale=0)
             with Modal(visible=False) as help_modal:
+                # TODO: tutorial material?
                 with gr.Tab("How to use App"):
-                    gr.Markdown("# How it works")
+                    gr.Markdown(load_markdown(None, "how_it_works"))
                 with gr.Tab("Contact"):
                     pass
 

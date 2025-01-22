@@ -6,7 +6,11 @@ import re
 def get_sorted_files(folder, extensions):
     """Retrieve sorted files by numeric value in their names."""
     return sorted(
-        [os.path.join(folder, file) for file in os.listdir(folder) if file.lower().endswith(extensions)],
+        [
+            os.path.join(folder, file)
+            for file in os.listdir(folder)
+            if file.lower().endswith(extensions)
+        ],
         key=lambda x: (
             int(re.search(r"\d+", os.path.basename(x)).group())
             if re.search(r"\d+", os.path.basename(x))
@@ -40,19 +44,17 @@ def get_yaml_content(yaml_path):
     return "YAML content not available"
 
 
-# Folder Paths
 TEMPLATE_IMAGE_FOLDER = "app/assets/images"
 TEMPLATE_YAML_FOLDER = "app/assets/templates"
 
-# File Retrieval
-image_files = get_sorted_files(TEMPLATE_IMAGE_FOLDER, (".png", ".jpg", ".jpeg", ".webp"))
+image_files = get_sorted_files(
+    TEMPLATE_IMAGE_FOLDER, (".png", ".jpg", ".jpeg", ".webp")
+)
 yaml_files = get_sorted_files(TEMPLATE_YAML_FOLDER, (".yaml",))
 
-# Categorize YAML Files
 yaml_files_numbered = filter_files_by_prefix(yaml_files, r"^\d")
 yaml_files_c_letter = filter_files_by_prefix(yaml_files, r"^[cC]")
 
-# Create Mappings
 name_yaml_files_c_letter_cleaned = clean_file_names(yaml_files_c_letter, "c_")
 name_to_yaml_map = dict(zip(name_yaml_files_c_letter_cleaned, yaml_files_c_letter))
 
@@ -90,7 +92,9 @@ with gr.Blocks() as templating_block:
             with gr.Group():
                 with gr.Row():
                     with gr.Column(scale=1):
-                        template_image = gr.Image(label="Example Templates", value=image_files[0], height=400)
+                        template_image = gr.Image(
+                            label="Example Templates", value=image_files[0], height=400
+                        )
                     with gr.Column(scale=1):
                         template_output_yaml_code = gr.Code(
                             language="yaml",
@@ -122,7 +126,9 @@ with gr.Blocks() as templating_block:
             yaml_content = get_yaml_content(yaml_files_c_letter[0])
             return image_files[2], yaml_content, gr.update(visible=True)
         else:
-            return gr.Error(f"{dropdown_selection_template} - is not a valid Template selection")
+            return gr.Error(
+                f"{dropdown_selection_template} - is not a valid Template selection"
+            )
 
     @custom_dropdown_selection_template.select(
         inputs=custom_dropdown_selection_template,
@@ -135,7 +141,9 @@ with gr.Blocks() as templating_block:
             yaml_content = get_yaml_content(yaml_path)
             return yaml_content
         else:
-            return gr.Error(f"{custom_template_selection} - is not a valid Custom Template selection")
+            return gr.Error(
+                f"{custom_template_selection} - is not a valid Custom Template selection"
+            )
 
     @dropdown_selection_template.select(
         inputs=dropdown_selection_template,
@@ -156,3 +164,27 @@ with gr.Blocks() as templating_block:
             custom_dropdown_selection_template,
         ],
     )
+
+# TODO: Vi vill ändra namn på på fileerna så man ser vilken extension (format) fileerna är i
+# rimes_test - kopia 2_page
+# .xml
+# 3.5 KB ⇣
+# ×
+# rimes_test - kopia
+# .xml
+# 3.5 KB ⇣
+# ×
+# rimes_test
+# .xml
+# 3.4 KB ⇣
+# ×
+# rimes_test - kopia 2
+# .xml
+# 1.7 KB ⇣
+# ×
+# rimes_test - kopia
+# .xml
+# 1.7 KB ⇣
+# ×
+# rimes_test
+# .xml

@@ -80,7 +80,7 @@ with gr.Blocks() as visualizer:
                     file_types=["image"],
                     label="Visualized Images from HTRflow",
                     interactive=False,
-                    height=400,
+                    height=600,
                     object_fit="cover",
                     columns=5,
                     preview=True,
@@ -97,7 +97,7 @@ with gr.Blocks() as visualizer:
                     interactive=False,
                     preview=True,
                     label="Cropped Polygons",
-                    height=400,
+                    height=200,
                 )
                 df_for_cropped_images = gr.Dataframe(
                     label="Cropped Transcriptions",
@@ -179,3 +179,15 @@ with gr.Blocks() as visualizer:
         styler = df.style.apply(highlight_row, axis=1)
 
         return styler
+
+
+# TODO: if state is empty from submit? dont show visualize button...
+
+
+# TODO: Add reading order in dataframe
+# TODO: Add reading order in visualization to the left
+# TODO: be able to click on mask on the left?
+
+
+# TODO: Show how to clone and setup pylaia? Which would probably be a seperate docker container!
+# TODO: fix api! and client... Notebook for api?
