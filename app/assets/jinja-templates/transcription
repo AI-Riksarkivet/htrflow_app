@@ -1,0 +1,10 @@
+{%- for line in lines -%}
+<span
+    class="textline line{{loop.index}}"
+    onmouseover="document.querySelectorAll('.line{{loop.index}}').forEach(element => {element.classList.add('highlighted')});"
+    onmouseout="document.querySelectorAll('*').forEach(element => {element.classList.remove('highlighted')});"
+>
+    {{line.text}}
+</span>
+<br>
+{% endfor %}

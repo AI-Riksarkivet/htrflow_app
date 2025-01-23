@@ -13,5 +13,32 @@ theme = gr.themes.Default(
 )
 
 css = """
+.svg-image {
+  height: auto;
+  width: 100%;
+  margin: auto;
+}
+
+.transcription {
+  font-size: large;
+}
+
+/* style of textline svg elements */
+.textline {
+  fill: transparent;
+  stroke: blue;
+  stroke-width: 10;
+  stroke-opacity: 0.2;
+}
+
+.highlighted polygon {
+  fill:blue;
+  fill-opacity: 0.2;
+}
+
+span.highlighted {
+  background-color: rgba(0%, 0%, 100%, 0.2);
+  font-size: large;
+}
 
 """

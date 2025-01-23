@@ -1,0 +1,7 @@
+<svg viewBox="0 0 {{ page.width }} {{ page.height }}" xmlns="http://www.w3.org/2000/svg">
+    <image height="{{ page.height }}" width="{{ page.width }}" href="/gradio_api/file={{ page.path }}" />
+    {%- for line in lines -%}
+        <a class="textline line{{loop.index}}" onmouseover="document.querySelectorAll('.line{{loop.index}}').forEach(element => {element.classList.add('highlighted')});" onmouseout="document.querySelectorAll('*').forEach(element => {element.classList.remove('highlighted')});">
+        <polygon id="{{ loop.index }}" points="{% for point in line.polygon %}{{ point|join(',') }}{% if not loop.last %} {% endif %}{% endfor %}"/></a>
+    {% endfor %}
+</svg>

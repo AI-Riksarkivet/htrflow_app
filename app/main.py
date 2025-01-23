@@ -7,7 +7,8 @@ from app.tabs.submit import (
     custom_template_yaml,
     collection_submit_state,
 )
-from app.tabs.visualizer import visualizer, collection_viz_state, viz_image_gallery
+from app.tabs.visualizer import visualizer, collection_viz_state
+
 from app.tabs.templating import (
     templating_block,
     TEMPLATE_IMAGE_FOLDER,
@@ -75,7 +76,7 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
         with gr.Tab(label="Submit Job") as tab_submit:
             submit.render()
 
-        with gr.Tab(label="Visualize Result") as tab_visualizer:
+        with gr.Tab(label="Result") as tab_visualizer:
             visualizer.render()
 
     @demo.load()
@@ -129,7 +130,7 @@ demo.queue()
 if __name__ == "__main__":
     demo.launch(
         server_name="0.0.0.0",
-        server_port=7860,
+        server_port=7862,
         enable_monitoring=True,
         # show_error=True,
     )
