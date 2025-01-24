@@ -168,10 +168,7 @@ with gr.Blocks() as submit:
                         file_types=["image"],
                         label="Upload the images you want to transcribe",
                         interactive=True,
-                        height=400,
                         object_fit="cover",
-                        columns=5,
-                        # preview=True,
                     )
 
                 with gr.Column(scale=1):
@@ -193,7 +190,7 @@ with gr.Blocks() as submit:
         outputs=[batch_image_gallery],
     )
     def validate_images(images):
-        if len(images) > 5:
+        if len(images) > MAX_IMAGES:
             gr.Warning(f"Maximum images you can upload is set to: {MAX_IMAGES}")
             return gr.update(value=None)
         return images
