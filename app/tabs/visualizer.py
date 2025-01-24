@@ -7,12 +7,12 @@ _IMAGE_TEMPLATE = _ENV.get_template("image")
 _TRANSCRIPTION_TEMPLATE = _ENV.get_template("transcription")
 
 
-def render_image(collection, current_page_idx):
-    return _IMAGE_TEMPLATE.render(page=collection[current_page_idx], lines=collection[current_page_idx].traverse(lambda node: node.is_line()))
+def render_image(collection, current_page_index):
+    return _IMAGE_TEMPLATE.render(page=collection[current_page_index], lines=collection[current_page_index].traverse(lambda node: node.is_line()))
 
 
-def render_transcription(collection, current_page_idx):
-    return _TRANSCRIPTION_TEMPLATE.render(lines=collection[current_page_idx].traverse(lambda node: node.is_line()))
+def render_transcription(collection, current_page_index):
+    return _TRANSCRIPTION_TEMPLATE.render(lines=collection[current_page_index].traverse(lambda node: node.is_line()))
 
 
 def toggle_navigation_button(collection):
@@ -20,13 +20,13 @@ def toggle_navigation_button(collection):
     return gr.update(visible=visible)
 
 
-def activate_left_button(current_page_idx):
-    interactive = current_page_idx > 0
+def activate_left_button(current_page_index):
+    interactive = current_page_index > 0
     return gr.update(interactive=interactive)
 
 
-def activate_right_button(collection, current_page_idx):
-    interactive = current_page_idx + 1 < len(collection.pages)
+def activate_right_button(collection, current_page_index):
+    interactive = current_page_index + 1 < len(collection.pages)
     return gr.update(interactive=interactive)
 
 
@@ -35,9 +35,13 @@ def right_button_click(collection, current_page_index):
     return min(max_index, current_page_index + 1)
 
 
-def update_image_caption(collection, current_page_idx):
+def left_button_click(current_page_index):
+    return max(0, current_page_index - 1)
+
+
+def update_image_caption(collection, current_page_index):
     n_pages = len(collection.pages)
-    return f"Image {current_page_idx + 1} of {n_pages}: `{collection[current_page_idx].label}`"
+    return f"Image {current_page_index + 1} of {n_pages}: `{collection[current_page_index].label}`"
 
 
 with gr.Blocks() as visualizer:
@@ -62,33 +66,31 @@ with gr.Blocks() as visualizer:
                 left = gr.Button("← Previous", visible=False, interactive=False)
                 right = gr.Button("Next →", visible=False)
 
-    collection_viz_state = gr.State()
+    collection = gr.State()
+    current_page_index = gr.State(0)
 
-    current_page_idx = gr.State(0)
+    # Wiring of navigation buttons
+    left.click(left_button_click, current_page_index, current_page_index)
+    right.click(right_button_click, [collection, current_page_index], current_page_index)
 
-    # Update `current_page_idx` on button click
-    left.click(lambda current_page_idx: max(0, current_page_idx-1), current_page_idx, current_page_idx)
-    right.click(right_button_click, [collection_viz_state, current_page_idx], current_page_idx)
+    # Updates on collection change:
+    # - update the view
+    # - reset the page index (always start on page 0)
+    # - toggle visibility of navigation buttons (don't show them for single pages)
+    # - update the image caption
+    collection.change(render_image, inputs=[collection, current_page_index], outputs=image)
+    collection.change(render_transcription, inputs=[collection, current_page_index], outputs=transcription)
+    collection.change(lambda _: 0, current_page_index, current_page_index)
+    collection.change(toggle_navigation_button, collection, left)
+    collection.change(toggle_navigation_button, collection, right)
+    collection.change(update_image_caption, inputs=[collection, current_page_index], outputs=image_caption)
 
-    # Update the view when...
-    # ...the collection changes, or...
-    collection_viz_state.change(render_image, inputs=[collection_viz_state, current_page_idx], outputs=image)
-    collection_viz_state.change(render_transcription, inputs=[collection_viz_state, current_page_idx], outputs=transcription)
-    # ...`current_page_idx` changes
-    current_page_idx.change(render_image, inputs=[collection_viz_state, current_page_idx], outputs=image)
-    current_page_idx.change(render_transcription, inputs=[collection_viz_state, current_page_idx], outputs=transcription)
-
-    # Toggle interactivity of navigation buttons when `current_page_idx` changes
-    current_page_idx.change(activate_left_button, current_page_idx, left)
-    current_page_idx.change(activate_right_button, [collection_viz_state, current_page_idx], right)
-
-    # Reset `current_page_idx` when the collection is updated
-    collection_viz_state.change(lambda _: 0, current_page_idx, current_page_idx)
-
-    # Toggle visibility of navigation buttons (they're hidden if there's only one page) when the collection is updated
-    collection_viz_state.change(toggle_navigation_button, collection_viz_state, left)
-    collection_viz_state.change(toggle_navigation_button, collection_viz_state, right)
-
-    # Update the image caption when the collection or current index changes
-    current_page_idx.change(update_image_caption, inputs=[collection_viz_state, current_page_idx], outputs=image_caption)
-    collection_viz_state.change(update_image_caption, inputs=[collection_viz_state, current_page_idx], outputs=image_caption)
+    # Updates on page change:
+    # - update the view
+    # - activate/deactivate buttons
+    # - update the image caption
+    current_page_index.change(render_image, inputs=[collection, current_page_index], outputs=image)
+    current_page_index.change(render_transcription, inputs=[collection, current_page_index], outputs=transcription)
+    current_page_index.change(activate_left_button, current_page_index, left)
+    current_page_index.change(activate_right_button, [collection, current_page_index], right)
+    current_page_index.change(update_image_caption, inputs=[collection, current_page_index], outputs=image_caption)

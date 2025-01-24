@@ -7,7 +7,7 @@ from app.tabs.submit import (
     custom_template_yaml,
     collection_submit_state,
 )
-from app.tabs.visualizer import visualizer, collection_viz_state
+from app.tabs.visualizer import visualizer, collection as collection_viz_state
 
 from app.tabs.templating import (
     templating_block,
