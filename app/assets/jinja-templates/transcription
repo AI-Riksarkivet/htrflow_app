@@ -1,10 +1,17 @@
-{%- for line in lines -%}
+{% set count = namespace(value=1) -%}
+{% for region in regions -%}
+{% for line in region -%}
 <span
-    class="textline line{{loop.index}}"
-    onmouseover="document.querySelectorAll('.line{{loop.index}}').forEach(element => {element.classList.add('highlighted')});"
+    class="textline line{{count.value}}"
+    onmouseover="document.querySelectorAll('.line{{count.value}}').forEach(element => {element.classList.add('highlighted')});"
     onmouseout="document.querySelectorAll('*').forEach(element => {element.classList.remove('highlighted')});"
 >
     {{line.text}}
 </span>
 <br>
+{% set count.value = count.value + 1 %}
+{% endfor %}
+{% if not loop.last %}
+<hr class="region-divider">
+{%endif%}
 {% endfor %}

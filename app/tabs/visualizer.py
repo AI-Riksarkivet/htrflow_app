@@ -12,7 +12,8 @@ def render_image(collection, current_page_index):
 
 
 def render_transcription(collection, current_page_index):
-    return _TRANSCRIPTION_TEMPLATE.render(lines=collection[current_page_index].traverse(lambda node: node.is_line()))
+    regions = collection[current_page_index].traverse(lambda node: node.children and all(child.is_line() for child in node))
+    return _TRANSCRIPTION_TEMPLATE.render(regions=regions)
 
 
 def toggle_navigation_button(collection):

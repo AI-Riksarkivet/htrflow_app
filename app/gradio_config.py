@@ -41,4 +41,9 @@ span.highlighted {
   font-size: large;
 }
 
+hr.region-divider {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
 """
