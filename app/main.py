@@ -41,16 +41,22 @@ def load_markdown(language, section, content_dir="app/content"):
 
 
 matomo = """
-<!-- Matomo Tag Manager -->
+<!-- Matomo -->
 <script>
-var _mtm = window._mtm = window._mtm || [];
-_mtm.push({'mtm.startTime': (new Date().getTime()), 'event': 'mtm.Start'});
-(function() {
-var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-g.async=true; g.src='https://matomo.riksarkivet.se/js/container_pWJwXoXG.js';; s.parentNode.insertBefore(g,s);
-})();
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="https://matomo.riksarkivet.se/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '25']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
 </script>
-<!-- End Matomo Tag Manager -->
+<noscript><p><img referrerpolicy="no-referrer-when-downgrade" src="https://matomo.riksarkivet.se/matomo.php?idsite=25&amp;rec=1" style="border:0;" alt="" /></p></noscript>
+<!-- End Matomo Code -->
 """
 
 with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
