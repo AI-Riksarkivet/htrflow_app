@@ -46,4 +46,34 @@ hr.region-divider {
   margin-bottom: 0.5em;
 }
 
+.pipeline-panel {
+  background: none;
+  border: solid 1px;
+  border-color: var(--block-border-color);
+}
+
+.pipeline-help {
+  padding: 5px 0 0 0;
+  font-weight: var(--block-info-text-weight);
+  font-size: var(--block-info-text-size);
+  color: var(--block-info-text-color);
+}
+
+.pipeline-help a {
+  color: var(--secondary-400);
+}
+
+.pipeline-help a:hover {
+  color: var(--secondary-500);
+}
+
+.pipeline-header {
+  padding: 2px 0px 0px 2px;
+  color: var(--body-text-color);
+}
+
+.pipeline-description {
+  margin: auto;
+  color: var(--body-text-color);
+}
 """
