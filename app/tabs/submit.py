@@ -11,6 +11,19 @@ from htrflow.pipeline.steps import auto_import
 import yaml
 
 MAX_IMAGES = int(os.environ.get("MAX_IMAGES", 5))  # env: Maximum allowed images
+PIPELINE_DOCUMENTATION = (
+    "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
+)
+PIPELINES = {
+    "Running text (Swedish)": {
+        "file": "app/assets/templates/2_nested.yaml",
+        "description": "This pipeline works well on documents with multiple text regions.",
+    },
+    "Letters (Swedish)": {
+        "file": "app/assets/templates/1_simple.yaml",
+        "description": "This pipeline works well on letters and other documents with only one text region.",
+    },
+}
 
 
 class PipelineWithProgress(Pipeline):
@@ -157,33 +170,51 @@ def tracking_exported_files(tmp_output_paths):
     return sorted(exported_files)
 
 
+def get_description(pipeline: str):
+    return PIPELINES[pipeline]["description"]
+
+
+def get_yaml(pipeline: str):
+    with open(PIPELINES[pipeline]["file"], "r") as f:
+        pipeline = f.read()
+    return pipeline
+
+
 with gr.Blocks() as submit:
     collection_submit_state = gr.State()
+    batch_image_gallery = gr.Gallery(
+        file_types=["image"],
+        label="Upload the images you want to transcribe",
+        interactive=True,
+        object_fit="cover",
+    )
 
-    with gr.Column(variant="panel"):
-        with gr.Group():
-            with gr.Row():
-                with gr.Column(scale=1):
-                    batch_image_gallery = gr.Gallery(
-                        file_types=["image"],
-                        label="Upload the images you want to transcribe",
-                        interactive=True,
-                        object_fit="cover",
-                    )
+    with gr.Column(variant="panel", elem_classes="pipeline-panel"):
+        gr.HTML("Pipeline", elem_classes="pipeline-header", padding=False)
 
-                with gr.Column(scale=1):
-                    custom_template_yaml = gr.Code(
-                        value="",
-                        language="yaml",
-                        label="Pipeline",
-                        interactive=True,
-                    )
         with gr.Row():
-            run_button = gr.Button("Submit", variant="primary", scale=0, min_width=200)
-            progess_bar = gr.Textbox(visible=False, show_label=False)
-            collection_output_files = gr.Files(
-                label="Output Files", scale=0, min_width=400, visible=False
+            pipeline_dropdown = gr.Dropdown(
+                PIPELINES, container=False, min_width=240, scale=0, elem_classes="pipeline-dropdown"
             )
+            pipeline_description = gr.HTML(
+                value=get_description, inputs=pipeline_dropdown, elem_classes="pipeline-description", padding=False
+            )
+
+        with gr.Group():
+            with gr.Accordion("Edit pipeline", open=False):
+                custom_template_yaml = gr.Code(
+                    value=get_yaml, inputs=pipeline_dropdown, language="yaml", container=False
+                )
+                gr.HTML(
+                    f'See the <a href="{PIPELINE_DOCUMENTATION}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
+                    padding=False,
+                    elem_classes="pipeline-help",
+                )
+
+    with gr.Row():
+        run_button = gr.Button("Submit", variant="primary", scale=0, min_width=200)
+        progess_bar = gr.Textbox(visible=False, show_label=False)
+        collection_output_files = gr.Files(label="Output Files", scale=0, min_width=400, visible=False)
 
     @batch_image_gallery.upload(
         inputs=batch_image_gallery,
