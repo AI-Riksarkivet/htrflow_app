@@ -52,6 +52,7 @@ RUN uv sync --frozen --no-cache \
 
 # Copy application code
 COPY --chown=appuser app app
+COPY --chown=appuser .gradio_cache .gradio_cache
 
 # Ensure non-root user has write access to cache and tmp directories
 RUN mkdir -p /home/appuser/.cache/transformers /home/appuser/tmp /home/appuser/.cache \
