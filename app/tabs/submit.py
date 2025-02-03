@@ -5,25 +5,50 @@ import gradio as gr
 from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 import os
+import logging
 from htrflow.volume.volume import Collection
 
 from htrflow.pipeline.steps import auto_import
 import yaml
 
-MAX_IMAGES = int(os.environ.get("MAX_IMAGES", 5))  # env: Maximum allowed images
-PIPELINE_DOCUMENTATION = (
-    "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
-)
+logger = logging.getLogger(__name__)
+
+# Max number of images a user can upload at once
+MAX_IMAGES = int(os.environ.get("MAX_IMAGES", 5))
+
+# Example pipelines
 PIPELINES = {
     "Running text (Swedish)": {
         "file": "app/assets/templates/2_nested.yaml",
         "description": "This pipeline works well on documents with multiple text regions.",
+        "examples": [
+            "R0003364_00005.jpg",
+            "30002027_00008.jpg",
+            "A0070302_00201.jpg",
+        ]
     },
-    "Letters (Swedish)": {
+    "Letters and snippets (Swedish)": {
         "file": "app/assets/templates/1_simple.yaml",
         "description": "This pipeline works well on letters and other documents with only one text region.",
+        "examples": [
+            "451511_1512_01.jpg",
+            "A0062408_00006.jpg",
+            "C0000546_00085_crop.png",
+            "A0073477_00025.jpg",
+        ]
     },
 }
+
+# Setup the cache directory to point to the directory where the example images
+# are located. The images must lay in the cache directory because otherwise they
+# have to be reuploaded when drag-and-dropped to the input image widget.
+GRADIO_CACHE = ".gradio_cache"
+EXAMPLES_DIRECTORY = os.path.join(GRADIO_CACHE, "examples")
+
+if os.environ.get("GRADIO_CACHE_DIR", GRADIO_CACHE) != GRADIO_CACHE:
+    logger.warning(
+        "Setting GRADIO_CACHE_DIR to '%s' (overriding a previous value)."
+    )
 
 
 class PipelineWithProgress(Pipeline):
@@ -170,24 +195,74 @@ def tracking_exported_files(tmp_output_paths):
     return sorted(exported_files)
 
 
-def get_description(pipeline: str):
+def get_pipeline_description(pipeline: str) -> str:
+    """
+    Get the description of the given pipeline
+    """
     return PIPELINES[pipeline]["description"]
 
 
-def get_yaml(pipeline: str):
+def get_yaml(pipeline: str) -> str:
+    """
+    Get the yaml file for the given pipeline
+
+    Args:
+        pipeline: Name of pipeline (must be a key in the PIPELINES directory)
+    """
     with open(PIPELINES[pipeline]["file"], "r") as f:
         pipeline = f.read()
     return pipeline
 
 
+def all_example_images() -> list[str]:
+    """
+    Get paths to all example images.
+    """
+    examples = []
+    for pipeline in PIPELINES.values():
+        for example in pipeline.get("examples", []):
+            examples.append(os.path.join(EXAMPLES_DIRECTORY, example))
+    return examples
+
+
+def get_selected_example_image(event: gr.SelectData) -> str:
+    """
+    Get path to the selected example image.
+    """
+    return [event.value["image"]["path"]]
+
+
+def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
+    """
+    Get the name of the pipeline that corresponds to the selected image.
+    """
+    for name, details in PIPELINES.items():
+        if event.value["image"]["orig_name"] in details.get("examples", []):
+            return name
+
+
 with gr.Blocks() as submit:
     collection_submit_state = gr.State()
-    batch_image_gallery = gr.Gallery(
-        file_types=["image"],
-        label="Upload the images you want to transcribe",
-        interactive=True,
-        object_fit="cover",
-    )
+
+    with gr.Group():
+        with gr.Row(equal_height=True):
+            batch_image_gallery = gr.Gallery(
+                file_types=["image"],
+                label="Image to transcribe",
+                interactive=True,
+                object_fit="scale-down",
+                scale=3,
+                preview=True
+            )
+
+            examples = gr.Gallery(
+                all_example_images(),
+                label="Examples",
+                interactive=False,
+                allow_preview=False,
+                object_fit="scale-down",
+                min_width=250,
+            )
 
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
         gr.HTML("Pipeline", elem_classes="pipeline-header", padding=False)
@@ -197,7 +272,7 @@ with gr.Blocks() as submit:
                 PIPELINES, container=False, min_width=240, scale=0, elem_classes="pipeline-dropdown"
             )
             pipeline_description = gr.HTML(
-                value=get_description, inputs=pipeline_dropdown, elem_classes="pipeline-description", padding=False
+                value=get_pipeline_description, inputs=pipeline_dropdown, elem_classes="pipeline-description", padding=False
             )
 
         with gr.Group():
@@ -205,8 +280,9 @@ with gr.Blocks() as submit:
                 custom_template_yaml = gr.Code(
                     value=get_yaml, inputs=pipeline_dropdown, language="yaml", container=False
                 )
+                url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
                 gr.HTML(
-                    f'See the <a href="{PIPELINE_DOCUMENTATION}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
+                    f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
                     padding=False,
                     elem_classes="pipeline-help",
                 )
@@ -237,6 +313,9 @@ with gr.Blocks() as submit:
         lambda: (gr.update(visible=False), gr.update(visible=True)),
         outputs=[progess_bar, collection_output_files],
     )
+
+    examples.select(get_selected_example_image, None, batch_image_gallery)
+    examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
 
 # TODO: valudate yaml before submitting...?
 # TODO: Add toast gr.Warning: Lose previues run...

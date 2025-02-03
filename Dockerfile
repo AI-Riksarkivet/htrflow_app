@@ -8,6 +8,7 @@ ENV PYTHONUNBUFFERED=1 \
     GRADIO_NUM_PORTS=1 \
     GRADIO_SERVER_NAME=0.0.0.0 \
     GRADIO_THEME=huggingface \
+    GRADIO_CACHE_DIR=/home/appuser/.gradio_cache \
     SYSTEM=spaces \
     AM_I_IN_A_DOCKER_CONTAINER=Yes \
     PYTHONPATH=/home/appuser/app \
