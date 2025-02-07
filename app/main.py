@@ -1,19 +1,17 @@
-import shutil
-import gradio as gr
 import os
-from app.gradio_config import css, theme
-from app.tabs.submit import submit, collection_submit_state
-from app.tabs.visualizer import visualizer, collection as collection_viz_state
-from gradio_modal import Modal
 
+import gradio as gr
 from htrflow.models.huggingface.trocr import TrOCR
+
+from app.gradio_config import css, theme
+from app.tabs.export import collection as collection_export_state
+from app.tabs.export import export
+from app.tabs.submit import collection_submit_state, submit
+from app.tabs.visualizer import collection as collection_viz_state
+from app.tabs.visualizer import visualizer
 
 TEMPLATE_YAML_FOLDER = "app/assets/templates"
 gr.set_static_paths(paths=[TEMPLATE_YAML_FOLDER])
-
-# TODO: fix api/ endpoints..
-# TODO add colab
-# TDOO addd eexmaple for api
 
 
 def load_markdown(language, section, content_dir="app/content"):
@@ -50,28 +48,24 @@ matomo = """
 <!-- End Matomo Code -->
 """
 
+
 with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
     with gr.Row():
         with gr.Column(scale=1):
-            help_button = gr.Button("Help", scale=0)
-            with Modal(visible=False) as help_modal:
-                # TODO: tutorial material?
-                with gr.Tab("How to use App"):
-                    gr.Markdown(load_markdown(None, "how_it_works"))
-                with gr.Tab("Contact"):
-                    pass
-
+            pass
         with gr.Column(scale=2):
             gr.Markdown(load_markdown(None, "main_title"))
         with gr.Column(scale=1):
             gr.Markdown(load_markdown(None, "main_sub_title"))
 
     with gr.Tabs(elem_classes="top-navbar") as navbar:
-        with gr.Tab(label="Submit Job") as tab_submit:
+        with gr.Tab(label="Upload") as tab_submit:
             submit.render()
-
         with gr.Tab(label="Result") as tab_visualizer:
             visualizer.render()
+
+        with gr.Tab(label="Export") as tab_export:
+            export.render()
 
     @demo.load()
     def inital_trocr_load():
@@ -88,14 +82,13 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
         fn=sync_gradio_object_state,
     )
 
-    help_button.click(lambda: Modal(visible=True), None, help_modal)
+    tab_export.select(
+        inputs=[collection_submit_state, collection_export_state],
+        outputs=[collection_export_state],
+        fn=sync_gradio_object_state,
+    )
 
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(
-        server_name="0.0.0.0",
-        server_port=7860,
-        enable_monitoring=True,
-        # show_error=True,
-    )
+    demo.launch(server_name="0.0.0.0", server_port=7860, enable_monitoring=True, show_api=False)

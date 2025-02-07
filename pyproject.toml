@@ -18,7 +18,7 @@ requires-python = ">=3.10,<3.13"
 
 dependencies = [
     "htrflow==0.2.0",
-    "gradio>=5.11.0",
+    "gradio>=5.15.0",
     "datasets>=3.2.0",
     "pandas>=2.2.3",
     "tqdm>=4.67.1",

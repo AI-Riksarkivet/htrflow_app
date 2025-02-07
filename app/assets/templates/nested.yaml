@@ -3,19 +3,15 @@ steps:
   settings:
     model: yolo
     model_settings:
+       model: Riksarkivet/yolov9-regions-1
+- step: Segmentation
+  settings:
+    model: yolo
+    model_settings:
       model: Riksarkivet/yolov9-lines-within-regions-1
-    generation_settings:
-       batch_size: 2
 - step: TextRecognition
   settings:
     model: TrOCR
     model_settings:
       model: Riksarkivet/trocr-base-handwritten-hist-swe-2
-    generation_settings:
-       batch_size: 4
-       num_beams: 1
-- step: OrderLines
-- step: Export
-  settings:
-    format: txt
-    dest: outputs
+- step: ReadingOrderMarginalia
