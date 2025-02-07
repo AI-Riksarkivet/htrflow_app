@@ -1,18 +1,22 @@
 import gradio as gr
 from jinja2 import Environment, FileSystemLoader
 
-
 _ENV = Environment(loader=FileSystemLoader("app/assets/jinja-templates"))
 _IMAGE_TEMPLATE = _ENV.get_template("image")
 _TRANSCRIPTION_TEMPLATE = _ENV.get_template("transcription")
 
 
 def render_image(collection, current_page_index):
-    return _IMAGE_TEMPLATE.render(page=collection[current_page_index], lines=collection[current_page_index].traverse(lambda node: node.is_line()))
+    return _IMAGE_TEMPLATE.render(
+        page=collection[current_page_index],
+        lines=collection[current_page_index].traverse(lambda node: node.is_line()),
+    )
 
 
 def render_transcription(collection, current_page_index):
-    regions = collection[current_page_index].traverse(lambda node: node.children and all(child.is_line() for child in node))
+    regions = collection[current_page_index].traverse(
+        lambda node: node.children and all(child.is_line() for child in node)
+    )
     return _TRANSCRIPTION_TEMPLATE.render(regions=regions)
 
 
@@ -46,7 +50,8 @@ def update_image_caption(collection, current_page_index):
 
 
 with gr.Blocks() as visualizer:
-
+    gr.Markdown("# Results")
+    gr.Markdown("Below is the results from the job that were submitted")
     with gr.Row():
         # Columns are needed here to get the scale right. The documentation
         # claims all components have the `scale` argument but it doesn't
@@ -62,10 +67,10 @@ with gr.Blocks() as visualizer:
             gr.Markdown("## Annotated image")
             image = gr.HTML(padding=False, elem_classes="svg-image", container=True)
 
-            image_caption = gr.Markdown()
-            with gr.Row():
-                left = gr.Button("← Previous", visible=False, interactive=False)
-                right = gr.Button("Next →", visible=False)
+            image_caption = gr.Markdown(elem_classes="button-group-viz")
+            with gr.Row(elem_classes="button-group-viz"):
+                left = gr.Button("← Previous", visible=False, interactive=False, scale=0)
+                right = gr.Button("Next →", visible=False, scale=0)
 
     collection = gr.State()
     current_page_index = gr.State(0)
@@ -80,18 +85,34 @@ with gr.Blocks() as visualizer:
     # - toggle visibility of navigation buttons (don't show them for single pages)
     # - update the image caption
     collection.change(render_image, inputs=[collection, current_page_index], outputs=image)
-    collection.change(render_transcription, inputs=[collection, current_page_index], outputs=transcription)
+    collection.change(
+        render_transcription,
+        inputs=[collection, current_page_index],
+        outputs=transcription,
+    )
     collection.change(lambda _: 0, current_page_index, current_page_index)
     collection.change(toggle_navigation_button, collection, left)
     collection.change(toggle_navigation_button, collection, right)
-    collection.change(update_image_caption, inputs=[collection, current_page_index], outputs=image_caption)
+    collection.change(
+        update_image_caption,
+        inputs=[collection, current_page_index],
+        outputs=image_caption,
+    )
 
     # Updates on page change:
     # - update the view
     # - activate/deactivate buttons
     # - update the image caption
     current_page_index.change(render_image, inputs=[collection, current_page_index], outputs=image)
-    current_page_index.change(render_transcription, inputs=[collection, current_page_index], outputs=transcription)
+    current_page_index.change(
+        render_transcription,
+        inputs=[collection, current_page_index],
+        outputs=transcription,
+    )
     current_page_index.change(activate_left_button, current_page_index, left)
     current_page_index.change(activate_right_button, [collection, current_page_index], right)
-    current_page_index.change(update_image_caption, inputs=[collection, current_page_index], outputs=image_caption)
+    current_page_index.change(
+        update_image_caption,
+        inputs=[collection, current_page_index],
+        outputs=image_caption,
+    )

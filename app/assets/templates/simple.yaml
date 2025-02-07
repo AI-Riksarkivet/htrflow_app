@@ -10,7 +10,3 @@ steps:
     model_settings:
       model: Riksarkivet/trocr-base-handwritten-hist-swe-2
 - step: OrderLines
-- step: Export
-  settings:
-    format: txt
-    dest: outputs

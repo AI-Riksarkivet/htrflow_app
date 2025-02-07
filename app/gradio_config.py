@@ -76,4 +76,12 @@ hr.region-divider {
   margin: auto;
   color: var(--body-text-color);
 }
+
+.button-group-viz {
+ margin: auto;
+ display: flex;
+ justify-content: center;
+ gap: 1rem;
+ text-align: center;
+}
 """
