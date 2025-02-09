@@ -114,27 +114,51 @@ The final pipeline step determines the reading order of the text. In this exampl
 
 ### Installation
 
-1. **Clone the Repository:**
+#### 1. Clone the Repository
 
-   ```bash
-   git clone https://github.com/your_username/htrflow_app.git
-   cd htrflow_app
-   ```
+```bash
+git clone https://github.com/your_username/htrflow_app.git
+cd htrflow_app
+```
 
-2. **Set Up a Virtual Environment:**
+#### 2. Install **uv** Globally
 
-   ```bash
-   python3 -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
+Install **uv** without activating a virtual environment:
 
-3. **Install Dependencies:**
+```bash
+pip install uv
+```
 
-   Since we are no longer using a Makefile, install the required packages with:
+#### 3. Create a Virtual Environment Using **uv**
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+Create a virtual environment with Python 3.10:
+
+```bash
+uv venv python 3.10
+```
+
+#### 4. Activate the Virtual Environment
+
+Activate your newly created virtual environment:
+
+```bash
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+
+#### 5. Install Project Dependencies
+
+For a one-time dependency sync, run:
+
+```bash
+uv sync
+```
+
+Or, if you are developing and prefer an editable installation, run:
+
+```bash
+uv pip install -e .
+```
+
 
 ### Running the Application Locally
 
