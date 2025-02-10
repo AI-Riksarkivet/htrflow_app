@@ -27,6 +27,10 @@ def load_markdown(language, section, content_dir="app/content"):
     return f"## Content missing for {file_path} in {language}"
 
 
+def activate_tab(collection):
+    return gr.update(interactive = collection is not None)
+
+
 matomo = """
 <!-- Matomo -->
 <script>
@@ -61,10 +65,10 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
     with gr.Tabs(elem_classes="top-navbar") as navbar:
         with gr.Tab(label="Upload") as tab_submit:
             submit.render()
-        with gr.Tab(label="Result") as tab_visualizer:
+        with gr.Tab(label="Result", interactive=False, id="result") as tab_visualizer:
             visualizer.render()
 
-        with gr.Tab(label="Export") as tab_export:
+        with gr.Tab(label="Export", interactive=False) as tab_export:
             export.render()
 
     @demo.load()
@@ -75,6 +79,10 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
         """Synchronize the Collection."""
         state_value = input_value
         return state_value if state_value is not None else gr.skip()
+
+    collection_submit_state.change(activate_tab, collection_submit_state, tab_visualizer)
+    collection_submit_state.change(activate_tab, collection_submit_state, tab_export)
+    collection_submit_state.change(lambda: gr.Tabs(selected="result"), outputs=navbar)
 
     tab_visualizer.select(
         inputs=[collection_submit_state, collection_viz_state],
