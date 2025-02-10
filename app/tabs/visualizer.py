@@ -65,7 +65,7 @@ with gr.Blocks() as visualizer:
                 right = gr.Button("Next →", visible=False, scale=0)
 
         # Transcription panel
-        with gr.Column(scale=1):
+        with gr.Column(scale=1, elem_classes="transcription-column"):
             gr.Markdown("## Transcription")
             transcription = gr.HTML(elem_classes="transcription", container=True, max_height="60vh")
 

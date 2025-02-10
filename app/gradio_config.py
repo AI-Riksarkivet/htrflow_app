@@ -21,6 +21,17 @@ css = """
 
 .transcription {
   font-size: large;
+  position: sticky;
+  top: 20px;
+}
+
+.transcription-column {
+  height: 100vh;
+}
+
+/* this is needed in order to make the transcription sticky */
+.app {
+  overflow: visible;
 }
 
 /* style of textline svg elements */
