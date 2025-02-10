@@ -70,6 +70,13 @@ hr.region-divider {
   color: var(--block-info-text-color);
 }
 
+.pipeline-info {
+  padding: 0 0 0 2px;
+  font-weight: var(--block-info-text-weight);
+  font-size: var(--block-info-text-size);
+  color: var(--block-info-text-color);
+}
+
 .pipeline-help a {
   color: var(--secondary-400);
 }
