@@ -44,6 +44,7 @@ GRADIO_CACHE = ".gradio_cache"
 EXAMPLES_DIRECTORY = os.path.join(GRADIO_CACHE, "examples")
 
 if os.environ.get("GRADIO_CACHE_DIR", GRADIO_CACHE) != GRADIO_CACHE:
+    os.environ["GRADIO_CACHE_DIR"] = GRADIO_CACHE
     logger.warning("Setting GRADIO_CACHE_DIR to '%s' (overriding a previous value).")
 
 
