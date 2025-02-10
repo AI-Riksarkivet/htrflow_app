@@ -53,14 +53,6 @@ with gr.Blocks() as visualizer:
     gr.Markdown("# Results")
     gr.Markdown("Below is the results from the job that were submitted")
     with gr.Row():
-        # Columns are needed here to get the scale right. The documentation
-        # claims all components have the `scale` argument but it doesn't
-        # seem to work for HTML components.
-
-        # Transcription panel
-        with gr.Column(scale=1):
-            gr.Markdown("## Transcription")
-            transcription = gr.HTML(elem_classes="transcription", container=True, max_height="60vh")
 
         # Annotated image panel
         with gr.Column(scale=2):
@@ -71,6 +63,12 @@ with gr.Blocks() as visualizer:
             with gr.Row(elem_classes="button-group-viz"):
                 left = gr.Button("← Previous", visible=False, interactive=False, scale=0)
                 right = gr.Button("Next →", visible=False, scale=0)
+
+        # Transcription panel
+        with gr.Column(scale=1):
+            gr.Markdown("## Transcription")
+            transcription = gr.HTML(elem_classes="transcription", container=True, max_height="60vh")
+
 
     collection = gr.State()
     current_page_index = gr.State(0)
