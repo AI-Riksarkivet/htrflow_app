@@ -173,6 +173,13 @@ def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
             return name
 
 
+def get_image_from_image_id(image_id):
+    """
+    Get URL of submitted image ID.
+    """
+    return [f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"]
+
+
 with gr.Blocks() as submit:
     gr.Markdown("# Upload")
     gr.Markdown("Select or upload the image you want to transcribe. You can upload up to five images at a time.")
@@ -199,13 +206,15 @@ with gr.Blocks() as submit:
                     min_width=250,
                 )
 
-                image_iiif_url = gr.Textbox(
-                    label="Images from the National Archives of Sweden",
-                    info="e.g <a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>R0002231_00005</a> - Press enter to submit",
+                image_id = gr.Textbox(
+                    label="Upload by image ID",
+                    info=(
+                        "Use any image from our digitized archives by pasting its image ID found in the "
+                        "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
+                        "Press enter to submit."
+                    ),
                     placeholder="R0002231_00005",
                 )
-
-                iiif_image_placeholder = gr.Image(visible=False)
 
     gr.Markdown("## Settings")
     gr.Markdown("Select a pipeline that suits your image. You can edit the pipeline if you need to customize it further.")
@@ -261,12 +270,7 @@ with gr.Blocks() as submit:
             return gr.update(value=None)
         return images
 
-    def return_iiif_url(image_iiif_url):
-        return f"https://lbiiif.riksarkivet.se/arkis!{image_iiif_url}/full/max/0/default.jpg"
-
-    image_iiif_url.submit(fn=return_iiif_url, inputs=image_iiif_url, outputs=iiif_image_placeholder).then(
-        fn=lambda x: [x], inputs=iiif_image_placeholder, outputs=batch_image_gallery
-    )
+    image_id.submit(fn=get_image_from_image_id, inputs=image_id, outputs=batch_image_gallery)
 
     run_button.click(
         lambda: gr.update(visible=True),
