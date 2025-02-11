@@ -233,7 +233,7 @@ with gr.Blocks() as submit:
                 )
 
             with gr.Column():
-                help_button = gr.Button("Edit", scale=0)
+                edit_pipeline_button = gr.Button("Edit", scale=0)
 
         pipeline_description = gr.HTML(
             value=get_pipeline_description,
@@ -242,7 +242,7 @@ with gr.Blocks() as submit:
             padding=False,
         )
 
-    with Modal(visible=False) as help_modal:
+    with Modal(visible=False) as edit_pipeline_modal:
         custom_template_yaml = gr.Code(
             value=get_yaml,
             inputs=pipeline_dropdown,
@@ -287,4 +287,4 @@ with gr.Blocks() as submit:
     examples.select(get_selected_example_image, None, batch_image_gallery)
     examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
 
-    help_button.click(lambda: Modal(visible=True), None, help_modal)
+    edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)
