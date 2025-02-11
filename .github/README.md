@@ -10,103 +10,30 @@ Please note that this is a demo application—not intended for production use—
 </p>
 
 ---
-<!-- https://ecotrust-canada.github.io/markdown-toc/ -->
-- [HTRflow_app](#htrflow-app) 
-  * [Overview](#overview)
-  * [Guide](#guide)
-  * [How to use app..](#how-to-use-app)
-  * [Getting Started](#getting-started)
-    + [Prerequisites](#prerequisites)
-    + [Installation](#installation)
-    + [Running the Application Locally](#running-the-application-locally)
-  * [Running with Docker](#running-with-docker)
-    + [Locally with Docker](#locally-with-docker)
-    + [On Hugging Face Spaces](#on-hugging-face-spaces)
-  * [Contributing](#contributing)
-  * [License](#license)
-
-
----
 
 ## Guide
 
-The demo consist of 3 tabs: Upload, Results and Export. You navigate through the app by first uploading 1 or many images  in 
+This demo consists of three tabs: **Upload**, **Results**, and **Export** and uses [HTRflow](https://ai-riksarkivet.github.io/htrflow/latest/index.html) as backend
 
-Upload:
+1. **Upload Tab:**  
+   - **Upload Images:** Start in the Upload tab by adding one or multiple images.  
+   - **Fetch Images:** Alternatively, you can retrieve images from the [Riksarkivet IIIF server](https://github.com/Riksarkivet/dataplattform/wiki/IIIF).  
+   - **Choose a Template:** Select a template that matches your material. For more details, see the [HTRflow guide](https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html).  
+   - **Submit:** Click **Submit** to start the HTR job. The HTRflow backend will then process your images and generate a [Document Model](https://ai-riksarkivet.github.io/htrflow/latest/getting_started/document_model.html).
 
-Result:
+2. **Results Tab:**  
+   - This tab displays the updated state of the Document Model created from your submission. Your uploaded images and chosen template drive how the document is rendered and visualized in real time.
 
-Export:
+3. **Export Tab:**  
+   - Use the Export tab to serialize and export the Document Model. Here, you can select the output format and choose name of the files that meets your needs.
 
-## Pipeline Configuration
-
-HTRflow powers the application's engine with a structured pipeline design pattern. This pattern uses declarative YAML schemas as blueprints to define step-by-step processing instructions. For detailed documentation, visit the [HTRflow Pipeline Guide](https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#yaml).
-
-<p align="center">
-  <img src="../app/assets/images/3_worker.png" alt="HTRflow Worker Pipeline" width="20%">
-</p>
-
-### Understanding YAML Pipeline Templates
-
-The following series of images demonstrates how YAML pipeline templates function. Each template is designed for specific document types - the example below shows a template optimized for single-column running text, such as letters, notes, and individual pages.
-
-<p align="center">
-  <img src="../app/assets/images/how_to_1.png" alt="YAML Template Structure" width="70%">
-</p>
-
-### Pipeline Steps
-
-Each pipeline consists of sequential steps executed from top to bottom. In this example, we focus on two primary steps:
-
-1. **Segmentation**: Identifies and extracts text lines from the image
-2. **Text Recognition**: Performs Handwritten Text Recognition (HTR) on the segmented lines
-
-<p align="center">
-  <img src="../app/assets/images/how_to_2.png" alt="Pipeline Steps Overview" width="50%">
-</p>
-
-### Model Integration
-
-Models specified in the pipeline can be downloaded directly from the [Huggingface model hub](https://huggingface.co/models?library=htrflow). For a comprehensive list of supported models, refer to the [HTRflow Models Documentation](https://ai-riksarkivet.github.io/htrflow/latest/getting_started/models.html#models).
-
-> **Note**: For English text recognition, you'll need to specify an appropriate model ID, such as the [Microsoft TrOCR base handwritten model](https://huggingface.co/microsoft/trocr-base-handwritten).
-
-<p align="center">
-  <img src="../app/assets/images/how_to_3.png" alt="Model Configuration" width="50%">
-</p>
-
-### Processing Workflow
-
-#### Text Line Detection
-The following image illustrates the text line segmentation process:
-
-<p align="center">
-  <img src="../app/assets/images/how_to_4.png" alt="Text Line Detection Process" width="90%">
-</p>
-
-#### Text Recognition
-After segmentation, the detected text lines are processed by the HTR component:
-
-<p align="center">
-  <img src="../app/assets/images/how_to_5.png" alt="Text Recognition Process" width="80%">
-</p>
-
-#### Reading Order Determination
-The final pipeline step determines the reading order of the text. In this example, it applies a simple top-down ordering transformation:
-
-<p align="center">
-  <img src="../app/assets/images/how_to_6.png" alt="Reading Order Determination" width="85%">
-</p>
-
-
-
-
+---
 
 ## Development
 
 ### Prerequisites
 
-- **Python:** Version 3.7 or higher
+- **Python:** Version 3.10 or higher
 - **pip:** Python package installer
 - **(Optional) Docker:** For containerized deployment
 - **(Optional) Nvidia GPU:** For faster predictions..
@@ -159,13 +86,21 @@ Or, if you are developing and prefer an editable installation, run:
 uv pip install -e .
 ```
 
+#### 6. Running the Application Locally (dev)
 
-### Running the Application Locally
 
-Launch the Gradio demo by running:
+For "hot reload" when developing, launch the Gradio demo by running:
 
 ```bash
 gradio app/main.py
+```
+
+### Running the Application
+
+Follow [Installation](#installation) and launch the Gradio demo by running:
+
+```bash
+uv run app/main.py
 ```
 
 Then open your web browser and navigate to `http://localhost:7860` (or the address displayed in your terminal) to interact with the demo.
@@ -198,18 +133,6 @@ Alternatively, you can run HTRflow_app directly on Hugging Face with:
 docker run -it -p 7860:7860 --platform=linux/amd64 --gpus all \
     -e registry.hf.space/riksarkivet-htr-demo:latest
 ```
-
----
-
-
-## Contributing
-
-We welcome community contributions! If you’d like to contribute:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/YourFeature`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to your branch (`git push origin feature/YourFeature`).
-5. Open a pull request.
 
 ---
 

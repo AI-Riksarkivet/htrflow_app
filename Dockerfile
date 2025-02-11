@@ -65,4 +65,4 @@ USER appuser
 EXPOSE 7860
 
 # Command to run the application
-CMD ["uv", "run", "python", "app/main.py"]
+CMD ["uv", "run", "app/main.py"]
