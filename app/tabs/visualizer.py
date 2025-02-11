@@ -50,8 +50,9 @@ def update_image_caption(collection, current_page_index):
 
 
 with gr.Blocks() as visualizer:
-    gr.Markdown("# Results")
-    gr.Markdown("Below is the results from the job that were submitted")
+    gr.Markdown("# Result")
+    gr.Markdown("The image to the left shows where HTRflow found text in the image. The transcription can be seen to the right.")
+
     with gr.Row():
 
         # Annotated image panel
