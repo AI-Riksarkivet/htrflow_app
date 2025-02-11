@@ -44,6 +44,7 @@ GRADIO_CACHE = ".gradio_cache"
 EXAMPLES_DIRECTORY = os.path.join(GRADIO_CACHE, "examples")
 
 if os.environ.get("GRADIO_CACHE_DIR", GRADIO_CACHE) != GRADIO_CACHE:
+    os.environ["GRADIO_CACHE_DIR"] = GRADIO_CACHE
     logger.warning("Setting GRADIO_CACHE_DIR to '%s' (overriding a previous value).")
 
 
@@ -174,13 +175,7 @@ def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
 
 with gr.Blocks() as submit:
     gr.Markdown("# Upload")
-    gr.Markdown("Start Here! ")
-    gr.Markdown(
-        "First you upload upload 1 image or multiple images (max 5 images). You can also use directly the Image ID from the National Archives of Sweden to request an image"
-    )
-    gr.Markdown(
-        "Afterward, choice a template from the examples based on your material. This will configure a certain pipeline that fits your image."
-    )
+    gr.Markdown("Select or upload the image you want to transcribe. You can upload up to five images at a time.")
 
     collection_submit_state = gr.State()
     with gr.Group():
@@ -192,7 +187,6 @@ with gr.Blocks() as submit:
                     interactive=True,
                     object_fit="scale-down",
                     scale=3,
-                    preview=True,
                 )
 
             with gr.Column(scale=2):
@@ -213,6 +207,9 @@ with gr.Blocks() as submit:
 
                 iiif_image_placeholder = gr.Image(visible=False)
 
+    gr.Markdown("## Settings")
+    gr.Markdown("Select a pipeline that suits your image. You can edit the pipeline if you need to customize it further.")
+
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
         gr.HTML("Pipeline", elem_classes="pipeline-header", padding=False)
 
@@ -225,35 +222,33 @@ with gr.Blocks() as submit:
                     scale=0,
                     elem_classes="pipeline-dropdown",
                 )
-            with gr.Column():
-                with gr.Row():
-                    pipeline_description = gr.HTML(
-                        value=get_pipeline_description,
-                        inputs=pipeline_dropdown,
-                        elem_classes="pipeline-description",
-                        padding=False,
-                    )
-                    help_button = gr.Button(
-                        "Edit Pipeline",
-                        scale=0,
-                    )
 
-                with Modal(visible=False) as help_modal:
-                    custom_template_yaml = gr.Code(
-                        value=get_yaml,
-                        inputs=pipeline_dropdown,
-                        language="yaml",
-                        container=False,
-                    )
-                    url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
-                    gr.HTML(
-                        f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
-                        padding=False,
-                        elem_classes="pipeline-help",
-                    )
+            with gr.Column():
+                help_button = gr.Button("Edit", scale=0)
+
+        pipeline_description = gr.HTML(
+            value=get_pipeline_description,
+            inputs=pipeline_dropdown,
+            elem_classes="pipeline-info",
+            padding=False,
+        )
+
+    with Modal(visible=False) as help_modal:
+        custom_template_yaml = gr.Code(
+            value=get_yaml,
+            inputs=pipeline_dropdown,
+            language="yaml",
+            container=False,
+        )
+        url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
+        gr.HTML(
+            f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
+            padding=False,
+            elem_classes="pipeline-help",
+        )
 
     with gr.Row():
-        run_button = gr.Button("Submit", variant="primary", scale=0, min_width=200)
+        run_button = gr.Button("Transcribe", variant="primary", scale=0, min_width=200)
         progess_bar = gr.Textbox(visible=False, show_label=False)
 
     @batch_image_gallery.upload(
