@@ -21,6 +21,17 @@ css = """
 
 .transcription {
   font-size: large;
+  position: sticky;
+  top: 20px;
+}
+
+.transcription-column {
+  height: 100vh;
+}
+
+/* this is needed in order to make the transcription sticky */
+.app {
+  overflow: visible;
 }
 
 /* style of textline svg elements */
@@ -54,6 +65,13 @@ hr.region-divider {
 
 .pipeline-help {
   padding: 5px 0 0 0;
+  font-weight: var(--block-info-text-weight);
+  font-size: var(--block-info-text-size);
+  color: var(--block-info-text-color);
+}
+
+.pipeline-info {
+  padding: 0 0 0 2px;
   font-weight: var(--block-info-text-weight);
   font-size: var(--block-info-text-size);
   color: var(--block-info-text-color);
