@@ -6,7 +6,7 @@ import gradio as gr
 import yaml
 from gradio_modal import Modal
 from htrflow.pipeline.pipeline import Pipeline
-from htrflow.pipeline.steps import auto_import, init_step
+from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
 
 logger = logging.getLogger(__name__)
@@ -106,22 +106,20 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
 
     images = [temp_img[0] for temp_img in batch_image_gallery]
 
+    collection = Collection(images)
+
     pipe = PipelineWithProgress.from_config(config)
-    collections = auto_import(images)
 
     gr.Info(f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}.")
     progress(0.1, desc="HTRflow: Processing")
 
-    for collection in collections:
-        if "labels" in config:
-            collection.set_label_format(**config["labels"])
+    collection.label = "demo_output"
 
-        collection.label = "HTRflow_demo_output"
-        collection: Collection = pipe.run(collection, progress=progress)
+    collection = pipe.run(collection, progress=progress)
 
-    progress(1, desc="HTRflow: Finish")
-    time.sleep(1)
-    gr.Info("HTRflow: Finish")
+    progress(1, desc="HTRflow: Finish, redirecting to 'Results tab'")
+    time.sleep(2)
+    gr.Info("Image were succesfully transcribed ✨")
 
     yield collection, gr.skip()
 
@@ -160,7 +158,6 @@ def get_selected_example_image(event: gr.SelectData) -> str:
     """
     Get path to the selected example image.
     """
-    print([event.value["image"]["path"]])
     return [event.value["image"]["path"]]
 
 
@@ -205,22 +202,21 @@ with gr.Blocks() as submit:
                     object_fit="scale-down",
                     min_width=250,
                 )
-
-                image_id = gr.Textbox(
+                image_iiif_url = gr.Textbox(
                     label="Upload by image ID",
                     info=(
                         "Use any image from our digitized archives by pasting its image ID found in the "
                         "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
                         "Press enter to submit."
                     ),
-                    placeholder="R0002231_00005",
+                    placeholder="R0002231_00005, R0002231_00006",
                 )
 
-    gr.Markdown("## Settings")
-    gr.Markdown("Select a pipeline that suits your image. You can edit the pipeline if you need to customize it further.")
-
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
-        gr.HTML("Pipeline", elem_classes="pipeline-header", padding=False)
+        gr.Markdown("## Settings")
+        gr.Markdown(
+            "Select a pipeline that suits your image. You can edit the pipeline if you need to customize it further."
+        )
 
         with gr.Row():
             with gr.Column(scale=0):
@@ -232,8 +228,12 @@ with gr.Blocks() as submit:
                     elem_classes="pipeline-dropdown",
                 )
 
-            with gr.Column():
+            with gr.Column(scale=0, min_width=100):
                 edit_pipeline_button = gr.Button("Edit", scale=0)
+            with gr.Column(scale=3):
+                progess_bar = gr.Textbox(visible=False, show_label=False)
+            with gr.Column(scale=0, min_width=20):
+                pass
 
         pipeline_description = gr.HTML(
             value=get_pipeline_description,
@@ -242,23 +242,34 @@ with gr.Blocks() as submit:
             padding=False,
         )
 
-    with Modal(visible=False) as edit_pipeline_modal:
-        custom_template_yaml = gr.Code(
-            value=get_yaml,
-            inputs=pipeline_dropdown,
-            language="yaml",
-            container=False,
-        )
-        url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
-        gr.HTML(
-            f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
-            padding=False,
-            elem_classes="pipeline-help",
-        )
+    with Modal(
+        visible=False,
+    ) as edit_pipeline_modal:
+        with gr.Column():
+            gr.Markdown(
+                """
+                ## Edit Pipeline
+                The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an
+                image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.
+
+                Edit pipeline if needed:
+                """
+            )
+            custom_template_yaml = gr.Code(
+                value=get_yaml,
+                inputs=pipeline_dropdown,
+                language="yaml",
+                container=False,
+            )
+            url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
+            gr.HTML(
+                f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
+                padding=False,
+                elem_classes="pipeline-help",
+            )
 
     with gr.Row():
         run_button = gr.Button("Transcribe", variant="primary", scale=0, min_width=200)
-        progess_bar = gr.Textbox(visible=False, show_label=False)
 
     @batch_image_gallery.upload(
         inputs=batch_image_gallery,
@@ -270,18 +281,20 @@ with gr.Blocks() as submit:
             return gr.update(value=None)
         return images
 
-    image_id.submit(fn=get_image_from_image_id, inputs=image_id, outputs=batch_image_gallery)
+    def return_iiif_url(image_ids):
+        if isinstance(image_ids, str):
+            image_ids = image_ids.split(",")
+
+        return [
+            f"https://lbiiif.riksarkivet.se/arkis!{image_id.strip()}/full/max/0/default.jpg" for image_id in image_ids
+        ]
+
+    image_iiif_url.submit(fn=return_iiif_url, inputs=image_iiif_url, outputs=batch_image_gallery)
 
     run_button.click(
-        lambda: gr.update(visible=True),
-        outputs=[progess_bar],
-    ).then(
         fn=run_htrflow,
         inputs=[custom_template_yaml, batch_image_gallery],
-        outputs=[collection_submit_state, progess_bar],
-    ).then(
-        lambda: gr.update(visible=False),
-        outputs=[progess_bar],
+        outputs=[collection_submit_state, batch_image_gallery],
     )
 
     examples.select(get_selected_example_image, None, batch_image_gallery)

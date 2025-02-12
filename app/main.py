@@ -1,3 +1,4 @@
+import logging
 import os
 
 import gradio as gr
@@ -9,6 +10,10 @@ from app.tabs.export import export
 from app.tabs.submit import collection_submit_state, submit
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
+
+# Suppress transformers logging
+logging.getLogger("transformers").setLevel(logging.ERROR)
+
 
 TEMPLATE_YAML_FOLDER = "app/assets/templates"
 gr.set_static_paths(paths=[TEMPLATE_YAML_FOLDER])
@@ -28,7 +33,7 @@ def load_markdown(language, section, content_dir="app/content"):
 
 
 def activate_tab(collection):
-    return gr.update(interactive = collection is not None)
+    return gr.update(interactive=collection is not None)
 
 
 matomo = """
