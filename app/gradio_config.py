@@ -102,4 +102,17 @@ hr.region-divider {
  gap: 1rem;
  text-align: center;
 }
+
+.modal-block {
+  width: 60%;
+  padding: 1rem;
+}
+
+@media (max-width: 1024px) { /* mobile and standing iPads */
+  .modal-block {
+    width: 100%;
+  }
+}
+
+
 """
