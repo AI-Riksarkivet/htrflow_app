@@ -9,33 +9,13 @@ from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
 
+from app.main import load_markdown
+from app.pipelines import PIPELINES
+
 logger = logging.getLogger(__name__)
 
 # Max number of images a user can upload at once
 MAX_IMAGES = int(os.environ.get("MAX_IMAGES", 5))
-
-# Example pipelines
-PIPELINES = {
-    "Running text (Swedish)": {
-        "file": "app/assets/templates/nested.yaml",
-        "description": "This pipeline works well on documents with multiple text regions.",
-        "examples": [
-            "R0003364_00005.jpg",
-            "30002027_00008.jpg",
-            "A0070302_00201.jpg",
-        ],
-    },
-    "Letters and snippets (Swedish)": {
-        "file": "app/assets/templates/simple.yaml",
-        "description": "This pipeline works well on letters and other documents with only one text region.",
-        "examples": [
-            "451511_1512_01.jpg",
-            "A0062408_00006.jpg",
-            "C0000546_00085_crop.png",
-            "A0073477_00025.jpg",
-        ],
-    },
-}
 
 # Setup the cache directory to point to the directory where the example images
 # are located. The images must lay in the cache directory because otherwise they
@@ -52,7 +32,12 @@ class PipelineWithProgress(Pipeline):
     @classmethod
     def from_config(cls, config: dict[str, str]):
         """Init pipeline from config, ensuring the correct subclass is instantiated."""
-        return cls([init_step(step["step"], step.get("settings", {})) for step in config["steps"]])
+        return cls(
+            [
+                init_step(step["step"], step.get("settings", {}))
+                for step in config["steps"]
+            ]
+        )
 
     def run(self, collection, start=0, progress=None):
         """
@@ -110,7 +95,9 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
 
     pipe = PipelineWithProgress.from_config(config)
 
-    gr.Info(f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}.")
+    gr.Info(
+        f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}."
+    )
     progress(0.1, desc="HTRflow: Processing")
 
     collection.label = "demo_output"
@@ -178,22 +165,29 @@ def get_image_from_image_id(image_id):
 
 
 with gr.Blocks() as submit:
-    gr.Markdown("# Upload")
-    gr.Markdown("Select or upload the image you want to transcribe. You can upload up to five images at a time.")
+
+    with gr.Row():
+        with gr.Column():
+            gr.Markdown("# Upload")
+            gr.Markdown(
+                "Select or upload the image you want to transcribe. You can upload up to five images at a time. \n "
+                "Alternatively, you can choose from example images from the gallery or use Image_IDs."
+            )
 
     collection_submit_state = gr.State()
     with gr.Group():
-        with gr.Row(equal_height=True):
+        with gr.Row(
+            equal_height=True,
+        ):
             with gr.Column(scale=5):
                 batch_image_gallery = gr.Gallery(
                     file_types=["image"],
                     label="Image to transcribe",
                     interactive=True,
                     object_fit="scale-down",
-                    scale=3,
                 )
 
-            with gr.Column(scale=2):
+            with gr.Column(scale=3):
                 examples = gr.Gallery(
                     all_example_images(),
                     label="Examples",
@@ -201,6 +195,7 @@ with gr.Blocks() as submit:
                     allow_preview=False,
                     object_fit="scale-down",
                     min_width=250,
+                    columns=3,
                 )
                 image_iiif_url = gr.Textbox(
                     label="Upload by image ID",
@@ -215,7 +210,9 @@ with gr.Blocks() as submit:
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
         gr.Markdown("## Settings")
         gr.Markdown(
-            "Select a pipeline that suits your image. You can edit the pipeline if you need to customize it further."
+            "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different handwritten text recognition tasks."
+            "If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further."
+            "Choosing the right pipeline significantly improves transcription quality"
         )
 
         with gr.Row():
@@ -286,10 +283,13 @@ with gr.Blocks() as submit:
             image_ids = image_ids.split(",")
 
         return [
-            f"https://lbiiif.riksarkivet.se/arkis!{image_id.strip()}/full/max/0/default.jpg" for image_id in image_ids
+            f"https://lbiiif.riksarkivet.se/arkis!{image_id.strip()}/full/max/0/default.jpg"
+            for image_id in image_ids
         ]
 
-    image_iiif_url.submit(fn=return_iiif_url, inputs=image_iiif_url, outputs=batch_image_gallery)
+    image_iiif_url.submit(
+        fn=return_iiif_url, inputs=image_iiif_url, outputs=batch_image_gallery
+    )
 
     run_button.click(
         fn=run_htrflow,

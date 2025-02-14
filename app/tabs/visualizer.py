@@ -59,32 +59,51 @@ with gr.Blocks() as visualizer:
     with gr.Row():
         # Annotated image panel
         with gr.Column(scale=2):
-            gr.Markdown("## Annotated image")
-            image = gr.HTML(padding=False, elem_classes="svg-image", container=True)
+            image = gr.HTML(
+                label="Annotated image",
+                padding=False,
+                elem_classes="svg-image",
+                container=True,
+                max_height="70vh",
+                min_height="70vh",
+                show_label=True,
+            )
 
             image_caption = gr.Markdown(elem_classes="button-group-viz")
             with gr.Row(elem_classes="button-group-viz"):
-                left = gr.Button("← Previous", visible=False, interactive=False, scale=0)
+                left = gr.Button(
+                    "← Previous", visible=False, interactive=False, scale=0
+                )
                 right = gr.Button("Next →", visible=False, scale=0)
 
         # Transcription panel
         with gr.Column(scale=1, elem_classes="transcription-column"):
-            gr.Markdown("## Transcription")
-            transcription = gr.HTML(elem_classes="transcription", container=True, max_height="60vh")
+            transcription = gr.HTML(
+                label="Transcription",
+                show_label=True,
+                elem_classes="transcription",
+                container=True,
+                max_height="70vh",
+                min_height="70vh",
+            )
 
     collection = gr.State()
     current_page_index = gr.State(0)
 
     # Wiring of navigation buttons
     left.click(left_button_click, current_page_index, current_page_index)
-    right.click(right_button_click, [collection, current_page_index], current_page_index)
+    right.click(
+        right_button_click, [collection, current_page_index], current_page_index
+    )
 
     # Updates on collection change:
     # - update the view
     # - reset the page index (always start on page 0)
     # - toggle visibility of navigation buttons (don't show them for single pages)
     # - update the image caption
-    collection.change(render_image, inputs=[collection, current_page_index], outputs=image)
+    collection.change(
+        render_image, inputs=[collection, current_page_index], outputs=image
+    )
     collection.change(
         render_transcription,
         inputs=[collection, current_page_index],
@@ -103,14 +122,18 @@ with gr.Blocks() as visualizer:
     # - update the view
     # - activate/deactivate buttons
     # - update the image caption
-    current_page_index.change(render_image, inputs=[collection, current_page_index], outputs=image)
+    current_page_index.change(
+        render_image, inputs=[collection, current_page_index], outputs=image
+    )
     current_page_index.change(
         render_transcription,
         inputs=[collection, current_page_index],
         outputs=transcription,
     )
     current_page_index.change(activate_left_button, current_page_index, left)
-    current_page_index.change(activate_right_button, [collection, current_page_index], right)
+    current_page_index.change(
+        activate_right_button, [collection, current_page_index], right
+    )
     current_page_index.change(
         update_image_caption,
         inputs=[collection, current_page_index],

@@ -70,21 +70,20 @@ with gr.Blocks() as export:
     gr.Markdown("Choose file format for export.")
     with gr.Row():
         with gr.Column(scale=1):
-            with gr.Group():
-                export_file_format = gr.Dropdown(
-                    value=DEFAULT_C,
-                    label="File format",
-                    info="Select export format(s)",
-                    choices=CHOICES,
-                    multiselect=True,
-                    interactive=True,
-                )
-                download_files = gr.Files(label="Download files", interactive=False)
-        with gr.Column(scale=1):
-            pass
+            export_file_format = gr.Dropdown(
+                value=DEFAULT_C,
+                label="File format",
+                info="Select export format(s)",
+                choices=CHOICES,
+                multiselect=True,
+                interactive=True,
+            )
+            export_button = gr.Button(
+                "Export", scale=0, min_width=200, variant="primary"
+            )
 
-    with gr.Row():
-        export_button = gr.Button("Export", scale=0, min_width=200, variant="primary")
+        with gr.Column(scale=1):
+            download_files = gr.Files(label="Download files", interactive=False)
 
         export_button.click(
             fn=export_files,

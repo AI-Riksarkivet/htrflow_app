@@ -17,13 +17,12 @@ classifiers = [
 requires-python = ">=3.10,<3.13"
 
 dependencies = [
-    "htrflow==0.2.0",
-    "gradio>=5.15.0",
-    "datasets>=3.2.0",
-    "pandas>=2.2.3",
+    "htrflow==0.2.5",
+    "gradio>=5.16.0",
     "tqdm>=4.67.1",
-    "pillow>=11.1.0",
     "gradio-modal>=0.0.4",
+    "dill>=0.3.9",
+    "pylaia>=1.1.2",
 ]
 
 [project.urls]
@@ -32,23 +31,10 @@ Repository = "https://github.com/AI-Riksarkivet/htrflow-app"
 
 [tool.uv]
 dev-dependencies = [
-    "pytest >=8.0.1",
     "python-dotenv >=1.0.1",
     "ruff >=0.6.2",
     "uv>=0.4.12",
 ]
-
-# [project.optional-dependencies]
-# openmmlab = [
-#     "openmim==0.3.9",
-#     "mmengine==0.7.4",
-#     "mmcv==2.0.1",
-#     "mmdet==3.0.0",
-#     "mmocr==1.0.0"
-# ]
-# teklia = [
-#     "pylaia==1.1.2"
-# ]
 
 
 [build-system]
@@ -71,5 +57,5 @@ line-length = 119
 target-version = "py310"
 
 [tool.ruff.lint]
-ignore = ["C901", "E741", "W605"]
+ignore = ["C901", "E741", "W605", "E501"]
 select = ["C", "E", "F", "I", "W"]
