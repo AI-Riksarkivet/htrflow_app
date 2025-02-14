@@ -4,12 +4,13 @@ theme = gr.themes.Default(
     primary_hue="blue",
     secondary_hue="blue",
     neutral_hue="slate",
-    # font=[
-    #     gr.themes.GoogleFont("Open Sans"),
-    #     "ui-sans-serif",
-    #     "system-ui",
-    #     "sans-serif",
-    # ],
+    font=[
+        gr.themes.GoogleFont("Open Sans"),
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
+    ],
+    # text_size="md",
 )
 
 css = """
@@ -25,14 +26,6 @@ css = """
   top: 20px;
 }
 
-.transcription-column {
-  height: 100vh;
-}
-
-/* this is needed in order to make the transcription sticky */
-.app {
-  overflow: visible;
-}
 
 /* style of textline svg elements */
 .textline {
@@ -73,7 +66,6 @@ hr.region-divider {
 .pipeline-info {
   padding: 0 0 0 2px;
   font-weight: var(--block-info-text-weight);
-  font-size: var(--block-info-text-size);
   color: var(--block-info-text-color);
 }
 

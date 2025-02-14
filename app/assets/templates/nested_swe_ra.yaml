@@ -14,4 +14,6 @@ steps:
     model: TrOCR
     model_settings:
       model: Riksarkivet/trocr-base-handwritten-hist-swe-2
+    generation_settings:
+       batch_size: 4
 - step: ReadingOrderMarginalia

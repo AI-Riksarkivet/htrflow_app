@@ -1,1 +1,1 @@
-<h1><center> HTRflow 🔍 App </center></h1>
+<h1><center> HTRflow 🔍</center></h1>

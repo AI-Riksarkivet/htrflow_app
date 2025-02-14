@@ -57,23 +57,28 @@ matomo = """
 <!-- End Matomo Code -->
 """
 
+with gr.Blocks(
+    title="HTRflow",
+    theme=theme,
+    css=css,
+    head=matomo,
+) as demo:
 
-with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
-    with gr.Row():
-        with gr.Column(scale=1):
-            pass
-        with gr.Column(scale=2):
-            gr.Markdown(load_markdown(None, "main_title"))
-        with gr.Column(scale=1):
-            gr.Markdown(load_markdown(None, "main_sub_title"))
+    gr.Markdown(load_markdown(None, "main_title"))
+
+    with gr.Sidebar(label="Menu"):
+        gr.Markdown(load_markdown(None, "main_sub_title_hum"))
+        gr.Markdown(load_markdown(None, "sidebar"))
 
     with gr.Tabs(elem_classes="top-navbar") as navbar:
-        with gr.Tab(label="Upload") as tab_submit:
+        with gr.Tab(label="1. Upload") as tab_submit:
             submit.render()
-        with gr.Tab(label="Result", interactive=False, id="result") as tab_visualizer:
+        with gr.Tab(
+            label="2. Result", interactive=False, id="result"
+        ) as tab_visualizer:
             visualizer.render()
 
-        with gr.Tab(label="Export", interactive=False) as tab_export:
+        with gr.Tab(label="3. Export", interactive=False) as tab_export:
             export.render()
 
     @demo.load()
@@ -85,7 +90,9 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
         state_value = input_value
         return state_value if state_value is not None else gr.skip()
 
-    collection_submit_state.change(activate_tab, collection_submit_state, tab_visualizer)
+    collection_submit_state.change(
+        activate_tab, collection_submit_state, tab_visualizer
+    )
     collection_submit_state.change(activate_tab, collection_submit_state, tab_export)
     collection_submit_state.change(lambda: gr.Tabs(selected="result"), outputs=navbar)
 
@@ -104,4 +111,6 @@ with gr.Blocks(title="HTRflow", theme=theme, css=css, head=matomo) as demo:
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, enable_monitoring=True, show_api=False)
+    demo.launch(
+        server_name="0.0.0.0", server_port=7860, enable_monitoring=True, show_api=False
+    )
