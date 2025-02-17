@@ -22,6 +22,7 @@ ENV PYTHONUNBUFFERED=1 \
 # Install system dependencies and set Python 3.10 as default
 RUN apt-get update && apt-get install --no-install-recommends -y \
     build-essential \
+    git \      
     python3.10 \
     python3.10-distutils \
     python3-pip \
