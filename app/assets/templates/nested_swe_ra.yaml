@@ -17,3 +17,5 @@ steps:
     generation_settings:
        batch_size: 4
 - step: ReadingOrderMarginalia
+  settings:
+    two_page: True

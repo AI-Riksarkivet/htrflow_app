@@ -1,6 +1,6 @@
 ## HTRflow Demo
 
-Welcome to the **HTRflow Demo** – a web application developed by the **National Archives of Sweden** in collaboration with [Huminfra](https://www.huminfra.se/). This demo lets you explore how AI transforms historical manuscripts into digital text using[HTRflow](https://ai-riksarkivet.github.io/htrflow/latest). 
+Welcome to the **HTRflow Demo** – a web application developed by the **National Archives of Sweden** in collaboration with [Huminfra](https://www.huminfra.se/). This demo lets you explore how AI transforms historical manuscripts into digital text using [HTRflow](https://ai-riksarkivet.github.io/htrflow/latest). 
 
 ### How It Works
 
