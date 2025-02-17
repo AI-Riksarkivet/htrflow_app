@@ -64,8 +64,8 @@ with gr.Blocks() as visualizer:
                 padding=False,
                 elem_classes="svg-image",
                 container=True,
-                max_height="70vh",
-                min_height="70vh",
+                max_height="65vh",
+                min_height="65vh",
                 show_label=True,
             )
 
@@ -83,8 +83,8 @@ with gr.Blocks() as visualizer:
                 show_label=True,
                 elem_classes="transcription",
                 container=True,
-                max_height="70vh",
-                min_height="70vh",
+                max_height="65vh",
+                min_height="65vh",
             )
 
     collection = gr.State()
