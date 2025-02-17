@@ -9,7 +9,6 @@ from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
 
-from app.main import load_markdown
 from app.pipelines import PIPELINES
 
 logger = logging.getLogger(__name__)
@@ -289,7 +288,7 @@ with gr.Blocks() as submit:
 
     image_iiif_url.submit(
         fn=return_iiif_url, inputs=image_iiif_url, outputs=batch_image_gallery
-    )
+    ).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
 
     run_button.click(
         fn=run_htrflow,
@@ -301,3 +300,5 @@ with gr.Blocks() as submit:
     examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
 
     edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)
+
+# TODO: submit on image_id .. --> yaml swedish - spreads
