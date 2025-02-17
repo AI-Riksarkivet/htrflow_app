@@ -88,7 +88,6 @@ uv pip install -e .
 
 #### 6. Running the Application Locally (dev)
 
-
 For "hot reload" when developing, launch the Gradio demo by running:
 
 ```bash
@@ -109,11 +108,6 @@ Then open your web browser and navigate to `http://localhost:7860` (or the addre
 
 ## Running with Docker
 
-Please remove this line in dockerfile, when running locally:
-```sh
-ENV PYTHONUNBUFFERED=1 \
-    SYSTEM=spaces \ 
-```
 
 ### Locally with Docker
 

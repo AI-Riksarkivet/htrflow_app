@@ -36,6 +36,7 @@ def activate_tab(collection):
     return gr.update(interactive=collection is not None)
 
 
+# Please remove this line when running locally
 matomo = """
 <!-- Matomo -->
 <script>
@@ -57,14 +58,11 @@ matomo = """
 <!-- End Matomo Code -->
 """
 
-system_env = os.getenv("SYSTEM", "local")
-head_content = matomo if system_env == "spaces" else None
-
 with gr.Blocks(
     title="HTRflow",
     theme=theme,
     css=css,
-    head=head_content,
+    head=matomo,
 ) as demo:
 
     gr.Markdown(load_markdown(None, "main_title"))
