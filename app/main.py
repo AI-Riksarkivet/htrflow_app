@@ -57,11 +57,14 @@ matomo = """
 <!-- End Matomo Code -->
 """
 
+system_env = os.getenv("SYSTEM", "local")
+head_content = matomo if system_env == "spaces" else None
+
 with gr.Blocks(
     title="HTRflow",
     theme=theme,
     css=css,
-    head=matomo,
+    head=head_content,
 ) as demo:
 
     gr.Markdown(load_markdown(None, "main_title"))
