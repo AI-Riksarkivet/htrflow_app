@@ -107,4 +107,9 @@ hr.region-divider {
 }
 
 
+.grid-wrap.svelte-842rpi.svelte-842rpi {
+  overflow-y: auto !important;
+}
+
+
 """

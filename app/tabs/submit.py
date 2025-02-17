@@ -195,6 +195,8 @@ with gr.Blocks() as submit:
                     object_fit="scale-down",
                     min_width=250,
                     columns=3,
+                    height="45vh",
+                    elem_classes="gallery-fix",
                 )
                 image_iiif_url = gr.Textbox(
                     label="Upload by image ID",
