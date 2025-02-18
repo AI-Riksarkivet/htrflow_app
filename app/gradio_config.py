@@ -111,5 +111,8 @@ hr.region-divider {
   overflow-y: auto !important;
 }
 
+.grid-container.svelte-842rpi {
+height: auto !important;
+}
 
 """
