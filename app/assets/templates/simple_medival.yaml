@@ -9,4 +9,6 @@ steps:
     model: TrOCR
     model_settings:
       model: medieval-data/trocr-medieval-base
+    generation_settings:
+       batch_size: 16
 - step: OrderLines
