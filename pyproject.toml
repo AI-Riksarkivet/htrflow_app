@@ -1,6 +1,6 @@
 [project]
 name = "htrflow-app"
-version = "1.0.0"
+version = "1.0.1"
 description = "htrflow-app is developed at Riksarkivet's AI-lab as a poc frontend to showcase HTRflow"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -18,11 +18,11 @@ requires-python = ">=3.10,<3.13"
 
 dependencies = [
     "htrflow==0.2.5",
-    "gradio>=5.16.1",
+    "gradio>=5.17.0",
     "tqdm>=4.67.1",
     "gradio-modal>=0.0.4",
     "dill>=0.3.9",
-    "pylaia>=1.1.2",
+    "spaces>=0.32.0",
 ]
 
 [project.urls]

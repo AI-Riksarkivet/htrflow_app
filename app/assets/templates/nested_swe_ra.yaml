@@ -4,18 +4,22 @@ steps:
     model: yolo
     model_settings:
        model: Riksarkivet/yolov9-regions-1
+    generation_settings:
+       batch_size: 4
 - step: Segmentation
   settings:
     model: yolo
     model_settings:
       model: Riksarkivet/yolov9-lines-within-regions-1
+    generation_settings:
+       batch_size: 8
 - step: TextRecognition
   settings:
     model: TrOCR
     model_settings:
       model: Riksarkivet/trocr-base-handwritten-hist-swe-2
     generation_settings:
-       batch_size: 4
+       batch_size: 16
 - step: ReadingOrderMarginalia
   settings:
     two_page: True

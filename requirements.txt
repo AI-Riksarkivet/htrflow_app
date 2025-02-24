@@ -1,0 +1,5 @@
+htrflow==0.2.5
+gradio>=5.17.0
+tqdm>=4.67.1
+gradio-modal>=0.0.4
+dill>=0.3.9

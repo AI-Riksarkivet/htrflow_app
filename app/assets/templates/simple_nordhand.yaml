@@ -9,4 +9,6 @@ steps:
     model: TrOCR
     model_settings:
       model: Sprakbanken/TrOCR-norhand-v3
+    generation_settings:
+       batch_size: 16
 - step: OrderLines

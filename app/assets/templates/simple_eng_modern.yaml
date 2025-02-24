@@ -9,4 +9,6 @@ steps:
     model: TrOCR
     model_settings:
       model: microsoft/trocr-base-handwritten
+    generation_settings:
+       batch_size: 16
 - step: OrderLines

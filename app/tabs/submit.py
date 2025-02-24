@@ -3,6 +3,7 @@ import os
 import time
 
 import gradio as gr
+import spaces
 import yaml
 from gradio_modal import Modal
 from htrflow.pipeline.pipeline import Pipeline
@@ -64,6 +65,7 @@ class PipelineWithProgress(Pipeline):
         return collection
 
 
+@spaces.GPU
 def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress()):
     """
     Executes the HTRflow pipeline based on the provided YAML configuration and batch images.
@@ -105,7 +107,7 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
 
     progress(1, desc="HTRflow: Finish, redirecting to 'Results tab'")
     time.sleep(2)
-    gr.Info("Image were succesfully transcribed ✨")
+    gr.Info("Completed succesfully ✨")
 
     yield collection, gr.skip()
 
@@ -156,11 +158,24 @@ def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
             return name
 
 
-def get_image_from_image_id(image_id):
+def get_image_from_image_url(input_value):
     """
-    Get URL of submitted image ID.
+    Get URL of the image from either an image_id (from Riksarkivet) or an image_url directly.
+    If input_value is an image_id, it constructs the IIIF URL.
+    If input_value is an image_url, it returns the URL as-is.
     """
-    return [f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"]
+
+    if input_value.startswith("http"):
+        return [input_value]
+    else:
+        input_value = input_value.split(",")
+
+        return [
+            (
+                f"https://lbiiif.riksarkivet.se/arkis!{item.strip()}/full/max/0/default.jpg"
+            )
+            for item in input_value
+        ]
 
 
 with gr.Blocks() as submit:
@@ -279,17 +294,8 @@ with gr.Blocks() as submit:
             return gr.update(value=None)
         return images
 
-    def return_iiif_url(image_ids):
-        if isinstance(image_ids, str):
-            image_ids = image_ids.split(",")
-
-        return [
-            f"https://lbiiif.riksarkivet.se/arkis!{image_id.strip()}/full/max/0/default.jpg"
-            for image_id in image_ids
-        ]
-
     image_iiif_url.submit(
-        fn=return_iiif_url, inputs=image_iiif_url, outputs=batch_image_gallery
+        fn=get_image_from_image_url, inputs=image_iiif_url, outputs=batch_image_gallery
     ).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
 
     run_button.click(
@@ -302,5 +308,3 @@ with gr.Blocks() as submit:
     examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
 
     edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)
-
-# TODO: submit on image_id .. --> yaml swedish - spreads

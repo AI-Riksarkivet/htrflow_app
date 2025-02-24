@@ -23,11 +23,6 @@ PIPELINES = {
         "description": "This pipeline works well on handwritten historic letters and other documents written in Norwegian with only one text region. The model is developed by the <a href='https://huggingface.co/Sprakbanken/TrOCR-norhand-v3'>Language Bank</a> at The National Library of Norway.",
         "examples": ["norhand_fmgh040_4.jpg"],
     },
-    "French - Single page and snippets": {
-        "file": "app/assets/templates/simple_pylaia_french.yaml",
-        "description": "This pipeline works well on handwritten historic letters and other documents written in French. The model is developed by <a href='https://huggingface.co/Teklia/pylaia-belfort'>Teklia</a>.",
-        "examples": ["belfort_snippet.jpg"],
-    },
     "Medival - Single page and snippets": {
         "file": "app/assets/templates/simple_medival.yaml",
         "description": "This pipeline works well for medieval scripts written in single-page running text. It is a base model from <a href='https://huggingface.co/medieval-data'>Medieval Data</a>, but other models can be selected from here: <a href='https://huggingface.co/collections/medieval-data/trocr-medieval-htr-66871faba03abfbb1b66ab69'>Medieval Models</a>.",
