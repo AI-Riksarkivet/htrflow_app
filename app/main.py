@@ -79,9 +79,9 @@ with gr.Blocks(
         with gr.Tab(label="3. Export", interactive=False) as tab_export:
             export.render()
 
-    @demo.load()
-    def inital_trocr_load():
-        TrOCR("Riksarkivet/trocr-base-handwritten-hist-swe-2")
+    # @demo.load()
+    # def inital_trocr_load():
+    #     TrOCR("Riksarkivet/trocr-base-handwritten-hist-swe-2")
 
     def sync_gradio_object_state(input_value, state_value):
         """Synchronize the Collection."""
