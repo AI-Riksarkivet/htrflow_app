@@ -115,4 +115,10 @@ hr.region-divider {
 height: auto !important;
 }
 
+.title-h1 {
+    text-align: center;
+    display:block;
+}
+
+
 """

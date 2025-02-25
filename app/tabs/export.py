@@ -78,9 +78,7 @@ with gr.Blocks() as export:
                 multiselect=True,
                 interactive=True,
             )
-            export_button = gr.Button(
-                "Export", scale=0, min_width=200, variant="primary"
-            )
+            export_button = gr.Button("Export", scale=0, min_width=200, variant="primary")
 
         with gr.Column(scale=1):
             download_files = gr.Files(label="Download files", interactive=False)
