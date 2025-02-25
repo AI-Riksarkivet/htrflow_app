@@ -179,7 +179,6 @@ def get_image_from_image_url(input_value):
 
 
 with gr.Blocks() as submit:
-
     with gr.Row():
         with gr.Column():
             gr.Markdown("# Upload")
@@ -213,6 +212,8 @@ with gr.Blocks() as submit:
                     height="45vh",
                     elem_classes="gallery-fix",
                 )
+                # with Modal(visible=False) as edit_pipeline_modal:
+
                 image_iiif_url = gr.Textbox(
                     label="Upload by image ID",
                     info=(

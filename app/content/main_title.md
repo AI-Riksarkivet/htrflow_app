@@ -1,1 +1,1 @@
-<h1><center> HTRflow 🔍</center></h1>
+<h1>HTRflow 🔍</h1>

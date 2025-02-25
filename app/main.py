@@ -64,19 +64,16 @@ with gr.Blocks(
     css=css,
     head=matomo,
 ) as demo:
-
-    gr.Markdown(load_markdown(None, "main_title"))
+    gr.Markdown(load_markdown(None, "main_title"), elem_classes="title-h1")
 
     with gr.Sidebar(label="Menu"):
-        gr.Markdown(load_markdown(None, "main_sub_title_hum"))
+        gr.HTML(load_markdown(None, "main_sub_title_hum"))
         gr.Markdown(load_markdown(None, "sidebar"))
 
     with gr.Tabs(elem_classes="top-navbar") as navbar:
         with gr.Tab(label="1. Upload") as tab_submit:
             submit.render()
-        with gr.Tab(
-            label="2. Result", interactive=False, id="result"
-        ) as tab_visualizer:
+        with gr.Tab(label="2. Result", interactive=False, id="result") as tab_visualizer:
             visualizer.render()
 
         with gr.Tab(label="3. Export", interactive=False) as tab_export:
@@ -91,9 +88,7 @@ with gr.Blocks(
         state_value = input_value
         return state_value if state_value is not None else gr.skip()
 
-    collection_submit_state.change(
-        activate_tab, collection_submit_state, tab_visualizer
-    )
+    collection_submit_state.change(activate_tab, collection_submit_state, tab_visualizer)
     collection_submit_state.change(activate_tab, collection_submit_state, tab_export)
     collection_submit_state.change(lambda: gr.Tabs(selected="result"), outputs=navbar)
 
@@ -112,6 +107,4 @@ with gr.Blocks(
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(
-        server_name="0.0.0.0", server_port=7860, enable_monitoring=False, show_api=False
-    )
+    demo.launch(server_name="0.0.0.0", server_port=7860, enable_monitoring=False, show_api=False)
