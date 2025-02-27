@@ -192,7 +192,7 @@ with gr.Blocks() as submit:
         with gr.Row(
             equal_height=True,
         ):
-            with gr.Column(scale=5):
+            with gr.Column(scale=2):
                 batch_image_gallery = gr.Gallery(
                     file_types=["image"],
                     label="Image to transcribe",
@@ -200,7 +200,7 @@ with gr.Blocks() as submit:
                     object_fit="scale-down",
                 )
 
-            with gr.Column(scale=3):
+            with gr.Column(scale=1):
                 examples = gr.Gallery(
                     all_example_images(),
                     label="Examples",
@@ -208,9 +208,8 @@ with gr.Blocks() as submit:
                     allow_preview=False,
                     object_fit="scale-down",
                     min_width=250,
-                    columns=3,
-                    height="45vh",
-                    elem_classes="gallery-fix",
+                    height="100%",
+                    columns=4,
                 )
                 # with Modal(visible=False) as edit_pipeline_modal:
 
