@@ -226,9 +226,9 @@ with gr.Blocks() as submit:
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
         gr.Markdown("## Settings")
         gr.Markdown(
-            "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different handwritten text recognition tasks."
-            "If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further."
-            "Choosing the right pipeline significantly improves transcription quality"
+            "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different handwritten text recognition tasks. "
+            "If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further. "
+            "Choosing the right pipeline significantly improves transcription quality. "
         )
 
         with gr.Row():
