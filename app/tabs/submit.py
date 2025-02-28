@@ -1,9 +1,11 @@
 import logging
 import os
+import re
 import time
 
 import gradio as gr
 import spaces
+import requests
 import yaml
 from gradio_modal import Modal
 from htrflow.pipeline.pipeline import Pipeline
@@ -149,33 +151,129 @@ def get_selected_example_image(event: gr.SelectData) -> str:
     return [event.value["image"]["path"]]
 
 
-def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
+def get_selected_example_pipeline(event: gr.SelectData) -> str:
     """
-    Get the name of the pipeline that corresponds to the selected image.
+    Get the name of the pipeline that corresponds to the selected image,
+    return the first pipeline if no image is selected.
     """
     for name, details in PIPELINES.items():
         if event.value["image"]["orig_name"] in details.get("examples", []):
             return name
+    return list(PIPELINES)[0]
 
 
-def get_image_from_image_url(input_value):
+def is_image_id(input_value: str) -> bool:
     """
-    Get URL of the image from either an image_id (from Riksarkivet) or an image_url directly.
-    If input_value is an image_id, it constructs the IIIF URL.
-    If input_value is an image_url, it returns the URL as-is.
+    Check if `input_value` is a valid Riksarkivet image ID
     """
+    return bool(re.match(r"\w{8}_\w{5}", input_value))
 
-    if input_value.startswith("http"):
-        return [input_value]
-    else:
-        input_value = input_value.split(",")
 
-        return [
-            (
-                f"https://lbiiif.riksarkivet.se/arkis!{item.strip()}/full/max/0/default.jpg"
-            )
-            for item in input_value
-        ]
+def get_images_from_iiif_manifest(manifest: dict, height: int=1600):
+    """
+    Read all images from a v2/v3 IIIF manifest.
+
+    Arguments:
+        manifest: IIIF manifest
+        height: Max height of returned images.
+    """
+    # Hacky solution to get all images regardless of API version - treat
+    # the manifest as a string and match everything that looks like an IIIF
+    # image URL.
+    manifest = str(manifest)
+    pattern = r"(?P<identifier>https?://\S*)/(?P<region>\S*?)/(?P<size>\S*?)/(?P<rotation>!?\d*?)/(?P<quality>\S*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)"
+
+    images = set()  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
+    for match in re.findall(pattern, manifest):
+        identifier, _, _, _, _, format_ = match
+        images.add(f"{identifier}/full/{height},/0/default.{format_}")
+    return sorted(images)
+
+
+def handle_url_input(input_value: str) -> list[str]:
+    """
+    Get images from a string input.
+
+    Arguments:
+        input_value: A string, which is any of the following:
+            - A Riksarkivet image ID (e.g. A0068688_00123)
+            - A IIIF manifest URI
+            - An image URL
+
+    Returns:
+        A list of image URLs.
+    """
+    # Does it look like an image ID? => Fetch the image from Riksarkivet's IIIF.
+    if is_image_id(input_value):
+        return [f"https://lbiiif.riksarkivet.se/arkis!{input_value}/full/max/0/default.jpg"]
+
+    # Does the URL return JSON? => Treat it like a IIIF manifest.
+    try:
+        manifest = requests.get(input_value, timeout=10).json()
+        return get_images_from_iiif_manifest(manifest)
+    except (requests.HTTPError, requests.JSONDecodeError):
+        pass
+
+    # Else treat it as an image URL.
+    return [input_value]
+
+
+def select_uploaded_image(selected_images, event: gr.SelectData):
+    """
+    Select an uploaded image.
+
+    Move the selected (clicked) image from the uploaded image gallery
+    to the selected image gallery.
+    """
+    selected_images = selected_images or []
+    paths = [path for path, _ in selected_images]
+    if event.value["image"]["path"] not in paths:
+        selected_images.append(event.value["image"]["path"])
+    return selected_images[-MAX_IMAGES:]
+
+
+def deselect_selected_image(selected_images, event: gr.SelectData):
+    """
+    Deselect (remove) a previously selected image.
+    """
+    selected_images = selected_images or []
+    for image in selected_images:
+        path, _ = image
+        if path == event.value["image"]["path"]:
+            selected_images.remove(image)
+
+    # When an image is removed from the gallery, the selected index is not updated, which
+    # leaves a blue box around the new image at the deleted image's index. Example:
+    # you have three images, img0, img1 and img2 and you click img1 to delete it:
+    #
+    #   img0 [img1] img2
+    #
+    # When img1 is removed, the new gallery looks like this:
+    #
+    #   img0 [img2]
+    #
+    # Which means that img2 is "selected", and if you try to delete (i.e. click/select) it,
+    # nothing will happen. To avoid it, we need to update/remove the selected index too. For
+    # some reason it doesn't work to set the selected index to None, but setting it to a
+    # sufficiently large index achieves the wanted effect.
+    return gr.update(value=selected_images, selected_index=1000)
+
+
+def open_image_selector_modal(uploaded_images):
+    """
+    Open image selector modal if needed (i.e. len(uploaded_images) > MAX_IMAGES)
+    """
+    visible = uploaded_images is not None and len(uploaded_images) > MAX_IMAGES
+    return Modal(visible=visible)
+
+
+def move_uploaded_to_selected_if_possible(uploaded_images):
+    """
+    Select all uploaded images if len(uploaded_images) <= MAX_IMAGES
+    """
+    if uploaded_images is None or len(uploaded_images) <= MAX_IMAGES:
+        return uploaded_images
+    return []
 
 
 with gr.Blocks() as submit:
@@ -214,13 +312,9 @@ with gr.Blocks() as submit:
                 # with Modal(visible=False) as edit_pipeline_modal:
 
                 image_iiif_url = gr.Textbox(
-                    label="Upload by image ID",
-                    info=(
-                        "Use any image from our digitized archives by pasting its image ID found in the "
-                        "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
-                        "Press enter to submit."
-                    ),
-                    placeholder="R0002231_00005, R0002231_00006",
+                    label="From the web",
+                    info="Paste an image URL, IIIF manifest or Riksarkivet image ID and press enter to submit.",
+                    placeholder="www.example.com/image.jpg",
                 )
 
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
@@ -284,27 +378,62 @@ with gr.Blocks() as submit:
     with gr.Row():
         run_button = gr.Button("Transcribe", variant="primary", scale=0, min_width=200)
 
-    @batch_image_gallery.upload(
-        inputs=batch_image_gallery,
-        outputs=[batch_image_gallery],
-    )
-    def validate_images(images):
-        if len(images) > MAX_IMAGES:
-            gr.Warning(f"Maximum images you can upload is set to: {MAX_IMAGES}")
-            return gr.update(value=None)
-        return images
+    with Modal(visible=False, allow_user_close=False) as image_selector_modal:
+        gr.Markdown("# Select images")
+        gr.Markdown(f"The number of images exceeds the app's limit of {MAX_IMAGES} images. Please select up to {MAX_IMAGES} images to continue.")
 
-    image_iiif_url.submit(
-        fn=get_image_from_image_url, inputs=image_iiif_url, outputs=batch_image_gallery
-    ).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
+        uploaded_images_gallery = gr.Gallery(
+            file_types=["image"],
+            object_fit="scale-down",
+            allow_preview=False,
+            interactive=False,
+            columns=6,
+            label="Uploaded images",
+            height="100%"
+        )
+        selected_images_gallery = gr.Gallery(
+            file_types=["image"],
+            object_fit="scale-down",
+            allow_preview=False,
+            interactive=False,
+            columns=MAX_IMAGES,
+            height="100%",
+            label="Selected images",
+            visible=False
+        )
 
-    run_button.click(
-        fn=run_htrflow,
-        inputs=[custom_template_yaml, batch_image_gallery],
-        outputs=[collection_submit_state, batch_image_gallery],
-    )
+        with gr.Row():
+            cancel_button = gr.Button("Cancel", variant="secondary")
+            ok_button = gr.Button("Continue", variant="primary")
 
-    examples.select(get_selected_example_image, None, batch_image_gallery)
+    # All images, regardless of source, are put in `uploaded_images_gallery`
+    batch_image_gallery.upload(lambda images: images, batch_image_gallery, uploaded_images_gallery)
+    image_iiif_url.submit(handle_url_input, image_iiif_url, uploaded_images_gallery)
+    examples.select(get_selected_example_image, None, batch_image_gallery).then(get_selected_example_image, None, uploaded_images_gallery)
+
+    # When `uploaded_images_gallery` changes, check if we need to open the modal to let the
+    # user select a subset of the uploaded images.
+    uploaded_images_gallery.change(open_image_selector_modal, uploaded_images_gallery, image_selector_modal)
+    uploaded_images_gallery.change(move_uploaded_to_selected_if_possible, uploaded_images_gallery, selected_images_gallery)
+    uploaded_images_gallery.change(move_uploaded_to_selected_if_possible, uploaded_images_gallery, batch_image_gallery)
+
+    # Image selector modal logic
+    uploaded_images_gallery.select(select_uploaded_image, selected_images_gallery, selected_images_gallery)
+    selected_images_gallery.select(deselect_selected_image, selected_images_gallery, selected_images_gallery)
+    selected_images_gallery.change(lambda images: gr.update(visible=bool(images)), selected_images_gallery, selected_images_gallery)
+    selected_images_gallery.change(lambda images: gr.update(interactive=bool(images)), selected_images_gallery, ok_button)
+
+    # Image selector modal buttons
+    cancel_button.click(lambda: Modal(visible=False), None, image_selector_modal)
+    cancel_button.click(lambda: gr.update(value=None), None, selected_images_gallery)
+    cancel_button.click(lambda: gr.update(value=None), None, batch_image_gallery)
+    cancel_button.click(lambda: gr.update(value=None), None, uploaded_images_gallery)
+    ok_button.click(lambda: Modal(visible=False), None, image_selector_modal)
+    ok_button.click(lambda images: images, selected_images_gallery, batch_image_gallery)
+
+    # Run HTRflow on selected images
+    run_button.click(fn=run_htrflow, inputs=[custom_template_yaml, selected_images_gallery], outputs=[collection_submit_state, batch_image_gallery])
+
     examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
 
     edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)
