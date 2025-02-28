@@ -111,7 +111,7 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
     time.sleep(2)
     gr.Info("Completed succesfully ✨")
 
-    yield collection, gr.skip()
+    yield collection
 
 
 def get_pipeline_description(pipeline: str) -> str:
@@ -227,7 +227,7 @@ def handle_url_input(input_value: str) -> list[str]:
 
     # Does the URL return JSON? => Treat it like a IIIF manifest.
     try:
-        manifest = requests.get(input_value, timeout=10).json()
+        manifest = requests.get(input_value).json()
         return get_images_from_iiif_manifest(manifest)
     except (requests.HTTPError, requests.JSONDecodeError):
         pass
@@ -289,7 +289,7 @@ def move_uploaded_to_selected_if_possible(uploaded_images):
     """
     Select all uploaded images if len(uploaded_images) <= MAX_IMAGES
     """
-    if uploaded_images is None or len(uploaded_images) <= MAX_IMAGES:
+    if uploaded_images is not None and len(uploaded_images) <= MAX_IMAGES:
         return uploaded_images
     return []
 
@@ -428,7 +428,6 @@ with gr.Blocks() as submit:
     batch_image_gallery.upload(lambda images: images, batch_image_gallery, uploaded_images_gallery)
     image_iiif_url.submit(handle_url_input, image_iiif_url, uploaded_images_gallery).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
     image_iiif_url.submit(open_image_selector_modal, uploaded_images_gallery, image_selector_modal)
-    image_iiif_url.submit(move_uploaded_to_selected_if_possible, uploaded_images_gallery, selected_images_gallery)
 
     # Move uploaded images to `selected_images`, opening the modal if needed
     uploaded_images_gallery.change(open_image_selector_modal, uploaded_images_gallery, image_selector_modal)
@@ -438,18 +437,18 @@ with gr.Blocks() as submit:
     uploaded_images_gallery.select(select_uploaded_image, selected_images_gallery, selected_images_gallery)
     selected_images_gallery.select(deselect_selected_image, selected_images_gallery, selected_images_gallery)
     selected_images_gallery.change(lambda images: gr.update(visible=bool(images)), selected_images_gallery, selected_images_gallery)
-    selected_images_gallery.change(lambda images: images, selected_images_gallery, batch_image_gallery)
     selected_images_gallery.change(lambda images: gr.update(interactive=bool(images)), selected_images_gallery, ok_button)
 
     # Image selector modal buttons
     cancel_button.click(lambda: Modal(visible=False), None, image_selector_modal)
     cancel_button.click(lambda: [], None, selected_images_gallery)
     cancel_button.click(lambda: gr.update(value=None), None, batch_image_gallery)
-    cancel_button.click(lambda: gr.update(value=None), None, uploaded_images_gallery)
     ok_button.click(lambda: Modal(visible=False), None, image_selector_modal)
+    ok_button.click(lambda x: x, selected_images_gallery, batch_image_gallery)
 
     # Run HTRflow on selected images
-    run_button.click(fn=run_htrflow, inputs=[custom_template_yaml, selected_images_gallery], outputs=[collection_submit_state, batch_image_gallery])
+    run_button.click(fn=run_htrflow, inputs=[custom_template_yaml, selected_images_gallery], outputs=collection_submit_state)
+    run_button.click(lambda: [], None, )
 
     examples.select(get_selected_example_image, None, batch_image_gallery)
     examples.select(get_selected_example_image, None, uploaded_images_gallery)
