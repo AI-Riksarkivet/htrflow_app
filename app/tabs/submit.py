@@ -179,19 +179,16 @@ def get_image_from_image_url(input_value):
 
 
 with gr.Blocks() as submit:
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("# Upload")
-            gr.Markdown(
-                "Select or upload the image you want to transcribe. You can upload up to five images at a time. \n "
-                "Alternatively, you can choose from example images from the gallery or use Image_IDs."
-            )
+
+    gr.Markdown("# Upload")
+    gr.Markdown(
+        "Select or upload the image you want to transcribe. You can upload up to five images at a time. \n "
+        "Alternatively, you can choose from example images from the gallery or use Image_IDs."
+    )
 
     collection_submit_state = gr.State()
     with gr.Group():
-        with gr.Row(
-            equal_height=True,
-        ):
+        with gr.Row(equal_height=True):
             with gr.Column(scale=2):
                 batch_image_gallery = gr.Gallery(
                     file_types=["image"],
@@ -211,7 +208,6 @@ with gr.Blocks() as submit:
                     height="100%",
                     columns=4,
                 )
-                # with Modal(visible=False) as edit_pipeline_modal:
 
                 image_iiif_url = gr.Textbox(
                     label="Upload by image ID",
@@ -255,31 +251,28 @@ with gr.Blocks() as submit:
             padding=False,
         )
 
-    with Modal(
-        visible=False,
-    ) as edit_pipeline_modal:
-        with gr.Column():
-            gr.Markdown(
-                """
-                ## Edit Pipeline
-                The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an
-                image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.
+    with Modal(visible=False) as edit_pipeline_modal:
+        gr.Markdown(
+            """
+            ## Edit Pipeline
+            The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an
+            image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.
 
-                Edit pipeline if needed:
-                """
-            )
-            custom_template_yaml = gr.Code(
-                value=get_yaml,
-                inputs=pipeline_dropdown,
-                language="yaml",
-                container=False,
-            )
-            url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
-            gr.HTML(
-                f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
-                padding=False,
-                elem_classes="pipeline-help",
-            )
+            Edit pipeline if needed:
+            """
+        )
+        custom_template_yaml = gr.Code(
+            value=get_yaml,
+            inputs=pipeline_dropdown,
+            language="yaml",
+            container=False,
+        )
+        url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
+        gr.HTML(
+            f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
+            padding=False,
+            elem_classes="pipeline-help",
+        )
 
     with gr.Row():
         run_button = gr.Button("Transcribe", variant="primary", scale=0, min_width=200)
