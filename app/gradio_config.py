@@ -120,5 +120,12 @@ height: auto !important;
     display:block;
 }
 
+.image_tab {
+  background: var(--bg);
+  border: none;
+}
 
+.image_tabs {
+  background: var(--bg);
+}
 """

@@ -1,6 +1,8 @@
 import logging
 import os
 import time
+import re
+import requests
 
 import gradio as gr
 import spaces
@@ -158,35 +160,47 @@ def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
             return name
 
 
-def get_image_from_image_url(input_value):
-    """
-    Get URL of the image from either an image_id (from Riksarkivet) or an image_url directly.
-    If input_value is an image_id, it constructs the IIIF URL.
-    If input_value is an image_url, it returns the URL as-is.
-    """
+def get_image_from_image_id(image_id):
+    return [f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"]
 
-    if input_value.startswith("http"):
-        return [input_value]
-    else:
-        input_value = input_value.split(",")
 
-        return [
-            (
-                f"https://lbiiif.riksarkivet.se/arkis!{item.strip()}/full/max/0/default.jpg"
-            )
-            for item in input_value
-        ]
+def get_images_from_iiif_manifest(iiif_manifest_url):
+    """
+    Read all images from a v2/v3 IIIF manifest.
+
+    Arguments:
+        manifest: IIIF manifest
+        height: Max height of returned images.
+    """
+    try:
+        response = requests.get(iiif_manifest_url, timeout=5)
+        response.raise_for_status()
+    except (requests.HTTPError, requests.ConnectionError) as e:
+        gr.Error(f"Could not fetch IIIF manifest from {iiif_manifest_url} ({e})")
+        return
+
+    # Hacky solution to get all images regardless of API version - treat
+    # the manifest as a string and match everything that looks like an IIIF
+    # image URL.
+    manifest = response.text
+    pattern = r'(?P<identifier>https?://[^"\s]*)/(?P<region>[^"\s]*?)/(?P<size>[^"\s]*?)/(?P<rotation>!?\d*?)/(?P<quality>[^"\s]*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)'
+    height= 1200
+
+    images = set()  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
+    for match in re.findall(pattern, manifest):
+        identifier, _, _, _, _, format_ = match
+        images.add(f"{identifier}/full/{height},/0/default.{format_}")
+
+    return sorted(images)
 
 
 with gr.Blocks() as submit:
 
     gr.Markdown("# Upload")
-    gr.Markdown(
-        "Select or upload the image you want to transcribe. You can upload up to five images at a time. \n "
-        "Alternatively, you can choose from example images from the gallery or use Image_IDs."
-    )
+    gr.Markdown("Select or upload the image you want to transcribe. You can upload up to five images at a time.")
 
     collection_submit_state = gr.State()
+
     with gr.Group():
         with gr.Row(equal_height=True):
             with gr.Column(scale=2):
@@ -198,26 +212,51 @@ with gr.Blocks() as submit:
                 )
 
             with gr.Column(scale=1):
-                examples = gr.Gallery(
-                    all_example_images(),
-                    label="Examples",
-                    interactive=False,
-                    allow_preview=False,
-                    object_fit="scale-down",
-                    min_width=250,
-                    height="100%",
-                    columns=4,
-                )
+                with gr.Tabs(elem_classes="image_tabs"):
+                    with gr.Tab("Examples", elem_classes="image_tab"):
+                        examples = gr.Gallery(
+                            all_example_images(),
+                            show_label=False,
+                            interactive=False,
+                            allow_preview=False,
+                            object_fit="scale-down",
+                            min_width=250,
+                            height="100%",
+                            columns=4,
+                        )
 
-                image_iiif_url = gr.Textbox(
-                    label="Upload by image ID",
-                    info=(
-                        "Use any image from our digitized archives by pasting its image ID found in the "
-                        "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
-                        "Press enter to submit."
-                    ),
-                    placeholder="R0002231_00005, R0002231_00006",
-                )
+                    with gr.Tab("Image ID", elem_classes="image_tab"):
+                        image_id = gr.Textbox(
+                            label="Upload by image ID",
+                            info=(
+                                "Use any image from our digitized archives by pasting its image ID found in the "
+                                "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
+                                "Press enter to submit."
+                            ),
+                            placeholder="R0002231_00005",
+                        )
+
+                    with gr.Tab("IIIF Manifest", elem_classes="image_tab"):
+                        iiif_manifest_url = gr.Textbox(
+                            label="IIIF Manifest",
+                            info=(
+                                "Use an image from a IIIF manifest by pasting a IIIF manifest URL. "
+                                "Press enter to submit."
+                            ),
+                            placeholder="",
+                        )
+                        iiif_gallery = gr.Gallery(
+                            interactive=False,
+                            columns=4,
+                            allow_preview=False,
+                            container=False,
+                            show_label=False,
+                            object_fit="scale-down",
+                        )
+
+                    with gr.Tab("URL", elem_classes="image_tab"):
+                        image_url = gr.Textbox(label="Image URL", info="Upload an image by pasting its URL.", placeholder="https://example.com/image.jpg")
+
 
     with gr.Column(variant="panel", elem_classes="pipeline-panel"):
         gr.Markdown("## Settings")
@@ -287,9 +326,11 @@ with gr.Blocks() as submit:
             return gr.update(value=None)
         return images
 
-    image_iiif_url.submit(
-        fn=get_image_from_image_url, inputs=image_iiif_url, outputs=batch_image_gallery
-    ).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
+
+    image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
+    iiif_manifest_url.submit(get_images_from_iiif_manifest, iiif_manifest_url, iiif_gallery)
+    image_url.submit(lambda url: [url], image_url, batch_image_gallery)
+
 
     run_button.click(
         fn=run_htrflow,
@@ -299,5 +340,7 @@ with gr.Blocks() as submit:
 
     examples.select(get_selected_example_image, None, batch_image_gallery)
     examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
+
+    iiif_gallery.select(get_selected_example_image, None, batch_image_gallery)
 
     edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)
