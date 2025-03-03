@@ -50,7 +50,7 @@ hr.region-divider {
   margin-bottom: 0.5em;
 }
 
-.pipeline-panel {
+.panel-with-border {
   background: none;
   border: solid 1px;
   border-color: var(--block-border-color);
@@ -120,12 +120,4 @@ height: auto !important;
     display:block;
 }
 
-.image_tab {
-  background: var(--bg);
-  border: none;
-}
-
-.image_tabs {
-  background: var(--bg);
-}
 """

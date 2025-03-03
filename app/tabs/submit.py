@@ -201,64 +201,65 @@ with gr.Blocks() as submit:
 
     collection_submit_state = gr.State()
 
-    with gr.Group():
-        with gr.Row(equal_height=True):
-            with gr.Column(scale=2):
-                batch_image_gallery = gr.Gallery(
-                    file_types=["image"],
-                    label="Image to transcribe",
-                    interactive=True,
-                    object_fit="scale-down",
-                )
 
-            with gr.Column(scale=1):
-                with gr.Tabs(elem_classes="image_tabs"):
-                    with gr.Tab("Examples", elem_classes="image_tab"):
-                        examples = gr.Gallery(
-                            all_example_images(),
-                            show_label=False,
-                            interactive=False,
-                            allow_preview=False,
-                            object_fit="scale-down",
-                            min_width=250,
-                            height="100%",
-                            columns=4,
-                        )
+    with gr.Row(equal_height=True):
+        with gr.Column(scale=2):
+            batch_image_gallery = gr.Gallery(
+                file_types=["image"],
+                label="Image to transcribe",
+                interactive=True,
+                object_fit="scale-down",
+            )
 
-                    with gr.Tab("Image ID", elem_classes="image_tab"):
-                        image_id = gr.Textbox(
-                            label="Upload by image ID",
-                            info=(
-                                "Use any image from our digitized archives by pasting its image ID found in the "
-                                "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
-                                "Press enter to submit."
-                            ),
-                            placeholder="R0002231_00005",
-                        )
+        with gr.Column(scale=1, variant="panel", elem_classes="panel-with-border"):
+            with gr.Tabs():
+                with gr.Tab("Examples"):
+                    examples = gr.Gallery(
+                        all_example_images(),
+                        show_label=False,
+                        interactive=False,
+                        allow_preview=False,
+                        object_fit="scale-down",
+                        min_width=250,
+                        height="100%",
+                        columns=4,
+                        container=False,
+                    )
 
-                    with gr.Tab("IIIF Manifest", elem_classes="image_tab"):
-                        iiif_manifest_url = gr.Textbox(
-                            label="IIIF Manifest",
-                            info=(
-                                "Use an image from a IIIF manifest by pasting a IIIF manifest URL. "
-                                "Press enter to submit."
-                            ),
-                            placeholder="",
-                        )
-                        iiif_gallery = gr.Gallery(
-                            interactive=False,
-                            columns=4,
-                            allow_preview=False,
-                            container=False,
-                            show_label=False,
-                            object_fit="scale-down",
-                        )
+                with gr.Tab("Image ID"):
+                    image_id = gr.Textbox(
+                        label="Upload by image ID",
+                        info=(
+                            "Use any image from our digitized archives by pasting its image ID found in the "
+                            "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
+                            "Press enter to submit."
+                        ),
+                        placeholder="R0002231_00005",
+                    )
 
-                    with gr.Tab("URL", elem_classes="image_tab"):
-                        image_url = gr.Textbox(label="Image URL", info="Upload an image by pasting its URL.", placeholder="https://example.com/image.jpg")
+                with gr.Tab("IIIF Manifest"):
+                    iiif_manifest_url = gr.Textbox(
+                        label="IIIF Manifest",
+                        info=(
+                            "Use an image from a IIIF manifest by pasting a IIIF manifest URL. "
+                            "Press enter to submit."
+                        ),
+                        placeholder="",
+                    )
+                    iiif_gallery = gr.Gallery(
+                        interactive=False,
+                        columns=4,
+                        allow_preview=False,
+                        container=False,
+                        show_label=False,
+                        object_fit="scale-down",
+                    )
+
+                with gr.Tab("URL"):
+                    image_url = gr.Textbox(label="Image URL", info="Upload an image by pasting its URL.", placeholder="https://example.com/image.jpg")
 
 
-    with gr.Column(variant="panel", elem_classes="pipeline-panel"):
+    with gr.Column(variant="panel", elem_classes="panel-with-border"):
         gr.Markdown("## Settings")
         gr.Markdown(
             "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different handwritten text recognition tasks. "
