@@ -2,7 +2,6 @@ import logging
 import os
 
 import gradio as gr
-from htrflow.models.huggingface.trocr import TrOCR
 
 from app.gradio_config import css, theme
 from app.tabs.export import collection as collection_export_state

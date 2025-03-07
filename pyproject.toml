@@ -23,6 +23,7 @@ dependencies = [
     "gradio-modal>=0.0.4",
     "dill>=0.3.9",
     "spaces>=0.32.0",
+    "pycurl",
 ]
 
 [project.urls]

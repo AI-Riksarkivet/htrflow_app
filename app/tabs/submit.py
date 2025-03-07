@@ -1,10 +1,12 @@
+import io
 import logging
 import os
-import time
 import re
-import requests
+import time
 
+import certifi
 import gradio as gr
+import pycurl
 import spaces
 import yaml
 from gradio_modal import Modal
@@ -34,12 +36,7 @@ class PipelineWithProgress(Pipeline):
     @classmethod
     def from_config(cls, config: dict[str, str]):
         """Init pipeline from config, ensuring the correct subclass is instantiated."""
-        return cls(
-            [
-                init_step(step["step"], step.get("settings", {}))
-                for step in config["steps"]
-            ]
-        )
+        return cls([init_step(step["step"], step.get("settings", {})) for step in config["steps"]])
 
     def run(self, collection, start=0, progress=None):
         """
@@ -67,7 +64,7 @@ class PipelineWithProgress(Pipeline):
         return collection
 
 
-@spaces.GPU
+# @spaces.GPU
 def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress()):
     """
     Executes the HTRflow pipeline based on the provided YAML configuration and batch images.
@@ -98,9 +95,7 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
 
     pipe = PipelineWithProgress.from_config(config)
 
-    gr.Info(
-        f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}."
-    )
+    gr.Info(f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}.")
     progress(0.1, desc="HTRflow: Processing")
 
     collection.label = "demo_output"
@@ -164,43 +159,96 @@ def get_image_from_image_id(image_id):
     return [f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"]
 
 
-def get_images_from_iiif_manifest(iiif_manifest_url):
-    """
-    Read all images from a v2/v3 IIIF manifest.
+# def get_images_from_iiif_manifest(iiif_manifest_url):
+#     """
+#     Read all images from a v2/v3 IIIF manifest.
 
+#     Arguments:
+#         manifest: IIIF manifest
+#         height: Max height of returned images.
+#     """
+#     try:
+#         response = requests.get(iiif_manifest_url, timeout=5)
+#         response.raise_for_status()
+#     except (requests.HTTPError, requests.ConnectionError) as e:
+#         gr.Error(f"Could not fetch IIIF manifest from {iiif_manifest_url} ({e})")
+#         return
+
+#     # Hacky solution to get all images regardless of API version - treat
+#     # the manifest as a string and match everything that looks like an IIIF
+#     # image URL.
+#     manifest = response.text
+#     pattern = r'(?P<identifier>https?://[^"\s]*)/(?P<region>[^"\s]*?)/(?P<size>[^"\s]*?)/(?P<rotation>!?\d*?)/(?P<quality>[^"\s]*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)'
+#     height= 1200
+
+#     images = set()  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
+#     for match in re.findall(pattern, manifest):
+#         identifier, _, _, _, _, format_ = match
+#         images.add(f"{identifier}/full/{height},/0/default.{format_}")
+
+#     return sorted(images)
+
+
+def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200):
+    """
+    Read images from a v2/v3 IIIF manifest, limited to max_images.
+    
     Arguments:
-        manifest: IIIF manifest
-        height: Max height of returned images.
+        iiif_manifest_url: URL to IIIF manifest
+        height: Max height of returned images
+        max_images: Maximum number of images to return (default: 20)
     """
     try:
-        response = requests.get(iiif_manifest_url, timeout=5)
-        response.raise_for_status()
-    except (requests.HTTPError, requests.ConnectionError) as e:
-        gr.Error(f"Could not fetch IIIF manifest from {iiif_manifest_url} ({e})")
-        return
-
+        buffer = io.BytesIO()
+        c = pycurl.Curl()
+        
+        c.setopt(c.URL, iiif_manifest_url)
+        c.setopt(c.WRITEDATA, buffer)
+        c.setopt(c.CAINFO, certifi.where())
+        c.setopt(c.FOLLOWLOCATION, 1)
+        c.setopt(c.MAXREDIRS, 5)
+        c.setopt(c.CONNECTTIMEOUT, 5)
+        c.setopt(c.TIMEOUT, 10)
+        c.setopt(c.NOSIGNAL, 1)
+        c.setopt(c.USERAGENT, "curl/7.68.0")
+        
+        c.perform()
+        
+        http_code = c.getinfo(c.RESPONSE_CODE)
+        if http_code != 200:
+            raise Exception(f"HTTP Error: {http_code}")
+        
+        manifest = buffer.getvalue().decode("utf-8")
+        c.close()
+        
+    except pycurl.error as e:
+        error_code, error_msg = e.args
+        raise Exception(f"Could not fetch IIIF manifest from {iiif_manifest_url} ({error_msg})")
+    
     # Hacky solution to get all images regardless of API version - treat
     # the manifest as a string and match everything that looks like an IIIF
     # image URL.
-    manifest = response.text
     pattern = r'(?P<identifier>https?://[^"\s]*)/(?P<region>[^"\s]*?)/(?P<size>[^"\s]*?)/(?P<rotation>!?\d*?)/(?P<quality>[^"\s]*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)'
-    height= 1200
-
+    
     images = set()  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
+    
     for match in re.findall(pattern, manifest):
         identifier, _, _, _, _, format_ = match
         images.add(f"{identifier}/full/{height},/0/default.{format_}")
-
-    return sorted(images)
+        
+        # Stop adding images if we've reached the maximum
+        if len(images) >= max_images:
+            break
+    
+    # Sort and limit the results to max_images
+    return sorted(images)[:max_images], gr.update(visible=True)
 
 
 with gr.Blocks() as submit:
-
     gr.Markdown("# Upload")
     gr.Markdown("Select or upload the image you want to transcribe. You can upload up to five images at a time.")
 
     collection_submit_state = gr.State()
-
 
     with gr.Row(equal_height=True):
         with gr.Column(scale=2):
@@ -238,26 +286,33 @@ with gr.Blocks() as submit:
                     )
 
                 with gr.Tab("IIIF Manifest"):
-                    iiif_manifest_url = gr.Textbox(
-                        label="IIIF Manifest",
-                        info=(
-                            "Use an image from a IIIF manifest by pasting a IIIF manifest URL. "
-                            "Press enter to submit."
-                        ),
-                        placeholder="",
-                    )
-                    iiif_gallery = gr.Gallery(
-                        interactive=False,
-                        columns=4,
-                        allow_preview=False,
-                        container=False,
-                        show_label=False,
-                        object_fit="scale-down",
-                    )
+                    with gr.Group():
+                            iiif_manifest_url = gr.Textbox(
+                                label="IIIF Manifest",
+                                info=(
+                                    "Use an image from a IIIF manifest by pasting a IIIF manifest URL. Press enter to submit."
+                                ),
+                                placeholder="",
+                                scale=0
+                            )
+                            max_images_iiif_manifest= gr.Number(value=20, min_width=50, scale=0,
+                                label="Number of image to return from IIIF manifest",
+                                minimum=1, visible=False)
+                            iiif_gallery = gr.Gallery(
+                                interactive=False,
+                                columns=4,
+                                allow_preview=False,
+                                container=False,
+                                show_label=False,
+                                object_fit="scale-down",
+                            )
 
                 with gr.Tab("URL"):
-                    image_url = gr.Textbox(label="Image URL", info="Upload an image by pasting its URL.", placeholder="https://example.com/image.jpg")
-
+                    image_url = gr.Textbox(
+                        label="Image URL",
+                        info="Upload an image by pasting its URL.",
+                        placeholder="https://example.com/image.jpg",
+                    )
 
     with gr.Column(variant="panel", elem_classes="panel-with-border"):
         gr.Markdown("## Settings")
@@ -327,11 +382,11 @@ with gr.Blocks() as submit:
             return gr.update(value=None)
         return images
 
-
-    image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown)
-    iiif_manifest_url.submit(get_images_from_iiif_manifest, iiif_manifest_url, iiif_gallery)
+    image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(
+        fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown
+    )
+    iiif_manifest_url.submit(get_images_from_iiif_manifest, [iiif_manifest_url, max_images_iiif_manifest], [iiif_gallery, max_images_iiif_manifest])
     image_url.submit(lambda url: [url], image_url, batch_image_gallery)
-
 
     run_button.click(
         fn=run_htrflow,
