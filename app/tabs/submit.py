@@ -298,14 +298,15 @@ with gr.Blocks() as submit:
                             max_images_iiif_manifest= gr.Number(value=20, min_width=50, scale=0,
                                 label="Number of image to return from IIIF manifest",
                                 minimum=1, visible=False)
-                            iiif_gallery = gr.Gallery(
-                                interactive=False,
-                                columns=4,
-                                allow_preview=False,
-                                container=False,
-                                show_label=False,
-                                object_fit="scale-down",
-                            )
+                        
+                        iiif_gallery = gr.Gallery(
+                            interactive=False,
+                            columns=4,
+                            allow_preview=False,
+                            container=False,
+                            show_label=False,
+                            object_fit="scale-down",
+                        )
 
                 with gr.Tab("URL"):
                     image_url = gr.Textbox(
