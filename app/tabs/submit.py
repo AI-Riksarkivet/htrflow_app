@@ -64,7 +64,7 @@ class PipelineWithProgress(Pipeline):
         return collection
 
 
-# @spaces.GPU
+@spaces.GPU
 def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress()):
     """
     Executes the HTRflow pipeline based on the provided YAML configuration and batch images.
