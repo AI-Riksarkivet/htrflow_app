@@ -287,26 +287,25 @@ with gr.Blocks() as submit:
 
                 with gr.Tab("IIIF Manifest"):
                     with gr.Group():
-                            iiif_manifest_url = gr.Textbox(
-                                label="IIIF Manifest",
-                                info=(
-                                    "Use an image from a IIIF manifest by pasting a IIIF manifest URL. Press enter to submit."
-                                ),
-                                placeholder="",
-                                scale=0
-                            )
-                            max_images_iiif_manifest= gr.Number(value=20, min_width=50, scale=0,
-                                label="Number of image to return from IIIF manifest",
-                                minimum=1, visible=False)
-                        
-                        iiif_gallery = gr.Gallery(
-                            interactive=False,
-                            columns=4,
-                            allow_preview=False,
-                            container=False,
-                            show_label=False,
-                            object_fit="scale-down",
+                        iiif_manifest_url = gr.Textbox(
+                            label="IIIF Manifest",
+                            info=(
+                                "Use an image from a IIIF manifest by pasting a IIIF manifest URL. Press enter to submit."
+                            ),
+                            placeholder="",
+                            scale=0
                         )
+                        max_images_iiif_manifest= gr.Number(value=20, min_width=50, scale=0,
+                            label="Number of image to return from IIIF manifest",
+                            minimum=1, visible=False)
+                    iiif_gallery = gr.Gallery(
+                        interactive=False,
+                        columns=4,
+                        allow_preview=False,
+                        container=False,
+                        show_label=False,
+                        object_fit="scale-down",
+                    )
 
                 with gr.Tab("URL"):
                     image_url = gr.Textbox(
