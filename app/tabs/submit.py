@@ -5,6 +5,7 @@ import re
 import time
 
 import certifi
+import fitz  # PyMuPDF
 import gradio as gr
 import pycurl
 import spaces
@@ -13,7 +14,7 @@ from gradio_modal import Modal
 from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
-from pdf2image import convert_from_path
+from PIL import Image
 
 from app.pipelines import PIPELINES
 
@@ -68,6 +69,44 @@ class PipelineWithProgress(Pipeline):
                     )
                 raise
         return collection
+
+
+def pdf_to_images(pdf_path):
+    """
+    Convert a PDF file to a list of PIL Image objects using PyMuPDF.
+    Extracts full-resolution images with no DPI adjustment.
+
+    Args:
+        pdf_path (str): Path to the PDF file
+
+    Returns:
+        list: List of PIL Image objects
+    """
+    # Open the PDF
+    pdf_document = fitz.open(pdf_path)
+
+    # List to store the images
+    images = []
+
+    # Iterate through each page
+    for page_num in range(len(pdf_document)):
+        # Get the page
+        page = pdf_document[page_num]
+
+        # Get the pixmap at default resolution
+        pixmap = page.get_pixmap(alpha=False)
+
+        # Convert pixmap to PIL Image
+        img_data = pixmap.tobytes("jpeg")
+        img = Image.open(io.BytesIO(img_data))
+
+        # Add the image to our list
+        images.append(img)
+
+    # Close the PDF
+    pdf_document.close()
+
+    return images
 
 
 @spaces.GPU
@@ -424,7 +463,7 @@ with gr.Blocks() as submit:
     image_url.submit(lambda url: [url], image_url, batch_image_gallery)
 
     pdf_file.upload(
-        lambda imgs: convert_from_path(imgs), inputs=pdf_file, outputs=pdf_gallery
+        lambda imgs: pdf_to_images(imgs), inputs=pdf_file, outputs=pdf_gallery
     )
 
     run_button.click(
