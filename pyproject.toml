@@ -24,6 +24,7 @@ dependencies = [
     "dill>=0.3.9",
     "spaces>=0.32.0",
     "pycurl",
+    "pdf2image>=1.17.0",
 ]
 
 [project.urls]

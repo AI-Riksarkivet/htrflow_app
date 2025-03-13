@@ -13,6 +13,7 @@ from gradio_modal import Modal
 from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
+from pdf2image import convert_from_path
 
 from app.pipelines import PIPELINES
 
@@ -36,7 +37,12 @@ class PipelineWithProgress(Pipeline):
     @classmethod
     def from_config(cls, config: dict[str, str]):
         """Init pipeline from config, ensuring the correct subclass is instantiated."""
-        return cls([init_step(step["step"], step.get("settings", {})) for step in config["steps"]])
+        return cls(
+            [
+                init_step(step["step"], step.get("settings", {}))
+                for step in config["steps"]
+            ]
+        )
 
     def run(self, collection, start=0, progress=None):
         """
@@ -95,7 +101,9 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
 
     pipe = PipelineWithProgress.from_config(config)
 
-    gr.Info(f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}.")
+    gr.Info(
+        f"HTRflow: processing {len(images)} {'image' if len(images) == 1 else 'images'}."
+    )
     progress(0.1, desc="HTRflow: Processing")
 
     collection.label = "demo_output"
@@ -192,7 +200,7 @@ def get_image_from_image_id(image_id):
 def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200):
     """
     Read images from a v2/v3 IIIF manifest, limited to max_images.
-    
+
     Arguments:
         iiif_manifest_url: URL to IIIF manifest
         height: Max height of returned images
@@ -201,7 +209,7 @@ def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200)
     try:
         buffer = io.BytesIO()
         c = pycurl.Curl()
-        
+
         c.setopt(c.URL, iiif_manifest_url)
         c.setopt(c.WRITEDATA, buffer)
         c.setopt(c.CAINFO, certifi.where())
@@ -211,42 +219,48 @@ def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200)
         c.setopt(c.TIMEOUT, 10)
         c.setopt(c.NOSIGNAL, 1)
         c.setopt(c.USERAGENT, "curl/7.68.0")
-        
+
         c.perform()
-        
+
         http_code = c.getinfo(c.RESPONSE_CODE)
         if http_code != 200:
             raise Exception(f"HTTP Error: {http_code}")
-        
+
         manifest = buffer.getvalue().decode("utf-8")
         c.close()
-        
+
     except pycurl.error as e:
         error_code, error_msg = e.args
-        raise Exception(f"Could not fetch IIIF manifest from {iiif_manifest_url} ({error_msg})")
-    
+        raise Exception(
+            f"Could not fetch IIIF manifest from {iiif_manifest_url} ({error_msg})"
+        )
+
     # Hacky solution to get all images regardless of API version - treat
     # the manifest as a string and match everything that looks like an IIIF
     # image URL.
     pattern = r'(?P<identifier>https?://[^"\s]*)/(?P<region>[^"\s]*?)/(?P<size>[^"\s]*?)/(?P<rotation>!?\d*?)/(?P<quality>[^"\s]*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)'
-    
-    images = set()  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
-    
+
+    images = (
+        set()
+    )  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
+
     for match in re.findall(pattern, manifest):
         identifier, _, _, _, _, format_ = match
         images.add(f"{identifier}/full/{height},/0/default.{format_}")
-        
+
         # Stop adding images if we've reached the maximum
         if len(images) >= max_images:
             break
-    
+
     # Sort and limit the results to max_images
     return sorted(images)[:max_images], gr.update(visible=True)
 
 
 with gr.Blocks() as submit:
     gr.Markdown("# Upload")
-    gr.Markdown("Select or upload the image you want to transcribe. You can upload up to five images at a time.")
+    gr.Markdown(
+        "Select or upload the image you want to transcribe. Most common image formats are supported and you can upload max 5 images at a time in this hosted demo."
+    )
 
     collection_submit_state = gr.State()
 
@@ -293,11 +307,16 @@ with gr.Blocks() as submit:
                                 "Use an image from a IIIF manifest by pasting a IIIF manifest URL. Press enter to submit."
                             ),
                             placeholder="",
-                            scale=0
+                            scale=0,
                         )
-                        max_images_iiif_manifest= gr.Number(value=20, min_width=50, scale=0,
+                        max_images_iiif_manifest = gr.Number(
+                            value=20,
+                            min_width=50,
+                            scale=0,
                             label="Number of image to return from IIIF manifest",
-                            minimum=1, visible=False)
+                            minimum=1,
+                            visible=False,
+                        )
                     iiif_gallery = gr.Gallery(
                         interactive=False,
                         columns=4,
@@ -312,6 +331,18 @@ with gr.Blocks() as submit:
                         label="Image URL",
                         info="Upload an image by pasting its URL.",
                         placeholder="https://example.com/image.jpg",
+                    )
+
+                with gr.Tab("PDF"):
+                    pdf_file = gr.File(label="PDF", file_types=[".pdf"])
+
+                    pdf_gallery = gr.Gallery(
+                        interactive=False,
+                        columns=4,
+                        allow_preview=False,
+                        container=False,
+                        show_label=False,
+                        object_fit="scale-down",
                     )
 
     with gr.Column(variant="panel", elem_classes="panel-with-border"):
@@ -370,7 +401,7 @@ with gr.Blocks() as submit:
         )
 
     with gr.Row():
-        run_button = gr.Button("Transcribe", variant="primary", scale=0, min_width=200)
+        run_button = gr.Button("Run HTR", variant="primary", scale=0, min_width=200)
 
     @batch_image_gallery.upload(
         inputs=batch_image_gallery,
@@ -385,8 +416,16 @@ with gr.Blocks() as submit:
     image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(
         fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown
     )
-    iiif_manifest_url.submit(get_images_from_iiif_manifest, [iiif_manifest_url, max_images_iiif_manifest], [iiif_gallery, max_images_iiif_manifest])
+    iiif_manifest_url.submit(
+        get_images_from_iiif_manifest,
+        [iiif_manifest_url, max_images_iiif_manifest],
+        [iiif_gallery, max_images_iiif_manifest],
+    )
     image_url.submit(lambda url: [url], image_url, batch_image_gallery)
+
+    pdf_file.upload(
+        lambda imgs: convert_from_path(imgs), inputs=pdf_file, outputs=pdf_gallery
+    )
 
     run_button.click(
         fn=run_htrflow,
@@ -398,5 +437,6 @@ with gr.Blocks() as submit:
     examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
 
     iiif_gallery.select(get_selected_example_image, None, batch_image_gallery)
+    pdf_gallery.select(get_selected_example_image, None, batch_image_gallery)
 
     edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)
