@@ -59,9 +59,6 @@ matomo = """
 
 with gr.Blocks(
     title="HTRflow",
-    theme=theme,
-    css=css,
-    head=matomo,
 ) as demo:
     gr.Markdown(load_markdown(None, "main_title"), elem_classes="title-h1")
 
@@ -106,4 +103,12 @@ with gr.Blocks(
 demo.queue()
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860, enable_monitoring=False, show_api=False)
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        enable_monitoring=False,
+        theme=theme,
+        css=css,
+        head=matomo,
+        footer_links=["gradio", "settings"],
+    )

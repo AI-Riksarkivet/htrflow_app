@@ -1,7 +1,0 @@
-htrflow==0.2.5
-gradio>=5.20.1
-tqdm>=4.67.1
-gradio-modal>=0.0.4
-dill>=0.3.9
-pycurl>=7.45.6
-pymupdf>=1.25.3

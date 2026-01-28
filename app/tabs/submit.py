@@ -10,7 +10,6 @@ import gradio as gr
 import pycurl
 import spaces
 import yaml
-from gradio_modal import Modal
 from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
@@ -402,8 +401,6 @@ with gr.Blocks() as submit:
                     elem_classes="pipeline-dropdown",
                 )
 
-            with gr.Column(scale=0, min_width=100):
-                edit_pipeline_button = gr.Button("Edit", scale=0)
             with gr.Column(scale=3):
                 progess_bar = gr.Textbox(visible=False, show_label=False)
             with gr.Column(scale=0, min_width=20):
@@ -416,28 +413,27 @@ with gr.Blocks() as submit:
             padding=False,
         )
 
-    with Modal(visible=False) as edit_pipeline_modal:
-        gr.Markdown(
-            """
-            ## Edit Pipeline
-            The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an
-            image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.
+        with gr.Accordion("Edit Pipeline", open=False):
+            gr.Markdown(
+                """
+                The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an
+                image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.
 
-            Edit pipeline if needed:
-            """
-        )
-        custom_template_yaml = gr.Code(
-            value=get_yaml,
-            inputs=pipeline_dropdown,
-            language="yaml",
-            container=False,
-        )
-        url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
-        gr.HTML(
-            f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
-            padding=False,
-            elem_classes="pipeline-help",
-        )
+                Edit pipeline if needed:
+                """
+            )
+            custom_template_yaml = gr.Code(
+                value=get_yaml,
+                inputs=pipeline_dropdown,
+                language="yaml",
+                container=False,
+            )
+            url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
+            gr.HTML(
+                f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
+                padding=False,
+                elem_classes="pipeline-help",
+            )
 
     with gr.Row():
         run_button = gr.Button("Run HTR", variant="primary", scale=0, min_width=200)
@@ -477,5 +473,3 @@ with gr.Blocks() as submit:
 
     iiif_gallery.select(get_selected_example_image, None, batch_image_gallery)
     pdf_gallery.select(get_selected_example_image, None, batch_image_gallery)
-
-    edit_pipeline_button.click(lambda: Modal(visible=True), None, edit_pipeline_modal)

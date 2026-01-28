@@ -14,13 +14,12 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Typing :: Typed",
 ]
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.13"
 
 dependencies = [
-    "htrflow==0.2.5",
-    "gradio>=5.17.0",
+    "htrflow==0.2.6",
+    "gradio>=6.0.0",
     "tqdm>=4.67.1",
-    "gradio-modal>=0.0.4",
     "dill>=0.3.9",
     "spaces>=0.32.0",
     "pycurl",
@@ -31,11 +30,10 @@ dependencies = [
 Homepage = "https://huggingface.co/spaces/Riksarkivet/htr_demo"
 Repository = "https://github.com/AI-Riksarkivet/htrflow-app"
 
-[tool.uv]
-dev-dependencies = [
-    "python-dotenv >=1.0.1",
-    "ruff >=0.6.2",
-    "uv>=0.4.12",
+
+[dependency-groups]
+dev = [
+  "ruff",
 ]
 
 
@@ -44,20 +42,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.metadata]
-allow-direct-references = true  
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]
-
-[tool.pytest.ini_options]
-addopts = "-v"
-pythonpath = "src"
-testpaths = ["tests"]
-
-[tool.ruff]
-line-length = 119
-target-version = "py310"
-
-[tool.ruff.lint]
-ignore = ["C901", "E741", "W605", "E501"]
-select = ["C", "E", "F", "I", "W"]
