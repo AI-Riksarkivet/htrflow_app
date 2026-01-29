@@ -4,6 +4,7 @@ from pathlib import Path
 
 import gradio as gr
 from htrflow.volume.volume import Collection
+from gradio_i18n import gettext as _
 
 DEFAULT_C = "txt"
 CHOICES = ["txt", "alto", "page", "json"]
@@ -40,11 +41,11 @@ def rename_files_in_directory(directory, fmt):
 
 def export_files(file_formats, collection: Collection, req: gr.Request):
     if len(file_formats) < 1:
-        gr.Warning("No export file format was selected. Please select a File format")
+        gr.Warning(_("No export file format was selected. Please select a File format"))
         return gr.skip()
 
     if collection is None:
-        gr.Warning("No image has been transcribed yet. Please go to the Upload tab")
+        gr.Warning(_("No image has been transcribed yet. Please go to the Upload tab"))
         return gr.skip()
 
     temp_user_dir = current_dir / str(req.session_hash)
@@ -66,22 +67,23 @@ with gr.Blocks() as export:
     collection = gr.State()
     temp_state = gr.State()
 
-    gr.Markdown("## Export")
-    gr.Markdown("Choose file format for export.")
+    gr.Markdown(_("Choose file format for export."))
     with gr.Row():
         with gr.Column(scale=1):
             export_file_format = gr.Dropdown(
                 value=DEFAULT_C,
-                label="File format",
-                info="Select export format(s)",
+                label=_("File format"),
+                info=_("Select export format(s)"),
                 choices=CHOICES,
                 multiselect=True,
                 interactive=True,
             )
-            export_button = gr.Button("Export", scale=0, min_width=200, variant="primary")
+            export_button = gr.Button(
+                _("Export"), scale=0, min_width=200, variant="primary"
+            )
 
         with gr.Column(scale=1):
-            download_files = gr.Files(label="Download files", interactive=False)
+            download_files = gr.Files(label=_("Download files"), interactive=False)
 
         export_button.click(
             fn=export_files,

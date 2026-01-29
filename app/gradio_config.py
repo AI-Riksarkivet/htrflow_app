@@ -14,20 +14,21 @@ theme = gr.themes.Default(
 )
 
 css = """
+/* SVG visualizations */
 .svg-image {
   height: auto;
   width: 100%;
   margin: auto;
 }
 
+/* Transcription display */
 .transcription {
   font-size: large;
   position: sticky;
   top: 20px;
 }
 
-
-/* style of textline svg elements */
+/* Textline polygon styling */
 .textline {
   fill: transparent;
   stroke: blue;
@@ -36,7 +37,7 @@ css = """
 }
 
 .highlighted polygon {
-  fill:blue;
+  fill: blue;
   fill-opacity: 0.2;
 }
 
@@ -50,22 +51,20 @@ hr.region-divider {
   margin-bottom: 0.5em;
 }
 
-.panel-with-border {
-  background: none;
-  border: solid 1px;
-  border-color: var(--block-border-color);
+/* Button grouping for visualizer */
+.button-group-viz {
+  margin: auto;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  text-align: center;
 }
 
+/* Pipeline information styling */
 .pipeline-help {
   padding: 5px 0 0 0;
   font-weight: var(--block-info-text-weight);
   font-size: var(--block-info-text-size);
-  color: var(--block-info-text-color);
-}
-
-.pipeline-info {
-  padding: 0 0 0 2px;
-  font-weight: var(--block-info-text-weight);
   color: var(--block-info-text-color);
 }
 
@@ -77,47 +76,16 @@ hr.region-divider {
   color: var(--secondary-500);
 }
 
-.pipeline-header {
-  padding: 2px 0px 0px 2px;
-  color: var(--body-text-color);
+.pipeline-info {
+  padding: 0;
+  margin: 0;
+  font-weight: var(--block-info-text-weight);
+  color: var(--block-info-text-color);
 }
 
-.pipeline-description {
-  margin: auto;
-  color: var(--body-text-color);
-}
-
-.button-group-viz {
- margin: auto;
- display: flex;
- justify-content: center;
- gap: 1rem;
- text-align: center;
-}
-
-.modal-block {
-  width: 60%;
-  padding: 1rem;
-}
-
-@media (max-width: 1024px) { /* mobile and standing iPads */
-  .modal-block {
-    width: 100%;
-  }
-}
-
-
-.grid-wrap.svelte-842rpi.svelte-842rpi {
-  overflow-y: auto !important;
-}
-
-.grid-container.svelte-842rpi {
-height: auto !important;
-}
-
+/* Title styling */
 .title-h1 {
-    text-align: center;
-    display:block;
+  text-align: center;
+  display: block;
 }
-
 """

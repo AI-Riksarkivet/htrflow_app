@@ -1,7 +1,10 @@
 PIPELINES = {
     "Swedish - Spreads": {
         "file": "app/assets/templates/nested_swe_ra.yaml",
-        "description": "This pipeline works well on handwritten historic documents written in Swedish with multiple text regions. The HTR model used in the pipeline is <b>Swedish Lion Libre</b> from <a href='https://huggingface.co/Riksarkivet'>the National Archives of Sweden</a>.",
+        "description": {
+            "en": "This pipeline works well on handwritten historic documents written in Swedish with multiple text regions. The HTR model used in the pipeline is <b>Swedish Lion Libre</b> from <a href='https://huggingface.co/Riksarkivet'>the National Archives of Sweden</a>.",
+            "sv": "Denna pipeline fungerar bra på handskrivna historiska dokument skrivna på svenska med flera textregioner. HTR-modellen som används i pipelinen är <b>Swedish Lion Libre</b> från <a href='https://huggingface.co/Riksarkivet'>Riksarkivet</a>.",
+        },
         "examples": [
             "R0003364_00005.jpg",
             "30002027_00008.jpg",
@@ -10,7 +13,10 @@ PIPELINES = {
     },
     "Swedish - Single page and snippets": {
         "file": "app/assets/templates/simple_swe_ra.yaml",
-        "description": "This pipeline works well on handwritten historic letters and other documents written in Swedish with only one text region. The HTR model used in the pipeline is <b>Swedish Lion Libre</b> from <a href='https://huggingface.co/Riksarkivet'>the National Archives of Sweden</a>.",
+        "description": {
+            "en": "This pipeline works well on handwritten historic letters and other documents written in Swedish with only one text region. The HTR model used in the pipeline is <b>Swedish Lion Libre</b> from <a href='https://huggingface.co/Riksarkivet'>the National Archives of Sweden</a>.",
+            "sv": "Denna pipeline fungerar bra på handskrivna historiska brev och andra dokument skrivna på svenska med endast en textregion. HTR-modellen som används i pipelinen är <b>Swedish Lion Libre</b> från <a href='https://huggingface.co/Riksarkivet'>Riksarkivet</a>.",
+        },
         "examples": [
             "451511_1512_01.jpg",
             "A0062408_00006.jpg",
@@ -20,17 +26,34 @@ PIPELINES = {
     },
     "Norwegian - Single page and snippets": {
         "file": "app/assets/templates/simple_nordhand.yaml",
-        "description": "This pipeline works well on handwritten historic letters and other documents written in Norwegian with only one text region. The model is developed by the <a href='https://huggingface.co/Sprakbanken/TrOCR-norhand-v3'>Language Bank</a> at The National Library of Norway.",
+        "description": {
+            "en": "This pipeline works well on handwritten historic letters and other documents written in Norwegian with only one text region. The model is developed by the <a href='https://huggingface.co/Sprakbanken/TrOCR-norhand-v3'>Language Bank</a> at The National Library of Norway.",
+            "sv": "Denna pipeline fungerar bra på handskrivna historiska brev och andra dokument skrivna på norska med endast en textregion. Modellen är utvecklad av <a href='https://huggingface.co/Sprakbanken/TrOCR-norhand-v3'>Språkbanken</a> vid Nasjonalbiblioteket i Norge.",
+        },
         "examples": ["norhand_fmgh040_4.jpg"],
     },
     "Medieval - Single page and snippets": {
         "file": "app/assets/templates/simple_medival.yaml",
-        "description": "This pipeline works well for medieval scripts written in single-page running text. The HTR model is from <a href='https://huggingface.co/medieval-data'>Medieval Data</a>, but other models can be selected from here: <a href='https://huggingface.co/collections/medieval-data/trocr-medieval-htr-66871faba03abfbb1b66ab69'>Medieval Models</a>.",
+        "description": {
+            "en": "This pipeline works well for medieval scripts written in single-page running text. The HTR model is from <a href='https://huggingface.co/medieval-data'>Medieval Data</a>, but other models can be selected from here: <a href='https://huggingface.co/collections/medieval-data/trocr-medieval-htr-66871faba03abfbb1b66ab69'>Medieval Models</a>.",
+            "sv": "Denna pipeline fungerar bra för medeltida skrifter skrivna i löpande text på en sida. HTR-modellen kommer från <a href='https://huggingface.co/medieval-data'>Medieval Data</a>, men andra modeller kan väljas härifrån: <a href='https://huggingface.co/collections/medieval-data/trocr-medieval-htr-66871faba03abfbb1b66ab69'>Medieval Models</a>.",
+        },
         "examples": ["manusscript_kb.png"],
     },
     "English - Single page and snippets": {
         "file": "app/assets/templates/simple_eng_modern.yaml",
-        "description": "This pipeline works well for English text in single page running text. The HTR model is from <a href='https://huggingface.co/microsoft/trocr-base-handwritten'>Microsoft</a>.",
+        "description": {
+            "en": "This pipeline works well for English text in single page running text. The HTR model is from <a href='https://huggingface.co/microsoft/trocr-base-handwritten'>Microsoft</a>.",
+            "sv": "Denna pipeline fungerar bra för engelsk text i löpande text på en sida. HTR-modellen kommer från <a href='https://huggingface.co/microsoft/trocr-base-handwritten'>Microsoft</a>.",
+        },
         "examples": ["iam.png"],
+    },
+    "Custom": {
+        "file": "app/assets/templates/nested_swe_ra.yaml",
+        "description": {
+            "en": "Create your own custom pipeline by editing the YAML configuration.",
+            "sv": "Skapa din egen anpassade pipeline genom att redigera YAML-konfigurationen.",
+        },
+        "examples": [],
     },
 }

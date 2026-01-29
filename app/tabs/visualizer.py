@@ -1,6 +1,7 @@
 import gradio as gr
 from htrflow.volume.volume import Collection
 from jinja2 import Environment, FileSystemLoader
+from gradio_i18n import gettext as _
 
 _ENV = Environment(loader=FileSystemLoader("app/assets/jinja-templates"))
 _IMAGE_TEMPLATE = _ENV.get_template("image")
@@ -51,16 +52,15 @@ def update_image_caption(collection: Collection, current_page_index):
 
 
 with gr.Blocks() as visualizer:
-    gr.Markdown("# Result")
     gr.Markdown(
-        "The image to the left shows where HTRflow found text in the image. The transcription can be seen to the right."
+        _("The image to the left shows where HTRflow found text in the image. The transcription can be seen to the right.")
     )
 
     with gr.Row():
         # Annotated image panel
         with gr.Column(scale=2):
             image = gr.HTML(
-                label="Annotated image",
+                label=_("Annotated image"),
                 padding=False,
                 elem_classes="svg-image",
                 container=True,
@@ -71,13 +71,15 @@ with gr.Blocks() as visualizer:
 
             image_caption = gr.Markdown(elem_classes="button-group-viz")
             with gr.Row(elem_classes="button-group-viz"):
-                left = gr.Button("← Previous", visible=False, interactive=False, scale=0)
-                right = gr.Button("Next →", visible=False, scale=0)
+                left = gr.Button(
+                    _("← Previous"), visible=False, interactive=False, scale=0
+                )
+                right = gr.Button(_("Next →"), visible=False, scale=0)
 
         # Transcription panel
         with gr.Column(scale=1, elem_classes="transcription-column"):
             transcription = gr.HTML(
-                label="Transcription",
+                label=_("Transcription"),
                 show_label=True,
                 elem_classes="transcription",
                 container=True,
@@ -90,14 +92,18 @@ with gr.Blocks() as visualizer:
 
     # Wiring of navigation buttons
     left.click(left_button_click, current_page_index, current_page_index)
-    right.click(right_button_click, [collection, current_page_index], current_page_index)
+    right.click(
+        right_button_click, [collection, current_page_index], current_page_index
+    )
 
     # Updates on collection change:
     # - update the view
     # - reset the page index (always start on page 0)
     # - toggle visibility of navigation buttons (don't show them for single pages)
     # - update the image caption
-    collection.change(render_image, inputs=[collection, current_page_index], outputs=image)
+    collection.change(
+        render_image, inputs=[collection, current_page_index], outputs=image
+    )
     collection.change(
         render_transcription,
         inputs=[collection, current_page_index],
@@ -116,14 +122,18 @@ with gr.Blocks() as visualizer:
     # - update the view
     # - activate/deactivate buttons
     # - update the image caption
-    current_page_index.change(render_image, inputs=[collection, current_page_index], outputs=image)
+    current_page_index.change(
+        render_image, inputs=[collection, current_page_index], outputs=image
+    )
     current_page_index.change(
         render_transcription,
         inputs=[collection, current_page_index],
         outputs=transcription,
     )
     current_page_index.change(activate_left_button, current_page_index, left)
-    current_page_index.change(activate_right_button, [collection, current_page_index], right)
+    current_page_index.change(
+        activate_right_button, [collection, current_page_index], right
+    )
     current_page_index.change(
         update_image_caption,
         inputs=[collection, current_page_index],

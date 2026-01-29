@@ -14,5 +14,3 @@ If you find our projects useful, please consider giving us a star ⭐!
 ### Contact
 
 ✉️ [ai@riksarkivet.se](mailto:ai@riksarkivet.se)
-
-

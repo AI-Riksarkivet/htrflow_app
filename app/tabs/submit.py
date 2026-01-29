@@ -8,14 +8,16 @@ import certifi
 import fitz  # PyMuPDF
 import gradio as gr
 import pycurl
-import spaces
 import yaml
+import spaces
+
 from htrflow.pipeline.pipeline import Pipeline
 from htrflow.pipeline.steps import init_step
 from htrflow.volume.volume import Collection
 from PIL import Image
 
 from app.pipelines import PIPELINES
+from gradio_i18n import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -81,30 +83,17 @@ def pdf_to_images(pdf_path):
     Returns:
         list: List of PIL Image objects
     """
-    # Open the PDF
     pdf_document = fitz.open(pdf_path)
-
-    # List to store the images
     images = []
 
-    # Iterate through each page
     for page_num in range(len(pdf_document)):
-        # Get the page
         page = pdf_document[page_num]
-
-        # Get the pixmap at default resolution
         pixmap = page.get_pixmap(alpha=False)
-
-        # Convert pixmap to PIL Image
         img_data = pixmap.tobytes("jpeg")
         img = Image.open(io.BytesIO(img_data))
-
-        # Add the image to our list
         images.append(img)
 
-    # Close the PDF
     pdf_document.close()
-
     return images
 
 
@@ -155,11 +144,14 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
     yield collection, gr.skip()
 
 
-def get_pipeline_description(pipeline: str) -> str:
+def get_pipeline_description(pipeline: str, language: str = "en") -> str:
     """
-    Get the description of the given pipeline
+    Get the description of the given pipeline in the specified language
     """
-    return PIPELINES[pipeline]["description"]
+    desc = PIPELINES[pipeline]["description"]
+    if isinstance(desc, dict):
+        return str(desc.get(language, desc.get("en", "")))
+    return str(desc)
 
 
 def get_yaml(pipeline: str) -> str:
@@ -185,11 +177,13 @@ def all_example_images() -> list[str]:
     return examples
 
 
-def get_selected_example_image(event: gr.SelectData) -> str:
+def get_selected_example_image(event: gr.SelectData) -> list:
     """
-    Get path to the selected example image.
+    Get path to the selected example image with caption.
     """
-    return [event.value["image"]["path"]]
+    image_path = event.value["image"]["path"]
+    caption = event.value["image"].get("orig_name") or os.path.basename(image_path)
+    return [(image_path, caption)]
 
 
 def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
@@ -202,37 +196,8 @@ def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
 
 
 def get_image_from_image_id(image_id):
-    return [f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"]
-
-
-# def get_images_from_iiif_manifest(iiif_manifest_url):
-#     """
-#     Read all images from a v2/v3 IIIF manifest.
-
-#     Arguments:
-#         manifest: IIIF manifest
-#         height: Max height of returned images.
-#     """
-#     try:
-#         response = requests.get(iiif_manifest_url, timeout=5)
-#         response.raise_for_status()
-#     except (requests.HTTPError, requests.ConnectionError) as e:
-#         gr.Error(f"Could not fetch IIIF manifest from {iiif_manifest_url} ({e})")
-#         return
-
-#     # Hacky solution to get all images regardless of API version - treat
-#     # the manifest as a string and match everything that looks like an IIIF
-#     # image URL.
-#     manifest = response.text
-#     pattern = r'(?P<identifier>https?://[^"\s]*)/(?P<region>[^"\s]*?)/(?P<size>[^"\s]*?)/(?P<rotation>!?\d*?)/(?P<quality>[^"\s]*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)'
-#     height= 1200
-
-#     images = set()  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
-#     for match in re.findall(pattern, manifest):
-#         identifier, _, _, _, _, format_ = match
-#         images.add(f"{identifier}/full/{height},/0/default.{format_}")
-
-#     return sorted(images)
+    url = f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"
+    return [(url, image_id)]
 
 
 def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200):
@@ -273,31 +238,21 @@ def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200)
             f"Could not fetch IIIF manifest from {iiif_manifest_url} ({error_msg})"
         )
 
-    # Hacky solution to get all images regardless of API version - treat
-    # the manifest as a string and match everything that looks like an IIIF
-    # image URL.
     pattern = r'(?P<identifier>https?://[^"\s]*)/(?P<region>[^"\s]*?)/(?P<size>[^"\s]*?)/(?P<rotation>!?\d*?)/(?P<quality>[^"\s]*?)\.(?P<format>jpg|tif|png|gif|jp2|pdf|webp)'
-
-    images = (
-        set()
-    )  # create a set to eliminate duplicates (e.g. thumbnails and fullsize images)
+    images = set()
 
     for match in re.findall(pattern, manifest):
         identifier, _, _, _, _, format_ = match
         images.add(f"{identifier}/full/{height},/0/default.{format_}")
-
-        # Stop adding images if we've reached the maximum
         if len(images) >= max_images:
             break
 
-    # Sort and limit the results to max_images
     return sorted(images)[:max_images], gr.update(visible=True)
 
 
 with gr.Blocks() as submit:
-    gr.Markdown("# Upload")
     gr.Markdown(
-        "Select or upload the image you want to transcribe. Most common image formats are supported and you can upload max 5 images at a time in this hosted demo."
+        _("Select or upload the image you want to transcribe. Most common image formats are supported and you can upload max 5 images at a time in this hosted demo.")
     )
 
     collection_submit_state = gr.State()
@@ -306,14 +261,15 @@ with gr.Blocks() as submit:
         with gr.Column(scale=2):
             batch_image_gallery = gr.Gallery(
                 file_types=["image"],
-                label="Image to transcribe",
+                label=_("Image to transcribe"),
                 interactive=True,
                 object_fit="scale-down",
+                preview=True,
             )
 
-        with gr.Column(scale=1, variant="panel", elem_classes="panel-with-border"):
+        with gr.Column(scale=1, variant="panel"):
             with gr.Tabs():
-                with gr.Tab("Examples"):
+                with gr.Tab(_("Examples")):
                     examples = gr.Gallery(
                         all_example_images(),
                         show_label=False,
@@ -326,10 +282,10 @@ with gr.Blocks() as submit:
                         container=False,
                     )
 
-                with gr.Tab("Image ID"):
+                with gr.Tab(_("Image ID")):
                     image_id = gr.Textbox(
-                        label="Upload by image ID",
-                        info=(
+                        label=_("Upload by image ID"),
+                        info=_(
                             "Use any image from our digitized archives by pasting its image ID found in the "
                             "<a href='https://sok.riksarkivet.se/bildvisning/R0002231_00005' target='_blank'>image viewer</a>. "
                             "Press enter to submit."
@@ -337,11 +293,11 @@ with gr.Blocks() as submit:
                         placeholder="R0002231_00005",
                     )
 
-                with gr.Tab("IIIF Manifest"):
+                with gr.Tab(_("IIIF Manifest")):
                     with gr.Group():
                         iiif_manifest_url = gr.Textbox(
-                            label="IIIF Manifest",
-                            info=(
+                            label=_("IIIF Manifest"),
+                            info=_(
                                 "Use an image from a IIIF manifest by pasting a IIIF manifest URL. Press enter to submit."
                             ),
                             placeholder="",
@@ -351,7 +307,7 @@ with gr.Blocks() as submit:
                             value=20,
                             min_width=50,
                             scale=0,
-                            label="Number of image to return from IIIF manifest",
+                            label=_("Number of image to return from IIIF manifest"),
                             minimum=1,
                             visible=False,
                         )
@@ -364,15 +320,15 @@ with gr.Blocks() as submit:
                         object_fit="scale-down",
                     )
 
-                with gr.Tab("URL"):
+                with gr.Tab(_("URL")):
                     image_url = gr.Textbox(
-                        label="Image URL",
-                        info="Upload an image by pasting its URL.",
+                        label=_("Image URL"),
+                        info=_("Upload an image by pasting its URL."),
                         placeholder="https://example.com/image.jpg",
                     )
 
-                with gr.Tab("PDF"):
-                    pdf_file = gr.File(label="PDF", file_types=[".pdf"])
+                with gr.Tab(_("PDF")):
+                    pdf_file = gr.File(label=_("PDF"), file_types=[".pdf"])
 
                     pdf_gallery = gr.Gallery(
                         interactive=False,
@@ -383,60 +339,50 @@ with gr.Blocks() as submit:
                         object_fit="scale-down",
                     )
 
-    with gr.Column(variant="panel", elem_classes="panel-with-border"):
-        gr.Markdown("## Settings")
+    with gr.Column(variant="panel"):
         gr.Markdown(
-            "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different handwritten text recognition tasks. "
+            _("Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different text recognition tasks. "
             "If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further. "
-            "Choosing the right pipeline significantly improves transcription quality. "
+            "Choosing the right pipeline significantly improves transcription quality.")
         )
 
         with gr.Row():
-            with gr.Column(scale=0):
+            with gr.Column(scale=0, min_width=250):
                 pipeline_dropdown = gr.Dropdown(
-                    PIPELINES,
+                    choices=[(_("Swedish - Spreads"), "Swedish - Spreads"),
+                            (_("Swedish - Single page and snippets"), "Swedish - Single page and snippets"),
+                            (_("Norwegian - Single page and snippets"), "Norwegian - Single page and snippets"),
+                            (_("Medieval - Single page and snippets"), "Medieval - Single page and snippets"),
+                            (_("English - Single page and snippets"), "English - Single page and snippets"),
+                            (_("Custom"), "Custom")],
                     container=False,
-                    min_width=240,
-                    scale=0,
                     elem_classes="pipeline-dropdown",
                 )
+            with gr.Column(scale=0, min_width=100):
+                run_button = gr.Button(_("Run ATR"), variant="primary")
 
-            with gr.Column(scale=3):
-                progess_bar = gr.Textbox(visible=False, show_label=False)
-            with gr.Column(scale=0, min_width=20):
-                pass
 
         pipeline_description = gr.HTML(
             value=get_pipeline_description,
             inputs=pipeline_dropdown,
             elem_classes="pipeline-info",
-            padding=False,
         )
 
-        with gr.Accordion("Edit Pipeline", open=False):
-            gr.Markdown(
-                """
-                The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an
-                image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.
-
-                Edit pipeline if needed:
-                """
-            )
-            custom_template_yaml = gr.Code(
-                value=get_yaml,
-                inputs=pipeline_dropdown,
-                language="yaml",
-                container=False,
-            )
-            url = "https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines"
-            gr.HTML(
-                f'See the <a href="{url}">documentation</a> for a detailed description on how to customize HTRflow pipelines.',
-                padding=False,
-                elem_classes="pipeline-help",
-            )
-
-    with gr.Row():
-        run_button = gr.Button("Run HTR", variant="primary", scale=0, min_width=200)
+        with gr.Row(visible=False) as edit_pipeline_column:
+            with gr.Accordion(_("Edit Pipeline"), open=False):
+                gr.Markdown(
+                    _("The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an "
+                    "image from the \"Examples\" section, the YAML is already a pre-made template tailored to fit the example image.\n\n"
+                    "Edit pipeline if needed:")
+                )
+                custom_template_yaml = gr.Code(
+                    language="yaml",
+                    container=False,
+                )
+                gr.HTML(
+                    _('See the <a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines">documentation</a> for a detailed description on how to customize HTRflow pipelines.'),
+                    elem_classes="pipeline-help",
+                )
 
     @batch_image_gallery.upload(
         inputs=batch_image_gallery,
@@ -444,9 +390,21 @@ with gr.Blocks() as submit:
     )
     def validate_images(images):
         if len(images) > MAX_IMAGES:
-            gr.Warning(f"Maximum images you can upload is set to: {MAX_IMAGES}")
+            gr.Warning(f"{_('Maximum images you can upload is set to')}: {MAX_IMAGES}")
             return gr.update(value=None)
-        return images
+
+        processed_images = []
+        for img in images:
+            if isinstance(img, (list, tuple)) and len(img) >= 2:
+                processed_images.append(img)
+            elif isinstance(img, dict) and "name" in img:
+                processed_images.append((img["name"], os.path.basename(img["name"])))
+            elif isinstance(img, str):
+                processed_images.append((img, os.path.basename(img)))
+            else:
+                processed_images.append(img)
+
+        return processed_images
 
     image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(
         fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown
@@ -456,7 +414,7 @@ with gr.Blocks() as submit:
         [iiif_manifest_url, max_images_iiif_manifest],
         [iiif_gallery, max_images_iiif_manifest],
     )
-    image_url.submit(lambda url: [url], image_url, batch_image_gallery)
+    image_url.submit(lambda url: [(url, url.split('/')[-1])], image_url, batch_image_gallery)
 
     pdf_file.upload(
         lambda imgs: pdf_to_images(imgs), inputs=pdf_file, outputs=pdf_gallery
@@ -473,3 +431,9 @@ with gr.Blocks() as submit:
 
     iiif_gallery.select(get_selected_example_image, None, batch_image_gallery)
     pdf_gallery.select(get_selected_example_image, None, batch_image_gallery)
+
+    pipeline_dropdown.change(
+        fn=lambda x: (gr.update(visible=(x == "Custom")), get_yaml(x) if x else ""),
+        inputs=pipeline_dropdown,
+        outputs=[edit_pipeline_column, custom_template_yaml],
+    )
