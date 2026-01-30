@@ -279,7 +279,7 @@ with gr.Blocks() as submit:
                         min_width=250,
                         height="100%",
                         columns=4,
-                        container=False,
+                        container=True,
                     )
 
                 with gr.Tab(_("Image ID")):
@@ -355,6 +355,7 @@ with gr.Blocks() as submit:
                             (_("Medieval - Single page and snippets"), "Medieval - Single page and snippets"),
                             (_("English - Single page and snippets"), "English - Single page and snippets"),
                             (_("Custom"), "Custom")],
+                    value="Swedish - Spreads",
                     container=False,
                     elem_classes="pipeline-dropdown",
                 )
@@ -376,6 +377,7 @@ with gr.Blocks() as submit:
                     "Edit pipeline if needed:")
                 )
                 custom_template_yaml = gr.Code(
+                    value=get_yaml("Swedish - Spreads"),
                     language="yaml",
                     container=False,
                 )
