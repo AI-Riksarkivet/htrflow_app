@@ -57,9 +57,7 @@ en:
     for a detailed description on how to customize HTRflow pipelines.
   Edit Pipeline: Edit Pipeline
   1. Upload: 1. Upload
-  Hover over text regions to highlight, click to select. Both panels scroll independently within a fixed height.: Hover
-    over text regions to highlight, click to select. Both panels scroll independently
-    within a fixed height.
+  visualizer_description: Interactive viewer with zoom, pan, and synchronized highlighting. Click any line to select and focus. Use mouse wheel or buttons to zoom, Ctrl+drag to pan.
   ← Previous: ← Previous
   Next →: Next →
   2. Result: 2. Result
@@ -129,9 +127,7 @@ sv:
     för en detaljerad beskrivning av hur man anpassar HTRflow-pipelines.
   Edit Pipeline: Redigera Pipeline
   1. Upload: 1. Ladda upp
-  Hover over text regions to highlight, click to select. Both panels scroll independently within a fixed height.: Hover
-    over text regions to highlight, click to select. Both panels scroll independently
-    within a fixed height.
+  visualizer_description: Interaktiv visare med zoom, panorering och synkroniserad markering. Klicka på valfri rad för att välja och fokusera. Använd mushjulet eller knapparna för att zooma, Ctrl+dra för att panorera.
   ← Previous: ← Föregående
   Next →: Nästa →
   2. Result: 2. Resultat

@@ -59,7 +59,6 @@ else:
 
 with gr.Blocks(
     title="HTR-demo",
-    head=matomo,
 ) as demo:
     with Translate("app/translations.yaml", placeholder_langs=["en", "sv"]) as lang:
         with gr.Row():

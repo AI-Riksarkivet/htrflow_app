@@ -16,14 +16,21 @@ class HTRVisualizer(gr.HTML):
         html_template = """
         <div class="htr-visualizer" data-layout="${layout}">
             <div class="image-panel" style="max-height: ${maxHeight};">
-                <svg class="image-svg" viewBox="0 0 ${value.width} ${value.height}" xmlns="http://www.w3.org/2000/svg">
-                    <image height="${value.height}" width="${value.width}" href="/gradio_api/file=${value.path}" />
-                    ${value.lines.map((line, idx) => `
-                        <a class="textline" data-line-id="${idx}">
-                            <polygon points="${line.polygonPoints}"/>
-                        </a>
-                    `).join('')}
-                </svg>
+                <div class="zoom-controls">
+                    <button class="zoom-btn" data-action="zoom-in" title="Zoom In">+</button>
+                    <button class="zoom-btn" data-action="zoom-out" title="Zoom Out">−</button>
+                    <button class="zoom-btn" data-action="reset" title="Reset View">⟲</button>
+                </div>
+                <div class="svg-container">
+                    <svg class="image-svg" viewBox="0 0 ${value.width} ${value.height}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                        <image height="${value.height}" width="${value.width}" href="/gradio_api/file=${value.path}" />
+                        ${value.lines.map((line) => `
+                            <a class="textline" data-line-id="${line.id}">
+                                <polygon points="${line.polygonPoints}"/>
+                            </a>
+                        `).join('')}
+                    </svg>
+                </div>
             </div>
             <div class="transcription-panel" style="max-height: ${maxHeight};">
                 ${value.regions.map((region, regionIdx) => `
@@ -67,16 +74,72 @@ class HTRVisualizer(gr.HTML):
 
         .image-panel {
             flex: 2;
-            overflow: auto;
+            position: relative;
+            overflow: hidden;
             border: 1px solid var(--border-color-primary);
             border-radius: var(--radius-lg);
             background: var(--background-fill-primary);
             box-sizing: border-box;
         }
 
+        .zoom-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 4px;
+            background: var(--background-fill-secondary);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--button-secondary-background-fill);
+            color: var(--button-secondary-text-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .zoom-btn:hover {
+            background: var(--button-secondary-background-fill-hover);
+            transform: scale(1.05);
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.95);
+        }
+
+        .svg-container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            cursor: default;
+            position: relative;
+        }
+
+        .svg-container.can-pan {
+            cursor: grab;
+        }
+
+        .svg-container.panning {
+            cursor: grabbing;
+        }
+
         .image-svg {
             width: 100%;
-            height: auto;
+            height: 100%;
             display: block;
         }
 
@@ -176,14 +239,204 @@ class HTRVisualizer(gr.HTML):
         """
 
         js_on_load = """
-        const imagePanel = element.querySelector('.image-panel');
-        const transcriptionPanel = element.querySelector('.transcription-panel');
-        let selectedLineId = null;
+        (() => {
+            const initVisualizer = () => {
+                // Check if we have valid data
+                if (!props.value || !props.value.path || props.value.lines.length === 0) {
+                    setTimeout(initVisualizer, 100);
+                    return;
+                }
 
-        // Highlight function for hover
+                const imagePanel = element.querySelector('.image-panel');
+                const svgContainer = element.querySelector('.svg-container');
+                const imageSvg = element.querySelector('.image-svg');
+                const transcriptionPanel = element.querySelector('.transcription-panel');
+
+                let selectedLineId = null;
+
+        // Zoom and pan state using viewBox
+        const svgWidth = props.value.width;
+        const svgHeight = props.value.height;
+        let viewBox = { x: 0, y: 0, width: svgWidth, height: svgHeight };
+        let isPanning = false;
+        let isCtrlPressed = false;
+        let panStart = { x: 0, y: 0 };
+
+        // Set initial viewBox
+        imageSvg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+
+        // Helper to update viewBox
+        function updateViewBox() {
+            imageSvg.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.width} ${viewBox.height}`);
+        }
+
+        // Zoom controls
+        element.querySelectorAll('.zoom-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = btn.dataset.action;
+
+                if (action === 'zoom-in') {
+                    // Zoom in by reducing viewBox size (zoom toward center)
+                    const zoomFactor = 0.85;
+                    const centerX = viewBox.x + viewBox.width / 2;
+                    const centerY = viewBox.y + viewBox.height / 2;
+                    const newWidth = viewBox.width * zoomFactor;
+                    const newHeight = viewBox.height * zoomFactor;
+                    viewBox.x = centerX - newWidth / 2;
+                    viewBox.y = centerY - newHeight / 2;
+                    viewBox.width = newWidth;
+                    viewBox.height = newHeight;
+                } else if (action === 'zoom-out') {
+                    // Zoom out by increasing viewBox size
+                    const zoomFactor = 1.15;
+                    const centerX = viewBox.x + viewBox.width / 2;
+                    const centerY = viewBox.y + viewBox.height / 2;
+                    const newWidth = Math.min(viewBox.width * zoomFactor, svgWidth);
+                    const newHeight = Math.min(viewBox.height * zoomFactor, svgHeight);
+                    viewBox.x = Math.max(0, centerX - newWidth / 2);
+                    viewBox.y = Math.max(0, centerY - newHeight / 2);
+                    viewBox.width = newWidth;
+                    viewBox.height = newHeight;
+                } else if (action === 'reset') {
+                    // Reset to original viewBox
+                    viewBox = { x: 0, y: 0, width: svgWidth, height: svgHeight };
+                }
+
+                updateViewBox();
+            });
+        });
+
+        // Show pan cursor when Ctrl is held
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                isCtrlPressed = true;
+                svgContainer.classList.add('can-pan');
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (!e.ctrlKey && !e.metaKey) {
+                isCtrlPressed = false;
+                svgContainer.classList.remove('can-pan');
+                if (isPanning) {
+                    isPanning = false;
+                    svgContainer.classList.remove('panning');
+                }
+            }
+        });
+
+        // Pan functionality with Ctrl+drag
+        svgContainer.addEventListener('mousedown', (e) => {
+            // Only pan if Ctrl/Cmd is held
+            if (!e.ctrlKey && !e.metaKey) return;
+            // Don't pan if clicking on a text line
+            if (e.target.closest('.textline')) return;
+
+            isPanning = true;
+            svgContainer.classList.add('panning');
+
+            // Get SVG point from mouse position
+            const rect = svgContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            panStart.x = x * (viewBox.width / rect.width) + viewBox.x;
+            panStart.y = y * (viewBox.height / rect.height) + viewBox.y;
+
+            e.preventDefault();
+        });
+
+        svgContainer.addEventListener('mouseleave', () => {
+            isPanning = false;
+            svgContainer.classList.remove('panning');
+        });
+
+        svgContainer.addEventListener('mouseup', () => {
+            isPanning = false;
+            svgContainer.classList.remove('panning');
+        });
+
+        svgContainer.addEventListener('mousemove', (e) => {
+            // Update cursor and Ctrl state
+            if (e.ctrlKey || e.metaKey) {
+                isCtrlPressed = true;
+                if (!isPanning) svgContainer.classList.add('can-pan');
+            } else {
+                isCtrlPressed = false;
+                if (!isPanning) svgContainer.classList.remove('can-pan');
+            }
+
+            if (!isPanning) return;
+            e.preventDefault();
+
+            // Calculate pan in SVG coordinates
+            const rect = svgContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const svgX = x * (viewBox.width / rect.width) + viewBox.x;
+            const svgY = y * (viewBox.height / rect.height) + viewBox.y;
+
+            const dx = svgX - panStart.x;
+            const dy = svgY - panStart.y;
+
+            viewBox.x -= dx;
+            viewBox.y -= dy;
+
+            // Constrain to image bounds
+            viewBox.x = Math.max(0, Math.min(svgWidth - viewBox.width, viewBox.x));
+            viewBox.y = Math.max(0, Math.min(svgHeight - viewBox.height, viewBox.y));
+
+            updateViewBox();
+        });
+
+        // Zoom with mouse wheel (zoom toward cursor position)
+        svgContainer.addEventListener('wheel', (e) => {
+            e.preventDefault();
+
+            // Get mouse position in SVG coordinates
+            const rect = svgContainer.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const svgX = mouseX * (viewBox.width / rect.width) + viewBox.x;
+            const svgY = mouseY * (viewBox.height / rect.height) + viewBox.y;
+
+            // Calculate zoom factor
+            const zoomFactor = e.deltaY < 0 ? 0.95 : 1.05;
+
+            // Calculate new viewBox dimensions
+            const newWidth = viewBox.width * zoomFactor;
+            const newHeight = viewBox.height * zoomFactor;
+
+            // Don't zoom out beyond original size
+            if (newWidth > svgWidth || newHeight > svgHeight) {
+                viewBox = { x: 0, y: 0, width: svgWidth, height: svgHeight };
+                updateViewBox();
+                return;
+            }
+
+            // Don't zoom in too much (max 10x zoom)
+            const minViewBoxSize = svgWidth / 10;
+            if (newWidth < minViewBoxSize || newHeight < minViewBoxSize) {
+                return;
+            }
+
+            // Calculate new viewBox position to keep mouse point stationary
+            viewBox.x = svgX - (svgX - viewBox.x) * zoomFactor;
+            viewBox.y = svgY - (svgY - viewBox.y) * zoomFactor;
+            viewBox.width = newWidth;
+            viewBox.height = newHeight;
+
+            // Constrain to image bounds
+            viewBox.x = Math.max(0, Math.min(svgWidth - viewBox.width, viewBox.x));
+            viewBox.y = Math.max(0, Math.min(svgHeight - viewBox.height, viewBox.y));
+
+            updateViewBox();
+        });
+
+        // Highlight function for hover (bidirectional)
         function highlightLine(lineId, isHovering) {
-            const imageLines = element.querySelectorAll(`[data-line-id="${lineId}"]`);
-            imageLines.forEach(el => {
+            const allElements = element.querySelectorAll(`[data-line-id="${lineId}"]`);
+            allElements.forEach(el => {
                 if (isHovering) {
                     el.classList.add('highlighted');
                 } else {
@@ -192,8 +445,8 @@ class HTRVisualizer(gr.HTML):
             });
         }
 
-        // Select function for click
-        function selectLine(lineId) {
+        // Select function for click (bidirectional)
+        function selectLine(lineId, clickedFromTranscription = false) {
             // Clear previous selection
             element.querySelectorAll('.selected').forEach(el => {
                 el.classList.remove('selected');
@@ -204,10 +457,37 @@ class HTRVisualizer(gr.HTML):
                 const elements = element.querySelectorAll(`[data-line-id="${lineId}"]`);
                 elements.forEach(el => el.classList.add('selected'));
 
-                // Scroll transcription to selected line
+                // Always scroll transcription to show selected line when clicking from image
                 const transcriptionLine = transcriptionPanel.querySelector(`.transcription-line[data-line-id="${lineId}"]`);
-                if (transcriptionLine) {
-                    transcriptionLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                if (transcriptionLine && !clickedFromTranscription) {
+                    setTimeout(() => {
+                        transcriptionLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 50);
+                }
+
+                // Always scroll image to show selected polygon when clicking from transcription
+                const imageLine = svgContainer.querySelector(`.textline[data-line-id="${lineId}"]`);
+                if (imageLine && clickedFromTranscription) {
+                    const polygon = imageLine.querySelector('polygon');
+                    if (polygon) {
+                        setTimeout(() => {
+                            // Get bounding box of polygon and scroll to it
+                            const bbox = polygon.getBBox();
+                            const containerRect = svgContainer.getBoundingClientRect();
+                            const scale = currentZoom;
+
+                            // Calculate center position with zoom applied
+                            const centerX = (bbox.x + bbox.width / 2) * scale;
+                            const centerY = (bbox.y + bbox.height / 2) * scale;
+
+                            // Scroll to center the polygon
+                            svgContainer.scrollTo({
+                                left: centerX - containerRect.width / 2,
+                                top: centerY - containerRect.height / 2,
+                                behavior: 'smooth'
+                            });
+                        }, 50);
+                    }
                 }
             }
 
@@ -215,25 +495,49 @@ class HTRVisualizer(gr.HTML):
             props.selectedLine = lineId;
         }
 
-        // Add hover listeners to all lines
+        // Add hover and click listeners to all lines
         element.querySelectorAll('[data-line-id]').forEach(lineEl => {
             const lineId = lineEl.dataset.lineId;
+            const isImageLine = lineEl.classList.contains('textline');
+            const isTranscriptionLine = lineEl.classList.contains('transcription-line');
 
+            // Hover highlighting (disabled when Ctrl is pressed)
             lineEl.addEventListener('mouseenter', () => {
-                highlightLine(lineId, true);
+                if (!isCtrlPressed) {
+                    highlightLine(lineId, true);
+                }
             });
 
             lineEl.addEventListener('mouseleave', () => {
-                highlightLine(lineId, false);
+                if (!isCtrlPressed) {
+                    highlightLine(lineId, false);
+                }
             });
 
-            lineEl.addEventListener('click', () => {
+            // Click selection (disabled when Ctrl is pressed)
+            lineEl.addEventListener('click', (e) => {
+                if (isCtrlPressed) return;
+                e.stopPropagation();
                 const newSelection = selectedLineId === lineId ? null : lineId;
-                selectLine(newSelection);
+                selectLine(newSelection, isTranscriptionLine);
                 trigger('line_selected', { lineId: newSelection });
             });
         });
-        """
+        };
+
+        // Monitor for prop changes
+        let lastPath = props.value?.path;
+        setInterval(() => {
+            if (props.value?.path && props.value.path !== lastPath) {
+                lastPath = props.value.path;
+                initVisualizer();
+            }
+        }, 100);
+
+        // Start initialization
+        initVisualizer();
+    })();
+    """
 
         super().__init__(
             value={"width": 100, "height": 100, "path": "", "lines": [], "regions": []},
