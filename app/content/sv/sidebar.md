@@ -1,4 +1,4 @@
-## ATR-demo
+## HTR-demo
 Utvecklad av **Riksarkivet** tillsammans med [Huminfra](https://www.huminfra.se/) som demonstrerar AI-driven konvertering av historiska manuskript till digital text med hjälp av [HTRflow](https://ai-riksarkivet.github.io/htrflow/latest).
 
 > OBS: Denna demoapplikation är endast avsedd för demonstrationsändamål och är inte avsedd för produktionsanvändning. Applikationen är värd på Hugging Face 🤗 med delad infrastruktur, vilket innebär att det finns en daglig kvotgräns för hur mycket du kan använda appen varje dag.

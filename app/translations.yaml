@@ -24,21 +24,21 @@ en:
   PDF: PDF
   ? Select a pipeline that best matches your image. The pipeline determines the processing
     workflow optimized for different text recognition tasks. If you select an example
-    image, a suitable pipeline will be preselected automatically. However, you can edit
-    the pipeline if you need to customize it further. Choosing the right pipeline significantly
-    improves transcription quality.
+    image, a suitable pipeline will be preselected automatically. However, you can
+    edit the pipeline if you need to customize it further. Choosing the right pipeline
+    significantly improves transcription quality.
   : Select a pipeline that best matches your image. The pipeline determines the processing
     workflow optimized for different text recognition tasks. If you select an example
-    image, a suitable pipeline will be preselected automatically. However, you can edit
-    the pipeline if you need to customize it further. Choosing the right pipeline significantly
-    improves transcription quality.
+    image, a suitable pipeline will be preselected automatically. However, you can
+    edit the pipeline if you need to customize it further. Choosing the right pipeline
+    significantly improves transcription quality.
   Swedish - Spreads: Swedish - Spreads
   Swedish - Single page and snippets: Swedish - Single page and snippets
   Norwegian - Single page and snippets: Norwegian - Single page and snippets
   Medieval - Single page and snippets: Medieval - Single page and snippets
   English - Single page and snippets: English - Single page and snippets
   Custom: Custom
-  Run ATR: Run ATR
+  Run HTR: Run HTR
   ? 'The code snippet below is a YAML file that the HTRflow app uses to process the
     image. If you have chosen an image from the "Examples" section, the YAML is already
     a pre-made template tailored to fit the example image.
@@ -57,13 +57,11 @@ en:
     for a detailed description on how to customize HTRflow pipelines.
   Edit Pipeline: Edit Pipeline
   1. Upload: 1. Upload
-  The image to the left shows where HTRflow found text in the image. The transcription can be seen to the right.: The
-    image to the left shows where HTRflow found text in the image. The transcription
-    can be seen to the right.
-  Annotated image: Annotated image
+  Hover over text regions to highlight, click to select. Both panels scroll independently within a fixed height.: Hover
+    over text regions to highlight, click to select. Both panels scroll independently
+    within a fixed height.
   ← Previous: ← Previous
   Next →: Next →
-  Transcription: Transcription
   2. Result: 2. Result
   Choose file format for export.: Choose file format for export.
   Select export format(s): Select export format(s)
@@ -98,13 +96,13 @@ sv:
   PDF: PDF
   ? Select a pipeline that best matches your image. The pipeline determines the processing
     workflow optimized for different text recognition tasks. If you select an example
-    image, a suitable pipeline will be preselected automatically. However, you can edit
-    the pipeline if you need to customize it further. Choosing the right pipeline significantly
-    improves transcription quality.
+    image, a suitable pipeline will be preselected automatically. However, you can
+    edit the pipeline if you need to customize it further. Choosing the right pipeline
+    significantly improves transcription quality.
   : Välj en pipeline som bäst matchar din bild. Pipelinen bestämmer bearbetningsflödet
     optimerat för olika textigenkänningsuppgifter. Om du väljer en exempelbild kommer
-    en lämplig pipeline att förväljas automatiskt. Du kan dock redigera pipelinen om
-    du behöver anpassa den ytterligare. Att välja rätt pipeline förbättrar transkriptionskvaliteten
+    en lämplig pipeline att förväljas automatiskt. Du kan dock redigera pipelinen
+    om du behöver anpassa den ytterligare. Att välja rätt pipeline förbättrar transkriptionskvaliteten
     avsevärt.
   Swedish - Spreads: Svenska - Uppslag
   Swedish - Single page and snippets: Svenska - Enkel sida och utdrag
@@ -112,7 +110,7 @@ sv:
   Medieval - Single page and snippets: Medeltida - Enkel sida och utdrag
   English - Single page and snippets: Engelska - Enkel sida och utdrag
   Custom: Anpassad
-  Run ATR: Kör ATR
+  Run HTR: Kör HTR
   ? 'The code snippet below is a YAML file that the HTRflow app uses to process the
     image. If you have chosen an image from the "Examples" section, the YAML is already
     a pre-made template tailored to fit the example image.
@@ -131,13 +129,11 @@ sv:
     för en detaljerad beskrivning av hur man anpassar HTRflow-pipelines.
   Edit Pipeline: Redigera Pipeline
   1. Upload: 1. Ladda upp
-  The image to the left shows where HTRflow found text in the image. The transcription can be seen to the right.: Bilden
-    till vänster visar var HTRflow hittade text i bilden. Transkriptionen kan ses
-    till höger.
-  Annotated image: Annoterad bild
+  Hover over text regions to highlight, click to select. Both panels scroll independently within a fixed height.: Hover
+    over text regions to highlight, click to select. Both panels scroll independently
+    within a fixed height.
   ← Previous: ← Föregående
   Next →: Nästa →
-  Transcription: Transkription
   2. Result: 2. Resultat
   Choose file format for export.: Välj filformat för export.
   Select export format(s): Välj exportformat

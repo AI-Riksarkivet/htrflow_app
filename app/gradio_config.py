@@ -60,6 +60,10 @@ hr.region-divider {
   text-align: center;
 }
 
+.button-group-viz button {
+  max-width: 150px;
+}
+
 /* Pipeline information styling */
 .pipeline-help {
   padding: 5px 0 0 0;

@@ -4,10 +4,10 @@ import gradio as gr
 translations = {
     "en": {
         # Main title
-        "app_title": "ATR-demo 🔍",
+        "app_title": "HTR-demo 🔍",
 
         # Sidebar
-        "sidebar_title": "ATR-demo",
+        "sidebar_title": "HTR-demo",
         "sidebar_description": "Developed by the **National Archives of Sweden** with [Huminfra](https://www.huminfra.se/) that demonstrates AI-powered conversion of historical manuscripts to digital text using [HTRflow](https://ai-riksarkivet.github.io/htrflow/latest).",
         "sidebar_note": "Note: This demo application is for demonstration purposes only and is not intended for production use. The application is hosted on Hugging Face 🤗 using shared infrastructure, which means there is a daily quota limit on how much you can use the app each day.",
         "sidebar_opensource": "Both the App and HTRflow's code are completely open source. Explore and contribute on GitHub:",
@@ -48,7 +48,7 @@ translations = {
         "settings_title": "Settings",
         "settings_description": "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different text recognition tasks. If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further. Choosing the right pipeline significantly improves transcription quality.",
         "edit_pipeline": "Edit Pipeline",
-        "edit_pipeline_description": "The code snippet below is a YAML file that the ATR-demo app uses to process the image. If you have chosen an image from the \"Examples\" section, the YAML is already a pre-made template tailored to fit the example image.\n\nEdit pipeline if needed:",
+        "edit_pipeline_description": "The code snippet below is a YAML file that the HTR-demo app uses to process the image. If you have chosen an image from the \"Examples\" section, the YAML is already a pre-made template tailored to fit the example image.\n\nEdit pipeline if needed:",
         "pipeline_docs": "See the documentation for a detailed description on how to customize HTRflow pipelines.",
 
         # Buttons
@@ -76,10 +76,10 @@ translations = {
     },
     "sv": {
         # Main title
-        "app_title": "ATR-demo 🔍",
+        "app_title": "HTR-demo 🔍",
 
         # Sidebar
-        "sidebar_title": "ATR-demo",
+        "sidebar_title": "HTR-demo",
         "sidebar_description": "Utvecklad av **Riksarkivet** med [Huminfra](https://www.huminfra.se/) som demonstrerar AI-driven konvertering av historiska manuskript till digital text med [HTRflow](https://ai-riksarkivet.github.io/htrflow/latest).",
         "sidebar_note": "OBS: Denna demoapplikation är endast för demonstrationsändamål och är inte avsedd för produktionsanvändning. Applikationen är värd på Hugging Face 🤗 med delad infrastruktur, vilket innebär att det finns en daglig kvotgräns för hur mycket du kan använda appen varje dag.",
         "sidebar_opensource": "Både appen och HTRflows kod är helt öppen källkod. Utforska och bidra på GitHub:",
@@ -120,7 +120,7 @@ translations = {
         "settings_title": "Inställningar",
         "settings_description": "Välj en pipeline som bäst matchar din bild. Pipelinen bestämmer arbetsflödet optimerat för olika textigenkänningsuppgifter. Om du väljer en exempelbild kommer en lämplig pipeline att väljas automatiskt. Du kan dock redigera pipelinen om du behöver anpassa den ytterligare. Att välja rätt pipeline förbättrar avsevärt transkriberingskvaliteten.",
         "edit_pipeline": "Redigera pipeline",
-        "edit_pipeline_description": "Kodavsnittet nedan är en YAML-fil som ATR-demo-appen använder för att bearbeta bilden. Om du har valt en bild från avsnittet \"Exempel\" är YAML redan en färdig mall anpassad för exempelbilden.\n\nRedigera pipeline vid behov:",
+        "edit_pipeline_description": "Kodavsnittet nedan är en YAML-fil som HTR-demo-appen använder för att bearbeta bilden. Om du har valt en bild från avsnittet \"Exempel\" är YAML redan en färdig mall anpassad för exempelbilden.\n\nRedigera pipeline vid behov:",
         "pipeline_docs": "Se dokumentationen för en detaljerad beskrivning av hur man anpassar HTRflow-pipelines.",
 
         # Buttons

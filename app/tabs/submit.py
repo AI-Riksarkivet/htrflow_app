@@ -360,7 +360,7 @@ with gr.Blocks() as submit:
                     elem_classes="pipeline-dropdown",
                 )
             with gr.Column(scale=0, min_width=100):
-                run_button = gr.Button(_("Run ATR"), variant="primary")
+                run_button = gr.Button(_("Run HTR"), variant="primary")
 
 
         pipeline_description = gr.HTML(

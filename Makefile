@@ -2,7 +2,7 @@
 
 # Development mode - runs locally with DEV_MODE enabled
 dev:
-	@echo "Starting ATR-demo app in development mode..."
+	@echo "Starting HTR-demo app in development mode..."
 	@echo "  - Disabling @spaces.GPU decorator"
 	@echo "  - Disabling Matomo analytics"
 	@echo "  - Setting proxy path for Coder workspace"
@@ -13,7 +13,7 @@ dev:
 
 # Production mode - runs as if on Hugging Face Spaces
 prod:
-	@echo "Starting ATR-demo app in production mode..."
+	@echo "Starting HTR-demo app in production mode..."
 	@echo "  - Enabling @spaces.GPU decorator"
 	@echo "  - Enabling Matomo analytics"
 	uv run app/main.py
