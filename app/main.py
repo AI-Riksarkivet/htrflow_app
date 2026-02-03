@@ -8,8 +8,8 @@ from app.gradio_config import css, theme
 from app.tabs.export import collection as collection_export_state
 from app.tabs.export import export
 from app.tabs.submit import collection_submit_state, submit
-from app.tabs.visualizer_v3 import collection as collection_viz_state
-from app.tabs.visualizer_v3 import visualizer
+from app.tabs.visualizer import collection as collection_viz_state
+from app.tabs.visualizer import visualizer
 
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
