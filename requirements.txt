@@ -1,0 +1,24 @@
+# HTRflow App Dependencies
+# Main dependencies for Hugging Face Spaces deployment
+
+# Core HTRflow package
+htrflow @ git+https://github.com/AI-Riksarkivet/htrflow.git@c9a21db6daaa2b3f915d6c53ee77e78656c68f96
+
+# Gradio and UI
+gradio[mcp]>=6.5.1
+gradio-i18n==0.3.4
+
+# Hugging Face Spaces
+spaces>=0.32.0
+
+# Document processing
+pymupdf==1.25.3
+pagexml-tools==0.8.1
+
+# ML/AI libraries
+transformers>=4.30.0,<5.0.0
+
+# Utilities
+tqdm==4.67.1
+dill==0.3.9
+pycurl==7.45.6
