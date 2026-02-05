@@ -641,7 +641,7 @@ wheels = [
 [[package]]
 name = "htrflow"
 version = "0.2.6"
-source = { git = "https://github.com/AI-Riksarkivet/htrflow.git#c9a21db6daaa2b3f915d6c53ee77e78656c68f96" }
+source = { git = "https://github.com/AI-Riksarkivet/htrflow.git?rev=c9a21db6daaa2b3f915d6c53ee77e78656c68f96#c9a21db6daaa2b3f915d6c53ee77e78656c68f96" }
 dependencies = [
     { name = "huggingface-hub", extra = ["cli"] },
     { name = "jinja2" },
@@ -688,7 +688,7 @@ requires-dist = [
     { name = "dill", specifier = ">=0.3.9" },
     { name = "gradio", extras = ["mcp"], specifier = ">=6.5.0" },
     { name = "gradio-i18n", specifier = ">=0.3.4" },
-    { name = "htrflow", git = "https://github.com/AI-Riksarkivet/htrflow.git" },
+    { name = "htrflow", git = "https://github.com/AI-Riksarkivet/htrflow.git?rev=c9a21db6daaa2b3f915d6c53ee77e78656c68f96" },
     { name = "pagexml-tools", specifier = ">=0.8.1" },
     { name = "pycurl", specifier = "==7.45.6" },
     { name = "pymupdf", specifier = ">=1.25.3" },
