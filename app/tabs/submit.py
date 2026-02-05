@@ -263,8 +263,11 @@ with gr.Blocks() as submit:
                 file_types=["image"],
                 label=_("Image to transcribe"),
                 interactive=True,
-                object_fit="scale-down",
-                preview=True,
+                object_fit="contain",  # Better fitting for different aspect ratios
+                allow_preview=True,  # Allow clicking to enlarge
+                preview=True,  # Start in preview mode to show images enlarged
+                columns=3,  # Show 3 images per row in grid view
+                height=300,  # Fixed height with scrollbar if needed
             )
 
         with gr.Column(scale=1, variant="panel"):
@@ -277,9 +280,9 @@ with gr.Blocks() as submit:
                         allow_preview=False,
                         object_fit="scale-down",
                         min_width=250,
-                        height="100%",
-                        columns=4,
-                        container=True,
+                        # height="100%",
+                        columns=3,
+                        container=False
                     )
 
                 with gr.Tab(_("Image ID")):
@@ -364,8 +367,6 @@ with gr.Blocks() as submit:
 
 
         pipeline_description = gr.HTML(
-            value=get_pipeline_description,
-            inputs=pipeline_dropdown,
             elem_classes="pipeline-info",
         )
 
@@ -438,4 +439,12 @@ with gr.Blocks() as submit:
         fn=lambda x: (gr.update(visible=(x == "Custom")), get_yaml(x) if x else ""),
         inputs=pipeline_dropdown,
         outputs=[edit_pipeline_column, custom_template_yaml],
+    )
+
+    # Update pipeline description when pipeline changes
+    # Note: Language parameter will be wired from main.py where lang is accessible
+    pipeline_dropdown.change(
+        fn=get_pipeline_description,
+        inputs=pipeline_dropdown,
+        outputs=pipeline_description
     )

@@ -17,7 +17,7 @@ classifiers = [
 requires-python = ">=3.13"
 
 dependencies = [
-    "htrflow @ git+https://github.com/AI-Riksarkivet/htrflow.git",
+    "htrflow @ git+https://github.com/AI-Riksarkivet/htrflow.git@c9a21db6daaa2b3f915d6c53ee77e78656c68f96",
     "gradio[mcp]>=6.5.0",
     "tqdm>=4.67.1",
     "dill>=0.3.9",

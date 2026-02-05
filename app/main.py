@@ -5,9 +5,7 @@ import gradio as gr
 from gradio_i18n import Translate, gettext as _
 
 from app.gradio_config import css, theme
-from app.tabs.export import collection as collection_export_state
-from app.tabs.export import export
-from app.tabs.submit import collection_submit_state, submit
+from app.tabs.submit import collection_submit_state, submit, pipeline_description, pipeline_dropdown, get_pipeline_description
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
 
@@ -83,35 +81,35 @@ with gr.Blocks(
 
         lang_selector.change(fn=update_sidebar, inputs=[lang_selector], outputs=[sidebar_content])
 
-        with gr.Tabs(elem_classes="top-navbar") as navbar:
-            with gr.Tab(label=_("1. Upload")) as tab_submit:
-                submit.render()
-            with gr.Tab(label=_("2. Result"), id="result") as tab_visualizer:
-                visualizer.render()
+        # Update pipeline description when language changes
+        lang_selector.change(
+            fn=get_pipeline_description,
+            inputs=[pipeline_dropdown, lang_selector],
+            outputs=[pipeline_description]
+        )
 
-            with gr.Tab(label=_("3. Export"), id="export") as tab_export:
-                export.render()
+        with gr.Tabs(elem_classes="top-navbar") as navbar:
+            with gr.Tab(label=_("Transcribe")) as tab_submit:
+                submit.render()
+            with gr.Tab(label=_("Results"), id="result") as tab_visualizer:
+                visualizer.render()
 
     def sync_gradio_object_state(input_value, state_value):
         """Synchronize the Collection."""
         state_value = input_value
         return state_value if state_value is not None else gr.skip()
 
+    # Auto-navigate to Results tab after HTR processing
     collection_submit_state.change(
         lambda collection: gr.Tabs(selected="result") if collection else gr.skip(),
         inputs=collection_submit_state,
         outputs=navbar
     )
 
+    # Sync collection from Upload to Results tab
     tab_visualizer.select(
         inputs=[collection_submit_state, collection_viz_state],
         outputs=[collection_viz_state],
-        fn=sync_gradio_object_state,
-    )
-
-    tab_export.select(
-        inputs=[collection_submit_state, collection_export_state],
-        outputs=[collection_export_state],
         fn=sync_gradio_object_state,
     )
 

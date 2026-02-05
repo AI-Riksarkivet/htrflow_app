@@ -56,17 +56,22 @@ en:
   : See the <a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines">documentation</a>
     for a detailed description on how to customize HTRflow pipelines.
   Edit Pipeline: Edit Pipeline
-  1. Upload: 1. Upload
-  visualizer_description: Interactive viewer with zoom, pan, and synchronized highlighting. Click any line to select and focus. Use mouse wheel or buttons to zoom, Ctrl+drag to pan.
+  Transcribe: Transcribe
+  Results: Results
+  1. HTR: Transcribe
+  visualizer_description: Interactive viewer with zoom, pan, and synchronized highlighting.
+    Click any line to select and focus. Use mouse wheel or buttons to zoom, Ctrl+drag
+    to pan.
+  Select export format(s): Select export format(s)
+  Select export format: Select export format
+  File format: File format
+  📤 Export: 📤 Export
+  📤 Export & Download: 📤 Export & Download
+  📥 Download: 📥 Download
+  ⬇️ Download: ⬇️ Download
   ← Previous: ← Previous
   Next →: Next →
-  2. Result: 2. Result
-  Choose file format for export.: Choose file format for export.
-  Select export format(s): Select export format(s)
-  File format: File format
-  Export: Export
-  Download files: Download files
-  3. Export: 3. Export
+  2. Viewer: Results
 sv:
   ? Select or upload the image you want to transcribe. Most common image formats are
     supported and you can upload max 5 images at a time in this hosted demo.
@@ -126,14 +131,19 @@ sv:
   : Se <a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines">dokumentationen</a>
     för en detaljerad beskrivning av hur man anpassar HTRflow-pipelines.
   Edit Pipeline: Redigera Pipeline
-  1. Upload: 1. Ladda upp
-  visualizer_description: Interaktiv visare med zoom, panorering och synkroniserad markering. Klicka på valfri rad för att välja och fokusera. Använd mushjulet eller knapparna för att zooma, Ctrl+dra för att panorera.
+  Transcribe: Transkribera
+  Results: Resultat
+  1. HTR: Transkribera
+  visualizer_description: Interaktiv visare med zoom, panorering och synkroniserad
+    markering. Klicka på valfri rad för att välja och fokusera. Använd mushjulet eller
+    knapparna för att zooma, Ctrl+dra för att panorera.
+  Select export format(s): Välj exportformat
+  Select export format: Välj exportformat
+  File format: Filformat
+  📤 Export: 📤 Export
+  📤 Export & Download: 📤 Exportera & Ladda ner
+  📥 Download: 📥 Download
+  ⬇️ Download: ⬇️ Ladda ner
   ← Previous: ← Föregående
   Next →: Nästa →
-  2. Result: 2. Resultat
-  Choose file format for export.: Välj filformat för export.
-  Select export format(s): Välj exportformat
-  File format: Filformat
-  Export: Export
-  Download files: Ladda ner filer
-  3. Export: 3. Exportera
+  2. Viewer: Resultat

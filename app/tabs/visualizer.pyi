@@ -1,25 +1,8 @@
-import os
-import shutil
-from pathlib import Path
-
 import gradio as gr
 from htrflow.volume.volume import Collection
-from htrflow.results import RecognizedText, TEXT_RESULT_KEY
 from gradio_i18n import gettext as _
 
-# Export functionality
-current_dir = Path(__file__).parent
-visualizer_dir = current_dir / "visualizer"
-DEFAULT_EXPORT_FORMAT = "txt"
-EXPORT_CHOICES = ["txt", "alto", "page", "json"]
-
-# Load external files (HTML, CSS, JavaScript)
-def load_file(filename):
-    """Load external file content (HTML, CSS, or JavaScript)"""
-    file_path = visualizer_dir / filename
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return f.read()
-
+from gradio.events import Dependency
 
 class HTRVisualizer(gr.HTML):
     """Unified HTR visualization with synchronized image and transcription panels"""
@@ -79,6 +62,11 @@ class HTRVisualizer(gr.HTML):
                 }
             }
         }
+    from typing import Callable, Literal, Sequence, Any, TYPE_CHECKING
+    from gradio.blocks import Block
+    if TYPE_CHECKING:
+        from gradio.components import Timer
+        from gradio.components.base import Component
 
 
 def prepare_visualizer_data(collection: Collection, current_page_index: int):
@@ -147,142 +135,58 @@ def update_image_caption(collection: Collection, current_page_index):
     return f"**Image {current_page_index + 1} of {n_pages}:** `{collection[current_page_index].label}`"
 
 
-def rename_files_in_directory(directory, fmt):
-    """
-    If fmt is "alto" or "page", rename each file in the directory so that its
-    base name ends with _{fmt} (if it doesn't already). For other formats, leave
-    the file names unchanged.
-    Returns a list of the (new or original) file paths.
-    """
-    renamed = []
-    for root, _, files in os.walk(directory):
-        for file in files:
-            old_path = os.path.join(root, file)
-
-            if fmt in ["alto", "page"]:
-                name, ext = os.path.splitext(file)
-
-                if not name.endswith(f"_{fmt}"):
-                    new_name = f"{name}_{fmt}{ext}"
-                    new_path = os.path.join(root, new_name)
-                    os.rename(old_path, new_path)
-                    renamed.append(new_path)
-                else:
-                    renamed.append(old_path)
-            else:
-                renamed.append(old_path)
-    return renamed
-
-
-def export_and_download(file_format, collection: Collection, req: gr.Request):
-    """Export collection and prepare download button with file"""
-    if not file_format:
-        gr.Warning(_("No export file format was selected"))
-        return None
-
-    if collection is None:
-        gr.Warning(_("No image has been transcribed yet. Please go to the HTR tab"))
-        return None
-
-    temp_user_dir = current_dir / str(req.session_hash)
-    temp_user_dir.mkdir(exist_ok=True)
-
-    # Export to single format
-    temp_user_file_dir = os.path.join(temp_user_dir, file_format)
-    collection.save(directory=temp_user_file_dir, serializer=file_format)
-    exported_files = rename_files_in_directory(temp_user_file_dir, file_format)
-
-    if exported_files and len(exported_files) > 0:
-        if len(exported_files) > 1:
-            zip_path = os.path.join(temp_user_dir, f"export_{file_format}.zip")
-            shutil.make_archive(zip_path.replace('.zip', ''), 'zip', temp_user_file_dir)
-            file_path = zip_path
-        else:
-            file_path = exported_files[0]
-
-        gr.Info(f"✅ Export successful! Download starting...")
-        return file_path
-
-    return None
-
-
-def apply_text_edits(collection: Collection, page_index: int, visualizer_value: dict):
+def apply_text_edits(collection: Collection, page_index: int, edit_data: dict):
     """Apply text edits from the visualizer to the collection"""
-    edit_data = visualizer_value.get('edits', {}) if isinstance(visualizer_value, dict) else {}
-
-    if not edit_data:
-        return collection
+    if not edit_data or not edit_data.get("edits"):
+        return collection, gr.update(visible=False)
 
     page = collection[page_index]
     lines = list(page.traverse(lambda node: node.is_line()))
 
-    for line_id_str, new_text in edit_data.items():
+    edits = edit_data.get("edits", {})
+    for line_id_str, new_text in edits.items():
         line_id = int(line_id_str)
         if 0 <= line_id < len(lines):
-            line = lines[line_id]
-            old_result = line.get(TEXT_RESULT_KEY)
-            score = old_result.scores[0] if (old_result and hasattr(old_result, 'scores') and old_result.scores) else 1.0
-            line.add_data(**{TEXT_RESULT_KEY: RecognizedText([new_text], [score])})
+            lines[line_id].text = new_text
 
-    return collection
+    # Return updated collection and hide save button
+    return collection, gr.update(visible=False)
 
 
 with gr.Blocks() as visualizer:
-    gr.Markdown(_("visualizer_description"))
+    gr.Markdown(
+        _("visualizer_description")
+    )
 
     visualizer_component = HTRVisualizer(
         max_height="70vh",
         layout="auto",
-        edits={},
     )
 
     image_caption = gr.Markdown()
 
-    with gr.Row(equal_height=False):
-        with gr.Column(elem_classes="button-group-viz"):
-            left = gr.Button(
-                _("← Previous"), visible=False, interactive=False, scale=0, min_width=100
-            )
-            right = gr.Button(_("Next →"), visible=False, scale=0, min_width=100)
-        with gr.Column(scale=0, min_width=200):
-            with gr.Row(equal_height=True):
-                export_file_format = gr.Dropdown(
-                    value=DEFAULT_EXPORT_FORMAT,
-                    label=None,
-                    info=None,
-                    choices=EXPORT_CHOICES,
-                    multiselect=False,
-                    interactive=True,
-                    scale=0,
-                    min_width=70,
-                    container=False
-                )
-                export_button = gr.Button(
-                    _("📤 Export"),
-                    scale=0,
-                    min_width=70,
-                    variant="primary",
-                    size="sm"
-                )
-                download_button = gr.DownloadButton(
-                    _("⬇️ Download"),
-                    scale=0,
-                    min_width=70,
-                    variant="secondary",
-                    size="sm",
-                    elem_id="hidden-download-btn",
-                    elem_classes="hidden-download-btn"
-                )
+    # Edit mode controls
+    with gr.Row(elem_classes="button-group-viz"):
+        edit_mode = gr.Checkbox(label="✏️ Edit Mode", value=False, scale=0)
+        save_btn = gr.Button("💾 Save Changes", visible=False, variant="primary", scale=0)
+
+    with gr.Row(elem_classes="button-group-viz"):
+        left = gr.Button(
+            _("← Previous"), visible=False, interactive=False, scale=0
+        )
+        right = gr.Button(_("Next →"), visible=False, scale=0)
 
     collection = gr.State()
     current_page_index = gr.State(0)
-    temp_state = gr.State()
+    edit_data_trigger = gr.Textbox(visible=False, elem_id="edit_data_trigger")  # Hidden field to receive edits from JavaScript
 
+    # Wiring of navigation buttons
     left.click(left_button_click, current_page_index, current_page_index)
     right.click(
         right_button_click, [collection, current_page_index], current_page_index
     )
 
+    # Updates on collection change
     collection.change(
         prepare_visualizer_data,
         inputs=[collection, current_page_index],
@@ -297,6 +201,7 @@ with gr.Blocks() as visualizer:
         outputs=image_caption,
     )
 
+    # Updates on page change
     current_page_index.change(
         prepare_visualizer_data,
         inputs=[collection, current_page_index],
@@ -312,29 +217,40 @@ with gr.Blocks() as visualizer:
         outputs=image_caption,
     )
 
-    def check_and_apply_edits(coll, page_idx, viz_value):
-        """Check if visualizer value has edits and apply them"""
-        if isinstance(viz_value, dict) and 'edits' in viz_value and viz_value['edits']:
-            updated_coll = apply_text_edits(coll, page_idx, viz_value)
-            viz_data = prepare_visualizer_data(updated_coll, page_idx)
-
-            gr.Info("✅ Edits saved successfully!")
-            return updated_coll, viz_data
-        return coll, gr.update()
-
-    visualizer_component.change(
-        fn=check_and_apply_edits,
-        inputs=[collection, current_page_index, visualizer_component],
-        outputs=[collection, visualizer_component]
+    # Edit mode functionality
+    edit_mode.change(
+        lambda is_edit: gr.update(visible=is_edit),
+        inputs=[edit_mode],
+        outputs=[save_btn]
     )
 
-    export_button.click(
-        fn=export_and_download,
-        inputs=[export_file_format, collection],
-        outputs=download_button
+    # Parse JSON from text trigger and apply edits
+    def parse_and_apply_edits(collection_val, page_idx, edit_json_str):
+        """Parse JSON string and apply edits"""
+        import json
+        try:
+            if edit_json_str:
+                edit_data_dict = json.loads(edit_json_str)
+                return apply_text_edits(collection_val, page_idx, edit_data_dict)
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"Error parsing edit data: {e}")
+            return collection_val, gr.update(visible=False)
+        return collection_val, gr.update(visible=False)
+
+    # Save button - apply edits to collection
+    save_btn.click(
+        fn=parse_and_apply_edits,
+        inputs=[collection, current_page_index, edit_data_trigger],
+        outputs=[collection, save_btn]
     ).then(
-        fn=None,
-        inputs=None,
-        outputs=None,
-        js="() => document.getElementById('hidden-download-btn').click()"
+        fn=prepare_visualizer_data,
+        inputs=[collection, current_page_index],
+        outputs=[visualizer_component]
+    )
+
+    # When edit_data_trigger changes, show save button
+    edit_data_trigger.change(
+        lambda x: gr.update(visible=True) if x else gr.update(visible=False),
+        inputs=[edit_data_trigger],
+        outputs=[save_btn]
     )

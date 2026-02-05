@@ -1,0 +1,46 @@
+<div class="htr-visualizer" data-layout="${layout}">
+    <div class="htr-visualizer-content">
+    <div class="image-panel" style="max-height: ${maxHeight};">
+        <!-- Zoom controls top-right -->
+        <div class="zoom-controls">
+            <button class="zoom-btn" data-action="zoom-in" title="Zoom In">+</button>
+            <button class="zoom-btn" data-action="zoom-out" title="Zoom Out">−</button>
+            <button class="zoom-btn" data-action="reset" title="Reset View">⟲</button>
+            <span class="zoom-level">100%</span>
+        </div>
+
+        <div class="svg-container">
+            <svg class="image-svg" viewBox="0 0 ${value.width} ${value.height}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+                <image height="${value.height}" width="${value.width}" href="/gradio_api/file=${value.path}" />
+                ${value.lines.map((line) => `
+                    <a class="textline" data-line-id="${line.id}">
+                        <polygon points="${line.polygonPoints}"/>
+                    </a>
+                `).join('')}
+            </svg>
+        </div>
+    </div>
+    <div class="transcription-panel-container">
+        <div class="edit-controls">
+            <label class="edit-mode-label">
+                <input type="checkbox" id="edit-mode-toggle" /> ✏️ Edit Mode
+            </label>
+            <button id="save-edits-btn" style="display: none;">💾 Save</button>
+        </div>
+        <div class="transcription-panel" style="max-height: ${maxHeight};">
+            ${value.regions.map((region, regionIdx) => `
+                <div class="transcription-region">
+                    ${region.map((line) => `
+                        <span class="transcription-line"
+                              data-line-id="${line.id}"
+                              data-original-text="${line.text}">
+                            ${line.text}
+                        </span><br>
+                    `).join('')}
+                </div>
+                ${regionIdx < value.regions.length - 1 ? '<hr class="region-divider">' : ''}
+            `).join('')}
+        </div>
+    </div>
+    </div>
+</div>
