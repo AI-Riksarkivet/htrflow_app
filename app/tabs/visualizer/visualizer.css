@@ -12,6 +12,7 @@
 .htr-visualizer-content {
     display: flex;
     gap: 0.75rem;
+    align-items: stretch;
 }
 
 /* Transcription panel container with integrated edit controls */
@@ -20,6 +21,8 @@
     flex-direction: column;
     flex: 1;
     min-width: 0;
+    min-height: 0;
+    align-self: stretch;
 }
 
 .edit-controls {
@@ -124,6 +127,10 @@
     border-radius: var(--radius-lg);
     background: var(--background-fill-primary);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    align-self: stretch;
 }
 
 .zoom-controls {
@@ -183,8 +190,8 @@
 }
 
 .svg-container {
+    flex: 1;
     width: 100%;
-    height: 100%;
     overflow: hidden;
     cursor: default;
     position: relative;
@@ -243,6 +250,7 @@
     font-size: var(--text-lg);
     line-height: 1.8;
     box-sizing: border-box;
+    min-height: 0;
 }
 
 .transcription-region {

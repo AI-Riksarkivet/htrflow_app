@@ -7,16 +7,13 @@ from htrflow.volume.volume import Collection
 from htrflow.results import RecognizedText, TEXT_RESULT_KEY
 from gradio_i18n import gettext as _
 
-# Export functionality
 current_dir = Path(__file__).parent
 visualizer_dir = current_dir / "visualizer"
 DEFAULT_EXPORT_FORMAT = "txt"
 EXPORT_CHOICES = ["txt", "alto", "page", "json"]
 
 
-# Load external files (HTML, CSS, JavaScript)
 def load_file(filename):
-    """Load external file content (HTML, CSS, or JavaScript)"""
     file_path = visualizer_dir / filename
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
@@ -26,13 +23,6 @@ class HTRVisualizer(gr.HTML):
     """Unified HTR visualization with synchronized image and transcription panels"""
 
     def __init__(self, max_height="70vh", layout="auto", edits=None, **kwargs):
-        """
-        Args:
-            max_height: Maximum height for the visualizer (default: "70vh")
-            layout: Layout mode - "horizontal" (side-by-side), "vertical" (stacked), or "auto" (responsive)
-            edits: Dictionary to store edited line texts
-        """
-        # Load HTML, CSS, and JavaScript from external files
         html_template = load_file("template.html")
         css_template = load_file("visualizer.css")
         js_on_load = load_file("visualizer.js")
@@ -83,13 +73,11 @@ class HTRVisualizer(gr.HTML):
 
 
 def prepare_visualizer_data(collection: Collection, current_page_index: int):
-    """Convert collection to format expected by HTRVisualizer with all pages"""
     all_pages = []
 
     for page_idx, page in enumerate(collection.pages):
         lines = list(page.traverse(lambda node: node.is_line()))
 
-        # Prepare regions with line IDs
         regions_raw = page.traverse(
             lambda node: node.children and all(child.is_line() for child in node)
         )
@@ -157,7 +145,6 @@ def rename_files_in_directory(directory, fmt):
 
 
 def export_and_download(file_format, collection: Collection, req: gr.Request):
-    """Export collection and prepare download button with file"""
     if not file_format:
         gr.Warning(_("No export file format was selected"))
         return None
@@ -169,7 +156,6 @@ def export_and_download(file_format, collection: Collection, req: gr.Request):
     temp_user_dir = current_dir / str(req.session_hash)
     temp_user_dir.mkdir(exist_ok=True)
 
-    # Export to single format
     temp_user_file_dir = os.path.join(temp_user_dir, file_format)
     collection.save(directory=temp_user_file_dir, serializer=file_format)
     exported_files = rename_files_in_directory(temp_user_file_dir, file_format)

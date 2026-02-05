@@ -283,7 +283,6 @@ with gr.Blocks() as submit:
                         allow_preview=False,
                         object_fit="scale-down",
                         min_width=250,
-                        # height="100%",
                         columns=3,
                         container=False,
                     )

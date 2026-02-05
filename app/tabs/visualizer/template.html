@@ -20,14 +20,14 @@
             <button class="nav-btn" id="nav-next-btn">›</button>
         </div>
     </div>
-    <div class="transcription-panel-container">
+    <div class="transcription-panel-container" style="max-height: ${maxHeight};">
         <div class="edit-controls">
             <label class="edit-mode-label">
                 <input type="checkbox" id="edit-mode-toggle" /> ✏️ Edit Mode
             </label>
             <button id="save-edits-btn" style="display: none;">💾 Save</button>
         </div>
-        <div class="transcription-panel" style="max-height: ${maxHeight};">
+        <div class="transcription-panel">
             <!-- Transcription will be rendered by JavaScript -->
         </div>
     </div>

@@ -20,39 +20,13 @@ def load_file(filename):
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
-from gradio.events import Dependency
-
 class HTRVisualizer(gr.HTML):
     """Unified HTR visualization with synchronized image and transcription panels"""
 
-    def __init__(
-        self, max_height="70vh", layout="auto", edits=None, i18n=None, **kwargs
-    ):
-        """
-        Args:
-            max_height: Maximum height for the visualizer (default: "70vh")
-            layout: Layout mode - "horizontal" (side-by-side), "vertical" (stacked), or "auto" (responsive)
-            edits: Dictionary to store edited line texts
-            i18n: Dictionary of translations for UI text
-        """
-        # Load HTML, CSS, and JavaScript from external files
+    def __init__(self, max_height="70vh", layout="auto", edits=None, **kwargs):
         html_template = load_file("template.html")
         css_template = load_file("visualizer.css")
         js_on_load = load_file("visualizer.js")
-
-        # Default translations (English)
-        default_i18n = {
-            "zoomIn": "Zoom In",
-            "zoomOut": "Zoom Out",
-            "resetView": "Reset View",
-            "editMode": "Edit Mode",
-            "save": "Save",
-            "imageOf": "Image",
-            "of": "of",
-        }
-
-        # Merge with provided translations
-        translations = {**default_i18n, **(i18n or {})}
 
         super().__init__(
             value={"width": 100, "height": 100, "path": "", "lines": [], "regions": []},
@@ -62,7 +36,6 @@ class HTRVisualizer(gr.HTML):
             js_on_load=js_on_load,
             maxHeight=max_height,
             layout=layout,
-            i18n=translations,
             **kwargs,
         )
 
@@ -100,7 +73,6 @@ class HTRVisualizer(gr.HTML):
         }
     from typing import Callable, Literal, Sequence, Any, TYPE_CHECKING
     from gradio.blocks import Block
-
     if TYPE_CHECKING:
         from gradio.components import Timer
         from gradio.components.base import Component
