@@ -38,6 +38,8 @@ en:
   Medieval - Single page and snippets: Medieval - Single page and snippets
   English - Single page and snippets: English - Single page and snippets
   Custom: Custom
+  No export file format was selected: No export file format was selected
+  No image has been transcribed yet. Please go to the HTR tab: No image has been transcribed yet. Please go to the HTR tab
   Run HTR: Run HTR
   ? 'The code snippet below is a YAML file that the HTRflow app uses to process the
     image. If you have chosen an image from the "Examples" section, the YAML is already
@@ -113,6 +115,8 @@ sv:
   Medieval - Single page and snippets: Medeltida - Enkel sida och utdrag
   English - Single page and snippets: Engelska - Enkel sida och utdrag
   Custom: Anpassad
+  No export file format was selected: Inget exportformat valdes
+  No image has been transcribed yet. Please go to the HTR tab: Ingen bild har transkriberats ännu. Gå till HTR-fliken
   Run HTR: Kör HTR
   ? 'The code snippet below is a YAML file that the HTRflow app uses to process the
     image. If you have chosen an image from the "Examples" section, the YAML is already

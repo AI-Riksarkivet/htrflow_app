@@ -89,10 +89,16 @@ with gr.Blocks(
             fn=update_sidebar, inputs=[lang_selector], outputs=[sidebar_content]
         )
 
-        # Update pipeline description when language changes
+        # Update pipeline description and dropdown choices when language changes
+        def update_pipeline_on_lang_change(lang, current_pipeline):
+            # The choices need to stay as the internal keys, not translated
+            # Gradio-i18n will handle the display translation
+            description = get_pipeline_description(current_pipeline, lang)
+            return description
+
         lang_selector.change(
-            fn=get_pipeline_description,
-            inputs=[pipeline_dropdown, lang_selector],
+            fn=update_pipeline_on_lang_change,
+            inputs=[lang_selector, pipeline_dropdown],
             outputs=[pipeline_description],
         )
 

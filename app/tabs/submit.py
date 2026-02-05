@@ -384,6 +384,7 @@ with gr.Blocks() as submit:
                 run_button = gr.Button(_("Run HTR"), variant="primary")
 
         pipeline_description = gr.HTML(
+            value=get_pipeline_description("Swedish - Spreads", "en"),
             elem_classes="pipeline-info",
         )
 
