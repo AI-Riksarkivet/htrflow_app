@@ -13,11 +13,12 @@ visualizer_dir = current_dir / "visualizer"
 DEFAULT_EXPORT_FORMAT = "txt"
 EXPORT_CHOICES = ["txt", "alto", "page", "json"]
 
+
 # Load external files (HTML, CSS, JavaScript)
 def load_file(filename):
     """Load external file content (HTML, CSS, or JavaScript)"""
     file_path = visualizer_dir / filename
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -32,9 +33,9 @@ class HTRVisualizer(gr.HTML):
             edits: Dictionary to store edited line texts
         """
         # Load HTML, CSS, and JavaScript from external files
-        html_template = load_file('template.html')
-        css_template = load_file('visualizer.css')
-        js_on_load = load_file('visualizer.js')
+        html_template = load_file("template.html")
+        css_template = load_file("visualizer.css")
+        js_on_load = load_file("visualizer.js")
 
         super().__init__(
             value={"width": 100, "height": 100, "path": "", "lines": [], "regions": []},
@@ -44,7 +45,7 @@ class HTRVisualizer(gr.HTML):
             js_on_load=js_on_load,
             maxHeight=max_height,
             layout=layout,
-            **kwargs
+            **kwargs,
         )
 
     def api_info(self):
@@ -60,9 +61,9 @@ class HTRVisualizer(gr.HTML):
                         "type": "object",
                         "properties": {
                             "polygonPoints": {"type": "string"},
-                            "id": {"type": "integer"}
-                        }
-                    }
+                            "id": {"type": "integer"},
+                        },
+                    },
                 },
                 "regions": {
                     "type": "array",
@@ -72,12 +73,12 @@ class HTRVisualizer(gr.HTML):
                             "type": "object",
                             "properties": {
                                 "id": {"type": "integer"},
-                                "text": {"type": "string"}
-                            }
-                        }
-                    }
-                }
-            }
+                                "text": {"type": "string"},
+                            },
+                        },
+                    },
+                },
+            },
         }
 
 
@@ -96,10 +97,7 @@ def prepare_visualizer_data(collection: Collection, current_page_index: int):
     for region in regions_raw:
         region_lines = []
         for line in region:
-            region_lines.append({
-                "id": line_counter,
-                "text": line.text
-            })
+            region_lines.append({"id": line_counter, "text": line.text})
             line_counter += 1
         region_data.append(region_lines)
 
@@ -110,11 +108,11 @@ def prepare_visualizer_data(collection: Collection, current_page_index: int):
         "lines": [
             {
                 "polygonPoints": " ".join([f"{p[0]},{p[1]}" for p in line.polygon]),
-                "id": idx
+                "id": idx,
             }
             for idx, line in enumerate(lines)
         ],
-        "regions": region_data
+        "regions": region_data,
     }
 
 
@@ -155,7 +153,7 @@ def rename_files_in_directory(directory, fmt):
     Returns a list of the (new or original) file paths.
     """
     renamed = []
-    for root, _, files in os.walk(directory):
+    for root, _dirs, files in os.walk(directory):
         for file in files:
             old_path = os.path.join(root, file)
 
@@ -195,12 +193,12 @@ def export_and_download(file_format, collection: Collection, req: gr.Request):
     if exported_files and len(exported_files) > 0:
         if len(exported_files) > 1:
             zip_path = os.path.join(temp_user_dir, f"export_{file_format}.zip")
-            shutil.make_archive(zip_path.replace('.zip', ''), 'zip', temp_user_file_dir)
+            shutil.make_archive(zip_path.replace(".zip", ""), "zip", temp_user_file_dir)
             file_path = zip_path
         else:
             file_path = exported_files[0]
 
-        gr.Info(f"✅ Export successful! Download starting...")
+        gr.Info("✅ Export successful! Download starting...")
         return file_path
 
     return None
@@ -208,7 +206,9 @@ def export_and_download(file_format, collection: Collection, req: gr.Request):
 
 def apply_text_edits(collection: Collection, page_index: int, visualizer_value: dict):
     """Apply text edits from the visualizer to the collection"""
-    edit_data = visualizer_value.get('edits', {}) if isinstance(visualizer_value, dict) else {}
+    edit_data = (
+        visualizer_value.get("edits", {}) if isinstance(visualizer_value, dict) else {}
+    )
 
     if not edit_data:
         return collection
@@ -221,7 +221,11 @@ def apply_text_edits(collection: Collection, page_index: int, visualizer_value: 
         if 0 <= line_id < len(lines):
             line = lines[line_id]
             old_result = line.get(TEXT_RESULT_KEY)
-            score = old_result.scores[0] if (old_result and hasattr(old_result, 'scores') and old_result.scores) else 1.0
+            score = (
+                old_result.scores[0]
+                if (old_result and hasattr(old_result, "scores") and old_result.scores)
+                else 1.0
+            )
             line.add_data(**{TEXT_RESULT_KEY: RecognizedText([new_text], [score])})
 
     return collection
@@ -241,7 +245,11 @@ with gr.Blocks() as visualizer:
     with gr.Row(equal_height=False):
         with gr.Column(elem_classes="button-group-viz"):
             left = gr.Button(
-                _("← Previous"), visible=False, interactive=False, scale=0, min_width=100
+                _("← Previous"),
+                visible=False,
+                interactive=False,
+                scale=0,
+                min_width=100,
             )
             right = gr.Button(_("Next →"), visible=False, scale=0, min_width=100)
         with gr.Column(scale=0, min_width=200):
@@ -255,14 +263,10 @@ with gr.Blocks() as visualizer:
                     interactive=True,
                     scale=0,
                     min_width=70,
-                    container=False
+                    container=False,
                 )
                 export_button = gr.Button(
-                    _("📤 Export"),
-                    scale=0,
-                    min_width=70,
-                    variant="primary",
-                    size="sm"
+                    _("📤 Export"), scale=0, min_width=70, variant="primary", size="sm"
                 )
                 download_button = gr.DownloadButton(
                     _("⬇️ Download"),
@@ -271,7 +275,7 @@ with gr.Blocks() as visualizer:
                     variant="secondary",
                     size="sm",
                     elem_id="hidden-download-btn",
-                    elem_classes="hidden-download-btn"
+                    elem_classes="hidden-download-btn",
                 )
 
     collection = gr.State()
@@ -286,7 +290,7 @@ with gr.Blocks() as visualizer:
     collection.change(
         prepare_visualizer_data,
         inputs=[collection, current_page_index],
-        outputs=visualizer_component
+        outputs=visualizer_component,
     )
     collection.change(lambda _: 0, current_page_index, current_page_index)
     collection.change(toggle_navigation_button, collection, left)
@@ -300,7 +304,7 @@ with gr.Blocks() as visualizer:
     current_page_index.change(
         prepare_visualizer_data,
         inputs=[collection, current_page_index],
-        outputs=visualizer_component
+        outputs=visualizer_component,
     )
     current_page_index.change(activate_left_button, current_page_index, left)
     current_page_index.change(
@@ -314,7 +318,7 @@ with gr.Blocks() as visualizer:
 
     def check_and_apply_edits(coll, page_idx, viz_value):
         """Check if visualizer value has edits and apply them"""
-        if isinstance(viz_value, dict) and 'edits' in viz_value and viz_value['edits']:
+        if isinstance(viz_value, dict) and "edits" in viz_value and viz_value["edits"]:
             updated_coll = apply_text_edits(coll, page_idx, viz_value)
             viz_data = prepare_visualizer_data(updated_coll, page_idx)
 
@@ -325,16 +329,16 @@ with gr.Blocks() as visualizer:
     visualizer_component.change(
         fn=check_and_apply_edits,
         inputs=[collection, current_page_index, visualizer_component],
-        outputs=[collection, visualizer_component]
+        outputs=[collection, visualizer_component],
     )
 
     export_button.click(
         fn=export_and_download,
         inputs=[export_file_format, collection],
-        outputs=download_button
+        outputs=download_button,
     ).then(
         fn=None,
         inputs=None,
         outputs=None,
-        js="() => document.getElementById('hidden-download-btn').click()"
+        js="() => document.getElementById('hidden-download-btn').click()",
     )

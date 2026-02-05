@@ -252,7 +252,9 @@ def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200)
 
 with gr.Blocks() as submit:
     gr.Markdown(
-        _("Select or upload the image you want to transcribe. Most common image formats are supported and you can upload max 5 images at a time in this hosted demo.")
+        _(
+            "Select or upload the image you want to transcribe. Most common image formats are supported and you can upload max 5 images at a time in this hosted demo."
+        )
     )
 
     collection_submit_state = gr.State()
@@ -282,7 +284,7 @@ with gr.Blocks() as submit:
                         min_width=250,
                         # height="100%",
                         columns=3,
-                        container=False
+                        container=False,
                     )
 
                 with gr.Tab(_("Image ID")):
@@ -344,27 +346,42 @@ with gr.Blocks() as submit:
 
     with gr.Column(variant="panel"):
         gr.Markdown(
-            _("Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different text recognition tasks. "
-            "If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further. "
-            "Choosing the right pipeline significantly improves transcription quality.")
+            _(
+                "Select a pipeline that best matches your image. The pipeline determines the processing workflow optimized for different text recognition tasks. "
+                "If you select an example image, a suitable pipeline will be preselected automatically. However, you can edit the pipeline if you need to customize it further. "
+                "Choosing the right pipeline significantly improves transcription quality."
+            )
         )
 
         with gr.Row():
             with gr.Column(scale=0, min_width=250):
                 pipeline_dropdown = gr.Dropdown(
-                    choices=[(_("Swedish - Spreads"), "Swedish - Spreads"),
-                            (_("Swedish - Single page and snippets"), "Swedish - Single page and snippets"),
-                            (_("Norwegian - Single page and snippets"), "Norwegian - Single page and snippets"),
-                            (_("Medieval - Single page and snippets"), "Medieval - Single page and snippets"),
-                            (_("English - Single page and snippets"), "English - Single page and snippets"),
-                            (_("Custom"), "Custom")],
+                    choices=[
+                        (_("Swedish - Spreads"), "Swedish - Spreads"),
+                        (
+                            _("Swedish - Single page and snippets"),
+                            "Swedish - Single page and snippets",
+                        ),
+                        (
+                            _("Norwegian - Single page and snippets"),
+                            "Norwegian - Single page and snippets",
+                        ),
+                        (
+                            _("Medieval - Single page and snippets"),
+                            "Medieval - Single page and snippets",
+                        ),
+                        (
+                            _("English - Single page and snippets"),
+                            "English - Single page and snippets",
+                        ),
+                        (_("Custom"), "Custom"),
+                    ],
                     value="Swedish - Spreads",
                     container=False,
                     elem_classes="pipeline-dropdown",
                 )
             with gr.Column(scale=0, min_width=100):
                 run_button = gr.Button(_("Run HTR"), variant="primary")
-
 
         pipeline_description = gr.HTML(
             elem_classes="pipeline-info",
@@ -373,9 +390,11 @@ with gr.Blocks() as submit:
         with gr.Row(visible=False) as edit_pipeline_column:
             with gr.Accordion(_("Edit Pipeline"), open=False):
                 gr.Markdown(
-                    _("The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an "
-                    "image from the \"Examples\" section, the YAML is already a pre-made template tailored to fit the example image.\n\n"
-                    "Edit pipeline if needed:")
+                    _(
+                        "The code snippet below is a YAML file that the HTRflow app uses to process the image. If you have chosen an "
+                        'image from the "Examples" section, the YAML is already a pre-made template tailored to fit the example image.\n\n'
+                        "Edit pipeline if needed:"
+                    )
                 )
                 custom_template_yaml = gr.Code(
                     value=get_yaml("Swedish - Spreads"),
@@ -383,7 +402,9 @@ with gr.Blocks() as submit:
                     container=False,
                 )
                 gr.HTML(
-                    _('See the <a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines">documentation</a> for a detailed description on how to customize HTRflow pipelines.'),
+                    _(
+                        'See the <a href="https://ai-riksarkivet.github.io/htrflow/latest/getting_started/pipeline.html#example-pipelines">documentation</a> for a detailed description on how to customize HTRflow pipelines.'
+                    ),
                     elem_classes="pipeline-help",
                 )
 
@@ -417,7 +438,9 @@ with gr.Blocks() as submit:
         [iiif_manifest_url, max_images_iiif_manifest],
         [iiif_gallery, max_images_iiif_manifest],
     )
-    image_url.submit(lambda url: [(url, url.split('/')[-1])], image_url, batch_image_gallery)
+    image_url.submit(
+        lambda url: [(url, url.split("/")[-1])], image_url, batch_image_gallery
+    )
 
     pdf_file.upload(
         lambda imgs: pdf_to_images(imgs), inputs=pdf_file, outputs=pdf_gallery
@@ -446,5 +469,5 @@ with gr.Blocks() as submit:
     pipeline_dropdown.change(
         fn=get_pipeline_description,
         inputs=pipeline_dropdown,
-        outputs=pipeline_description
+        outputs=pipeline_description,
     )

@@ -5,7 +5,13 @@ import gradio as gr
 from gradio_i18n import Translate, gettext as _
 
 from app.gradio_config import css, theme
-from app.tabs.submit import collection_submit_state, submit, pipeline_description, pipeline_dropdown, get_pipeline_description
+from app.tabs.submit import (
+    collection_submit_state,
+    submit,
+    pipeline_description,
+    pipeline_dropdown,
+    get_pipeline_description,
+)
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
 
@@ -79,13 +85,15 @@ with gr.Blocks(
         def update_sidebar(language):
             return load_markdown(language, "sidebar")
 
-        lang_selector.change(fn=update_sidebar, inputs=[lang_selector], outputs=[sidebar_content])
+        lang_selector.change(
+            fn=update_sidebar, inputs=[lang_selector], outputs=[sidebar_content]
+        )
 
         # Update pipeline description when language changes
         lang_selector.change(
             fn=get_pipeline_description,
             inputs=[pipeline_dropdown, lang_selector],
-            outputs=[pipeline_description]
+            outputs=[pipeline_description],
         )
 
         with gr.Tabs(elem_classes="top-navbar") as navbar:
@@ -103,7 +111,7 @@ with gr.Blocks(
     collection_submit_state.change(
         lambda collection: gr.Tabs(selected="result") if collection else gr.skip(),
         inputs=collection_submit_state,
-        outputs=navbar
+        outputs=navbar,
     )
 
     # Sync collection from Upload to Results tab
@@ -125,5 +133,5 @@ if __name__ == "__main__":
         head=matomo,
         footer_links=["api", "settings"],
         root_path=os.environ.get("GRADIO_ROOT_PATH", ""),
-        mcp_server=True
+        mcp_server=True,
     )
