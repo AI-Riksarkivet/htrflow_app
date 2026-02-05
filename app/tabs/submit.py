@@ -430,7 +430,9 @@ with gr.Blocks() as submit:
             else:
                 processed_images.append(img)
 
-        return gr.update(value=processed_images, selected_index=0 if processed_images else None)
+        return gr.update(
+            value=processed_images, selected_index=0 if processed_images else None
+        )
 
     image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(
         fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown
@@ -443,7 +445,7 @@ with gr.Blocks() as submit:
     image_url.submit(
         lambda url: gr.update(value=[(url, url.split("/")[-1])], selected_index=0),
         image_url,
-        batch_image_gallery
+        batch_image_gallery,
     )
 
     pdf_file.upload(

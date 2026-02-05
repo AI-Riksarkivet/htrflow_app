@@ -74,6 +74,15 @@ en:
   ← Previous: ← Previous
   Next →: Next →
   2. Viewer: Results
+  Zoom In: Zoom In
+  Zoom Out: Zoom Out
+  Reset View: Reset View
+  Edit Mode: Edit Mode
+  Save: Save
+  Image: Image
+  of: of
+  Previous: Previous
+  Next: Next
 sv:
   ? Select or upload the image you want to transcribe. Most common image formats are
     supported and you can upload max 5 images at a time in this hosted demo.
@@ -151,3 +160,12 @@ sv:
   ← Previous: ← Föregående
   Next →: Nästa →
   2. Viewer: Resultat
+  Zoom In: Zooma in
+  Zoom Out: Zooma ut
+  Reset View: Återställ vy
+  Edit Mode: Redigeringsläge
+  Save: Spara
+  Image: Bild
+  of: av
+  Previous: Föregående
+  Next: Nästa

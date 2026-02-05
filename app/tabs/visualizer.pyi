@@ -13,7 +13,6 @@ visualizer_dir = current_dir / "visualizer"
 DEFAULT_EXPORT_FORMAT = "txt"
 EXPORT_CHOICES = ["txt", "alto", "page", "json"]
 
-
 # Load external files (HTML, CSS, JavaScript)
 def load_file(filename):
     """Load external file content (HTML, CSS, or JavaScript)"""
@@ -26,17 +25,34 @@ from gradio.events import Dependency
 class HTRVisualizer(gr.HTML):
     """Unified HTR visualization with synchronized image and transcription panels"""
 
-    def __init__(self, max_height="70vh", layout="auto", edits=None, **kwargs):
+    def __init__(
+        self, max_height="70vh", layout="auto", edits=None, i18n=None, **kwargs
+    ):
         """
         Args:
             max_height: Maximum height for the visualizer (default: "70vh")
             layout: Layout mode - "horizontal" (side-by-side), "vertical" (stacked), or "auto" (responsive)
             edits: Dictionary to store edited line texts
+            i18n: Dictionary of translations for UI text
         """
         # Load HTML, CSS, and JavaScript from external files
         html_template = load_file("template.html")
         css_template = load_file("visualizer.css")
         js_on_load = load_file("visualizer.js")
+
+        # Default translations (English)
+        default_i18n = {
+            "zoomIn": "Zoom In",
+            "zoomOut": "Zoom Out",
+            "resetView": "Reset View",
+            "editMode": "Edit Mode",
+            "save": "Save",
+            "imageOf": "Image",
+            "of": "of",
+        }
+
+        # Merge with provided translations
+        translations = {**default_i18n, **(i18n or {})}
 
         super().__init__(
             value={"width": 100, "height": 100, "path": "", "lines": [], "regions": []},
@@ -46,6 +62,7 @@ class HTRVisualizer(gr.HTML):
             js_on_load=js_on_load,
             maxHeight=max_height,
             layout=layout,
+            i18n=translations,
             **kwargs,
         )
 
@@ -83,10 +100,10 @@ class HTRVisualizer(gr.HTML):
         }
     from typing import Callable, Literal, Sequence, Any, TYPE_CHECKING
     from gradio.blocks import Block
+
     if TYPE_CHECKING:
         from gradio.components import Timer
         from gradio.components.base import Component
-
 
 def prepare_visualizer_data(collection: Collection, current_page_index: int):
     """Convert collection page to format expected by HTRVisualizer"""
@@ -121,35 +138,28 @@ def prepare_visualizer_data(collection: Collection, current_page_index: int):
         "regions": region_data,
     }
 
-
 def toggle_navigation_button(collection: Collection):
     visible = len(collection.pages) > 1
     return gr.update(visible=visible)
-
 
 def activate_left_button(current_page_index):
     interactive = current_page_index > 0
     return gr.update(interactive=interactive)
 
-
 def activate_right_button(collection: Collection, current_page_index):
     interactive = current_page_index + 1 < len(collection.pages)
     return gr.update(interactive=interactive)
-
 
 def right_button_click(collection: Collection, current_page_index):
     max_index = len(collection.pages) - 1
     return min(max_index, current_page_index + 1)
 
-
 def left_button_click(current_page_index):
     return max(0, current_page_index - 1)
-
 
 def update_image_caption(collection: Collection, current_page_index):
     n_pages = len(collection.pages)
     return f"**Image {current_page_index + 1} of {n_pages}:** `{collection[current_page_index].label}`"
-
 
 def rename_files_in_directory(directory, fmt):
     """
@@ -176,7 +186,6 @@ def rename_files_in_directory(directory, fmt):
             else:
                 renamed.append(old_path)
     return renamed
-
 
 def export_and_download(file_format, collection: Collection, req: gr.Request):
     """Export collection and prepare download button with file"""
@@ -209,7 +218,6 @@ def export_and_download(file_format, collection: Collection, req: gr.Request):
 
     return None
 
-
 def apply_text_edits(collection: Collection, page_index: int, visualizer_value: dict):
     """Apply text edits from the visualizer to the collection"""
     edit_data = (
@@ -235,7 +243,6 @@ def apply_text_edits(collection: Collection, page_index: int, visualizer_value: 
             line.add_data(**{TEXT_RESULT_KEY: RecognizedText([new_text], [score])})
 
     return collection
-
 
 with gr.Blocks() as visualizer:
     gr.Markdown(_("visualizer_description"))

@@ -103,28 +103,30 @@ def prepare_visualizer_data(collection: Collection, current_page_index: int):
                 line_counter += 1
             region_data.append(region_lines)
 
-        all_pages.append({
-            "width": page.width,
-            "height": page.height,
-            "path": page.path,
-            "label": page.label,
-            "lines": [
-                {
-                    "polygonPoints": " ".join([f"{p[0]},{p[1]}" for p in line.polygon]),
-                    "id": idx,
-                }
-                for idx, line in enumerate(lines)
-            ],
-            "regions": region_data,
-        })
+        all_pages.append(
+            {
+                "width": page.width,
+                "height": page.height,
+                "path": page.path,
+                "label": page.label,
+                "lines": [
+                    {
+                        "polygonPoints": " ".join(
+                            [f"{p[0]},{p[1]}" for p in line.polygon]
+                        ),
+                        "id": idx,
+                    }
+                    for idx, line in enumerate(lines)
+                ],
+                "regions": region_data,
+            }
+        )
 
     return {
         "pages": all_pages,
         "currentPageIndex": current_page_index,
         "totalPages": len(collection.pages),
     }
-
-
 
 
 def rename_files_in_directory(directory, fmt):
@@ -210,7 +212,11 @@ def apply_text_edits(collection: Collection, visualizer_value: dict):
                 old_result = line.get(TEXT_RESULT_KEY)
                 score = (
                     old_result.scores[0]
-                    if (old_result and hasattr(old_result, "scores") and old_result.scores)
+                    if (
+                        old_result
+                        and hasattr(old_result, "scores")
+                        and old_result.scores
+                    )
                     else 1.0
                 )
                 line.add_data(**{TEXT_RESULT_KEY: RecognizedText([new_text], [score])})
@@ -240,7 +246,7 @@ with gr.Blocks() as visualizer:
                 scale=1,
                 min_width=120,
                 container=False,
-                elem_classes="export-dropdown"
+                elem_classes="export-dropdown",
             )
         with gr.Column(scale=0, min_width=100, elem_classes="export-button-col"):
             export_button = gr.Button(
@@ -249,7 +255,7 @@ with gr.Blocks() as visualizer:
                 min_width=100,
                 variant="primary",
                 size="md",
-                elem_classes="export-button"
+                elem_classes="export-button",
             )
 
     # Hidden download button (needs to be in DOM for JS to trigger it)
