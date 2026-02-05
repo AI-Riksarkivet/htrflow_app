@@ -146,7 +146,14 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
 
 def get_pipeline_description(pipeline: str, language: str = "en") -> str:
     """
-    Get the description of the given pipeline in the specified language
+    Get the description of the given pipeline in the specified language.
+
+    Args:
+        pipeline: Pipeline name (e.g., "Swedish - Spreads", "English - Single page and snippets")
+        language: Language code ("en" or "sv")
+
+    Returns:
+        HTML-formatted description of the pipeline's capabilities and models
     """
     desc = PIPELINES[pipeline]["description"]
     if isinstance(desc, dict):
@@ -412,6 +419,7 @@ with gr.Blocks() as submit:
     @batch_image_gallery.upload(
         inputs=batch_image_gallery,
         outputs=[batch_image_gallery],
+        api_visibility="private",
     )
     def validate_images(images):
         if len(images) > MAX_IMAGES:
@@ -433,44 +441,67 @@ with gr.Blocks() as submit:
             value=processed_images, selected_index=0 if processed_images else None
         )
 
-    image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(
-        fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown
+    image_id.submit(
+        get_image_from_image_id,
+        image_id,
+        batch_image_gallery,
+        api_visibility="private",
+    ).then(
+        fn=lambda: "Swedish - Spreads",
+        outputs=pipeline_dropdown,
+        api_visibility="private",
     )
     iiif_manifest_url.submit(
         get_images_from_iiif_manifest,
         [iiif_manifest_url, max_images_iiif_manifest],
         [iiif_gallery, max_images_iiif_manifest],
+        api_visibility="private",
     )
     image_url.submit(
         lambda url: gr.update(value=[(url, url.split("/")[-1])], selected_index=0),
         image_url,
         batch_image_gallery,
+        api_visibility="private",
     )
 
     pdf_file.upload(
-        lambda imgs: pdf_to_images(imgs), inputs=pdf_file, outputs=pdf_gallery
+        lambda imgs: pdf_to_images(imgs),
+        inputs=pdf_file,
+        outputs=pdf_gallery,
+        api_visibility="private",
     )
 
     run_button.click(
         fn=run_htrflow,
         inputs=[custom_template_yaml, batch_image_gallery],
         outputs=[collection_submit_state, batch_image_gallery],
+        api_visibility="private",
     )
 
-    examples.select(get_selected_example_image, None, batch_image_gallery)
-    examples.select(get_selected_example_pipeline, None, pipeline_dropdown)
+    examples.select(
+        get_selected_example_image, None, batch_image_gallery, api_visibility="private"
+    )
+    examples.select(
+        get_selected_example_pipeline, None, pipeline_dropdown, api_visibility="private"
+    )
 
-    iiif_gallery.select(get_selected_example_image, None, batch_image_gallery)
-    pdf_gallery.select(get_selected_example_image, None, batch_image_gallery)
+    iiif_gallery.select(
+        get_selected_example_image, None, batch_image_gallery, api_visibility="private"
+    )
+    pdf_gallery.select(
+        get_selected_example_image, None, batch_image_gallery, api_visibility="private"
+    )
 
     pipeline_dropdown.change(
         fn=lambda x: (gr.update(visible=(x == "Custom")), get_yaml(x) if x else ""),
         inputs=pipeline_dropdown,
         outputs=[edit_pipeline_column, custom_template_yaml],
+        api_visibility="private",
     )
 
     pipeline_dropdown.change(
         fn=get_pipeline_description,
         inputs=pipeline_dropdown,
         outputs=pipeline_description,
+        api_visibility="private",
     )

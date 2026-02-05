@@ -1,9 +1,5 @@
-// HTR Visualizer JavaScript
-// Fully self-contained with internal navigation
-
 (() => {
     const initVisualizer = () => {
-        // Check if we have valid data
         if (!props.value || !props.value.pages || props.value.pages.length === 0) {
             setTimeout(initVisualizer, 100);
             return;
@@ -15,32 +11,25 @@
         const prevBtn = element.querySelector('#nav-prev-btn');
         const nextBtn = element.querySelector('#nav-next-btn');
 
-        // Internal state
         let currentPageIndex = props.value.currentPageIndex || 0;
         let selectedLineId = null;
         let editedTexts = {};
 
-        // Zoom and pan state using viewBox
         let viewBox = { x: 0, y: 0, width: 0, height: 0 };
         let isPanning = false;
         let isCtrlPressed = false;
         let panStart = { x: 0, y: 0 };
 
-        // Touch gesture state
         let isTouchPanning = false;
         let touchStartDistance = 0;
         let touchStartViewBox = { x: 0, y: 0, width: 0, height: 0 };
         let touchStartCenter = { x: 0, y: 0 };
-
-        // ===== RENDER FUNCTIONS =====
         function renderPage(pageIndex) {
             const page = props.value.pages[pageIndex];
             if (!page) return;
 
-            // Reset zoom/pan
             viewBox = { x: 0, y: 0, width: page.width, height: page.height };
 
-            // Render SVG
             svgContainer.innerHTML = `
                 <svg class="image-svg" viewBox="0 0 ${page.width} ${page.height}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
                     <image height="${page.height}" width="${page.width}" href="/gradio_api/file=${page.path}" />
@@ -52,7 +41,6 @@
                 </svg>
             `;
 
-            // Render transcription
             transcriptionPanel.innerHTML = page.regions.map((region, regionIdx) => `
                 <div class="transcription-region">
                     ${region.map((line) => `
@@ -66,31 +54,22 @@
                 ${regionIdx < page.regions.length - 1 ? '<hr class="region-divider">' : ''}
             `).join('');
 
-            // Update page info
             if (pageInfoEl) {
                 pageInfoEl.textContent = `Image ${pageIndex + 1} of ${props.value.totalPages}: ${page.label}`;
             }
 
-            // Update navigation buttons
             if (prevBtn) prevBtn.disabled = pageIndex <= 0;
             if (nextBtn) nextBtn.disabled = pageIndex >= props.value.totalPages - 1;
 
-            // Update zoom level
             updateViewBox();
-
-            // Re-attach event listeners to new elements
             attachLineInteractions();
 
-            // Re-apply edit mode if active
             if (isEditMode) {
                 toggleEditMode(true);
             }
 
-            // Clear selection
             selectedLineId = null;
         }
-
-        // Helper to update viewBox and zoom level
         function updateViewBox() {
             const imageSvg = element.querySelector('.image-svg');
             if (!imageSvg) return;
@@ -106,8 +85,6 @@
                 zoomLevelEl.textContent = `${zoomLevel}%`;
             }
         }
-
-        // ===== NAVIGATION FUNCTIONS =====
         function navigateToPrevious() {
             if (currentPageIndex > 0) {
                 currentPageIndex--;
@@ -121,8 +98,6 @@
                 renderPage(currentPageIndex);
             }
         }
-
-        // ===== HIGHLIGHT & SELECT FUNCTIONS =====
         function highlightLine(lineId, isHovering) {
             const allElements = element.querySelectorAll(`[data-line-id="${lineId}"]`);
             allElements.forEach(el => {
@@ -135,17 +110,14 @@
         }
 
         function selectLine(lineId, clickedFromTranscription = false) {
-            // Clear previous selection
             element.querySelectorAll('.selected').forEach(el => {
                 el.classList.remove('selected');
             });
 
-            // Set new selection
             if (lineId !== null) {
                 const elements = element.querySelectorAll(`[data-line-id="${lineId}"]`);
                 elements.forEach(el => el.classList.add('selected'));
 
-                // Scroll transcription to show selected line
                 const transcriptionLine = transcriptionPanel.querySelector(`.transcription-line[data-line-id="${lineId}"]`);
                 if (transcriptionLine && !clickedFromTranscription) {
                     setTimeout(() => {
@@ -156,14 +128,11 @@
 
             selectedLineId = lineId;
         }
-
-        // ===== LINE INTERACTION (Hover & Click) =====
         function attachLineInteractions() {
             element.querySelectorAll('[data-line-id]').forEach(lineEl => {
                 const lineId = lineEl.dataset.lineId;
                 const isTranscriptionLine = lineEl.classList.contains('transcription-line');
 
-                // Hover highlighting (disabled when Ctrl is pressed)
                 lineEl.addEventListener('mouseenter', (e) => {
                     if (!isCtrlPressed && !e.ctrlKey && !e.metaKey) {
                         highlightLine(lineId, true);
@@ -176,7 +145,6 @@
                     }
                 });
 
-                // Click selection (disabled when Ctrl is pressed)
                 lineEl.addEventListener('click', (e) => {
                     if (isCtrlPressed || e.ctrlKey || e.metaKey) return;
                     e.stopPropagation();
@@ -185,8 +153,6 @@
                 });
             });
         }
-
-        // ===== EDIT MODE FUNCTIONALITY =====
         function toggleEditMode(enabled) {
             isEditMode = enabled;
             const transcriptionLines = element.querySelectorAll('.transcription-line');
@@ -225,13 +191,10 @@
             const originalText = lineEl.dataset.originalText;
 
             if (newText !== originalText) {
-                // Store edit with page context
                 const editKey = `${currentPageIndex}_${lineId}`;
                 editedTexts[editKey] = newText;
             }
         }
-
-        // ===== ZOOM CONTROLS =====
         element.querySelectorAll('.zoom-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -265,8 +228,6 @@
                 updateViewBox();
             });
         });
-
-        // ===== KEYBOARD CONTROLS =====
         const handleKeyDown = (e) => {
             if (e.ctrlKey || e.metaKey) {
                 isCtrlPressed = true;
@@ -290,8 +251,6 @@
 
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp);
-
-        // ===== PAN FUNCTIONALITY (Ctrl+Drag) =====
         svgContainer.addEventListener('mousedown', (e) => {
             if (!e.ctrlKey && !e.metaKey) return;
             if (e.target.closest('.textline')) return;
@@ -319,7 +278,6 @@
         });
 
         svgContainer.addEventListener('mousemove', (e) => {
-            // Update cursor state
             if (e.ctrlKey || e.metaKey) {
                 isCtrlPressed = true;
                 if (!isPanning) svgContainer.classList.add('can-pan');
@@ -344,14 +302,11 @@
             viewBox.x -= dx;
             viewBox.y -= dy;
 
-            // Constrain to image bounds
             viewBox.x = Math.max(0, Math.min(page.width - viewBox.width, viewBox.x));
             viewBox.y = Math.max(0, Math.min(page.height - viewBox.height, viewBox.y));
 
             updateViewBox();
         });
-
-        // ===== ZOOM WITH MOUSE WHEEL =====
         svgContainer.addEventListener('wheel', (e) => {
             e.preventDefault();
 
@@ -367,33 +322,27 @@
             const newWidth = viewBox.width * zoomFactor;
             const newHeight = viewBox.height * zoomFactor;
 
-            // Don't zoom out beyond original size
             if (newWidth > page.width || newHeight > page.height) {
                 viewBox = { x: 0, y: 0, width: page.width, height: page.height };
                 updateViewBox();
                 return;
             }
 
-            // Don't zoom in too much (max 10x zoom)
             const minViewBoxSize = page.width / 10;
             if (newWidth < minViewBoxSize || newHeight < minViewBoxSize) {
                 return;
             }
 
-            // Calculate new viewBox position to keep mouse point stationary
             viewBox.x = svgX - (svgX - viewBox.x) * zoomFactor;
             viewBox.y = svgY - (svgY - viewBox.y) * zoomFactor;
             viewBox.width = newWidth;
             viewBox.height = newHeight;
 
-            // Constrain to image bounds
             viewBox.x = Math.max(0, Math.min(page.width - viewBox.width, viewBox.x));
             viewBox.y = Math.max(0, Math.min(page.height - viewBox.height, viewBox.y));
 
             updateViewBox();
         });
-
-        // Helper functions for touch gestures
         function getTouchDistance(touch1, touch2) {
             const dx = touch1.clientX - touch2.clientX;
             const dy = touch1.clientY - touch2.clientY;
@@ -406,8 +355,6 @@
                 y: (touch1.clientY + touch2.clientY) / 2
             };
         }
-
-        // ===== TOUCH GESTURES (Mobile) =====
         svgContainer.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
                 e.preventDefault();
@@ -439,7 +386,6 @@
                 let newWidth = touchStartViewBox.width * scaleFactor;
                 let newHeight = touchStartViewBox.height * scaleFactor;
 
-                // Constrain zoom limits
                 if (newWidth > page.width || newHeight > page.height) {
                     newWidth = page.width;
                     newHeight = page.height;
@@ -459,7 +405,6 @@
                 viewBox.x = touchStartCenter.x - (relX * (viewBox.width / rect.width));
                 viewBox.y = touchStartCenter.y - (relY * (viewBox.height / rect.height));
 
-                // Constrain to image bounds
                 viewBox.x = Math.max(0, Math.min(page.width - viewBox.width, viewBox.x));
                 viewBox.y = Math.max(0, Math.min(page.height - viewBox.height, viewBox.y));
 
@@ -472,19 +417,15 @@
                 isTouchPanning = false;
             }
         });
-
-        // ===== WIRE UP INTERNAL EDIT CONTROLS =====
         const editToggle = element.querySelector('#edit-mode-toggle');
         const saveBtn = element.querySelector('#save-edits-btn');
 
         if (editToggle && saveBtn) {
-            // Toggle edit mode and show/hide save button
             editToggle.addEventListener('change', (e) => {
                 const isEnabled = e.target.checked;
                 toggleEditMode(isEnabled);
                 saveBtn.style.display = isEnabled ? 'inline-block' : 'none';
 
-                // Clear edits when disabling edit mode
                 if (!isEnabled) {
                     editedTexts = {};
                     element.querySelectorAll('.transcription-line').forEach(line => {
@@ -493,12 +434,9 @@
                 }
             });
 
-            // Handle save button click
             saveBtn.addEventListener('click', () => {
-                // Create a deep copy of edits to avoid reference issues
                 const editsCopy = JSON.parse(JSON.stringify(editedTexts));
 
-                // Store edits in the component's value so Python can access it
                 const currentValue = props.value || {};
                 const newValue = {
                     ...currentValue,
@@ -506,23 +444,18 @@
                 };
                 props.value = newValue;
 
-                // Trigger the component's change event to notify Python
                 trigger('change');
 
-                // Disable edit mode after saving
                 editToggle.checked = false;
                 toggleEditMode(false);
                 saveBtn.style.display = 'none';
 
-                // Clear local edits and remove 'edited' styling
                 editedTexts = {};
                 element.querySelectorAll('.transcription-line').forEach(line => {
                     line.classList.remove('edited');
                 });
             });
         }
-
-        // ===== WIRE UP NAVIGATION BUTTONS =====
         if (prevBtn) {
             prevBtn.addEventListener('click', navigateToPrevious);
         }
@@ -531,11 +464,9 @@
             nextBtn.addEventListener('click', navigateToNext);
         }
 
-        // ===== INITIAL RENDER =====
         renderPage(currentPageIndex);
     };
 
-    // Monitor for prop changes
     let lastTotalPages = props.value?.totalPages;
     setInterval(() => {
         if (props.value?.totalPages && props.value.totalPages !== lastTotalPages) {
@@ -544,6 +475,5 @@
         }
     }, 100);
 
-    // Start initialization
     initVisualizer();
 })();

@@ -1,4 +1,3 @@
-/* Global styles - not scoped to .htr-visualizer */
 .hidden-download-btn {
     display: none !important;
 }
@@ -14,8 +13,6 @@
     gap: 0.75rem;
     align-items: stretch;
 }
-
-/* Transcription panel container with integrated edit controls */
 .transcription-panel-container {
     display: flex;
     flex-direction: column;
@@ -98,7 +95,6 @@
         min-width: 100% !important;
     }
 
-    /* Adjust heights for mobile */
     .image-panel {
         max-height: 50vh !important;
     }
@@ -107,7 +103,6 @@
         max-height: 50vh !important;
     }
 
-    /* Make edit controls more compact on mobile */
     .edit-controls {
         padding: 0.4rem 0.5rem;
         font-size: 0.85rem;
@@ -278,7 +273,6 @@
     padding: 2px 4px;
 }
 
-/* Edit mode styling */
 .transcription-line[contenteditable="true"] {
     border: 1px dashed var(--color-accent);
     padding: 4px 6px;
@@ -312,7 +306,6 @@
     border-top: 1px solid var(--border-color-primary);
 }
 
-/* Navigation container at bottom center - matches zoom controls theme */
 .nav-container {
     position: absolute;
     bottom: 10px;
@@ -378,7 +371,6 @@
     cursor: not-allowed;
 }
 
-/* Mobile responsive navigation */
 @media (max-width: 768px) {
     .nav-container {
         padding: 3px;
@@ -398,7 +390,6 @@
     }
 }
 
-/* Scrollbar styling with theme colors */
 .image-panel::-webkit-scrollbar,
 .transcription-panel::-webkit-scrollbar {
     width: 8px;

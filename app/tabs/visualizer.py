@@ -145,6 +145,17 @@ def rename_files_in_directory(directory, fmt):
 
 
 def export_and_download(file_format, collection: Collection, req: gr.Request):
+    """
+    Export transcription results in the specified format (txt, alto, page, json).
+
+    Args:
+        file_format: Export format - one of: txt, alto, page, or json
+        collection: Collection object containing transcribed pages
+        req: Gradio request object
+
+    Returns:
+        Path to the exported zip file for download
+    """
     if not file_format:
         gr.Warning(_("No export file format was selected"))
         return None
@@ -269,21 +280,25 @@ with gr.Blocks() as visualizer:
         prepare_visualizer_data,
         inputs=[collection, current_page_index],
         outputs=visualizer_component,
+        api_visibility="private",
     )
 
     visualizer_component.change(
         fn=check_and_apply_edits,
         inputs=[collection, visualizer_component],
         outputs=[collection, visualizer_component],
+        api_visibility="private",
     )
 
     export_button.click(
         fn=export_and_download,
         inputs=[export_file_format, collection],
         outputs=download_button,
+        api_visibility="private",
     ).then(
         fn=None,
         inputs=None,
         outputs=None,
         js="() => document.getElementById('hidden-download-btn').click()",
+        api_visibility="private",
     )

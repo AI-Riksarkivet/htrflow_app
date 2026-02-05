@@ -14,6 +14,10 @@ from app.tabs.submit import (
 )
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
+from app.mcp_tools import (
+    htr_for_analysis,
+    htr_export_format,
+)
 
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
@@ -76,7 +80,12 @@ with gr.Blocks(
                     show_label=False,
                 )
 
-        lang_selector.change(fn=lambda x: x, inputs=[lang_selector], outputs=[lang])
+        lang_selector.change(
+            fn=lambda x: x,
+            inputs=[lang_selector],
+            outputs=[lang],
+            api_visibility="private",
+        )
 
         with gr.Sidebar(label="Menu"):
             gr.HTML(load_markdown(None, "main_sub_title_hum"))
@@ -86,7 +95,10 @@ with gr.Blocks(
             return load_markdown(language, "sidebar")
 
         lang_selector.change(
-            fn=update_sidebar, inputs=[lang_selector], outputs=[sidebar_content]
+            fn=update_sidebar,
+            inputs=[lang_selector],
+            outputs=[sidebar_content],
+            api_visibility="private",
         )
 
         # Update pipeline description and dropdown choices when language changes
@@ -100,6 +112,7 @@ with gr.Blocks(
             fn=update_pipeline_on_lang_change,
             inputs=[lang_selector, pipeline_dropdown],
             outputs=[pipeline_description],
+            api_visibility="private",
         )
 
         with gr.Tabs(elem_classes="top-navbar") as navbar:
@@ -118,6 +131,7 @@ with gr.Blocks(
         lambda collection: gr.Tabs(selected="result") if collection else gr.skip(),
         inputs=collection_submit_state,
         outputs=navbar,
+        api_visibility="private",
     )
 
     # Sync collection from Upload to Results tab
@@ -125,7 +139,17 @@ with gr.Blocks(
         inputs=[collection_submit_state, collection_viz_state],
         outputs=[collection_viz_state],
         fn=sync_gradio_object_state,
+        api_visibility="private",
     )
+
+    # Register MCP tools
+    gr.api(htr_for_analysis, api_name="htr_for_analysis")
+    gr.api(htr_export_format, api_name="htr_export_format")
+
+# Hide the Translate component's auto-generated /on_lang_change API endpoint
+for dep in demo.fns.values():
+    if hasattr(dep, "api_name") and dep.api_name == "on_lang_change":
+        dep.api_name = None
 
 demo.queue()
 
