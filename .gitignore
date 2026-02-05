@@ -24,9 +24,11 @@ src/htr_pipeline.egg-info/
 
 .gradio/
 
-# Temporary session data directories (random hash directories)
-# Pattern: app/tabs/ followed by 12 lowercase alphanumeric characters
-app/tabs/[a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9][a-z0-9]/
+# Temporary session data directories (exclude visualizer and __pycache__)
+# Matches any lowercase alphanumeric directory except 'visualizer' and '__pycache__'
+app/tabs/[a-z0-9]*/
+!app/tabs/visualizer/
+!app/tabs/__pycache__/
 
 #
 page_xml.xml
