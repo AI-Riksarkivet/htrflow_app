@@ -227,32 +227,38 @@ with gr.Blocks() as visualizer:
         edits={},
     )
 
-    with gr.Row(equal_height=False):
-        with gr.Column(scale=0, min_width=200):
-            with gr.Row(equal_height=True):
-                export_file_format = gr.Dropdown(
-                    value=DEFAULT_EXPORT_FORMAT,
-                    label=None,
-                    info=None,
-                    choices=EXPORT_CHOICES,
-                    multiselect=False,
-                    interactive=True,
-                    scale=0,
-                    min_width=70,
-                    container=False,
-                )
-                export_button = gr.Button(
-                    _("📤 Export"), scale=0, min_width=70, variant="primary", size="sm"
-                )
-                download_button = gr.DownloadButton(
-                    _("⬇️ Download"),
-                    scale=0,
-                    min_width=70,
-                    variant="secondary",
-                    size="sm",
-                    elem_id="hidden-download-btn",
-                    elem_classes="hidden-download-btn",
-                )
+    with gr.Row(equal_height=True):
+        gr.Column(scale=1)  # Empty space to push content right
+        with gr.Column(scale=0, min_width=120, elem_classes="export-dropdown-col"):
+            export_file_format = gr.Dropdown(
+                value=DEFAULT_EXPORT_FORMAT,
+                label=None,
+                info=None,
+                choices=EXPORT_CHOICES,
+                multiselect=False,
+                interactive=True,
+                scale=1,
+                min_width=120,
+                container=False,
+                elem_classes="export-dropdown"
+            )
+        with gr.Column(scale=0, min_width=100, elem_classes="export-button-col"):
+            export_button = gr.Button(
+                _("📤 Export"),
+                scale=0,
+                min_width=100,
+                variant="primary",
+                size="md",
+                elem_classes="export-button"
+            )
+
+    # Hidden download button (needs to be in DOM for JS to trigger it)
+    # Using custom CSS to hide it instead of visible=False
+    download_button = gr.DownloadButton(
+        _("⬇️ Download"),
+        elem_id="hidden-download-btn",
+        elem_classes="hidden-download-btn",
+    )
 
     collection = gr.State()
     current_page_index = gr.State(0)

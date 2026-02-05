@@ -92,4 +92,9 @@ hr.region-divider {
   text-align: center;
   display: block;
 }
+
+/* Hidden download button for visualizer export */
+.hidden-download-btn {
+  display: none !important;
+}
 """

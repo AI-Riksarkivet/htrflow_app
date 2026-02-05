@@ -177,13 +177,13 @@ def all_example_images() -> list[str]:
     return examples
 
 
-def get_selected_example_image(event: gr.SelectData) -> list:
+def get_selected_example_image(event: gr.SelectData):
     """
-    Get path to the selected example image with caption.
+    Get path to the selected example image with caption, and open in preview mode.
     """
     image_path = event.value["image"]["path"]
     caption = event.value["image"].get("orig_name") or os.path.basename(image_path)
-    return [(image_path, caption)]
+    return gr.update(value=[(image_path, caption)], selected_index=0)
 
 
 def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
@@ -197,7 +197,7 @@ def get_selected_example_pipeline(event: gr.SelectData) -> str | None:
 
 def get_image_from_image_id(image_id):
     url = f"https://lbiiif.riksarkivet.se/arkis!{image_id}/full/max/0/default.jpg"
-    return [(url, image_id)]
+    return gr.update(value=[(url, image_id)], selected_index=0)
 
 
 def get_images_from_iiif_manifest(iiif_manifest_url, max_images=20, height=1200):
@@ -265,11 +265,12 @@ with gr.Blocks() as submit:
                 file_types=["image"],
                 label=_("Image to transcribe"),
                 interactive=True,
-                object_fit="contain",  # Better fitting for different aspect ratios
-                allow_preview=True,  # Allow clicking to enlarge
-                preview=True,  # Start in preview mode to show images enlarged
-                columns=3,  # Show 3 images per row in grid view
-                height=300,  # Fixed height with scrollbar if needed
+                object_fit="contain",
+                allow_preview=True,
+                preview=True,
+                columns=3,
+                height=400,
+                rows=2,
             )
 
         with gr.Column(scale=1, variant="panel"):
@@ -429,7 +430,7 @@ with gr.Blocks() as submit:
             else:
                 processed_images.append(img)
 
-        return processed_images
+        return gr.update(value=processed_images, selected_index=0 if processed_images else None)
 
     image_id.submit(get_image_from_image_id, image_id, batch_image_gallery).then(
         fn=lambda: "Swedish - Spreads", outputs=pipeline_dropdown
@@ -440,7 +441,9 @@ with gr.Blocks() as submit:
         [iiif_gallery, max_images_iiif_manifest],
     )
     image_url.submit(
-        lambda url: [(url, url.split("/")[-1])], image_url, batch_image_gallery
+        lambda url: gr.update(value=[(url, url.split("/")[-1])], selected_index=0),
+        image_url,
+        batch_image_gallery
     )
 
     pdf_file.upload(
@@ -465,8 +468,6 @@ with gr.Blocks() as submit:
         outputs=[edit_pipeline_column, custom_template_yaml],
     )
 
-    # Update pipeline description when pipeline changes
-    # Note: Language parameter will be wired from main.py where lang is accessible
     pipeline_dropdown.change(
         fn=get_pipeline_description,
         inputs=pipeline_dropdown,
