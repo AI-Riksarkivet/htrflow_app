@@ -37,16 +37,15 @@ def _get_base_url() -> str:
     return ""
 
 
-@gr.mcp.resource("htr_upload_image://{filename}")
-def htr_upload_image(filename: str) -> str:
-    """
-    Get instructions for uploading an image to use with HTR transcription.
+@gr.mcp.tool()
+def htr_upload_image(filename: str = "image.jpg") -> str:
+    """Get instructions for uploading an image to use with HTR transcription.
 
-    When user attaches an image, use this resource to understand how to
+    When user attaches an image, use this tool to understand how to
     convert it to a public URL for htrflow_transcribe_document.
 
     Args:
-        filename: The filename from the user's upload path
+        filename: The filename from the user's upload path (optional)
 
     Returns:
         Instructions for handling image uploads
@@ -110,11 +109,22 @@ def htr_generate_viewer(analysis_data: dict, image_url: str, document_name: str)
     return html
 
 
-@gr.mcp.prompt()
+@gr.mcp.tool()
 def htr_transcribe_workflow(
     language: str = "swedish", layout: str = "single_page", return_format: str = "text"
 ) -> str:
-    """Workflow guide for transcribing user-uploaded handwritten documents."""
+    """Get workflow guide for transcribing user-uploaded handwritten documents.
+
+    Use this tool to understand the complete workflow for HTR transcription.
+
+    Args:
+        language: Default language to use (swedish/norwegian/english/medieval)
+        layout: Default layout (single_page/spread)
+        return_format: Default format (text/analysis_data/alto_xml/page_xml/json)
+
+    Returns:
+        Step-by-step workflow instructions
+    """
     base_url = _get_base_url() or "http://localhost:7860"
 
     return f"""When user attaches an image for HTR transcription:
