@@ -72,7 +72,9 @@ image_url = f"{base_url}/gradio_api/file={{server_path}}"
 
 def _get_htr_viewer_template() -> str:
     """Load the HTR viewer HTML template from file."""
-    template_path = Path(__file__).parent / "tabs" / "visualizer" / "generate_viewer_template.html"
+    template_path = (
+        Path(__file__).parent / "tabs" / "visualizer" / "generate_viewer_template.html"
+    )
     with open(template_path, "r", encoding="utf-8") as f:
         return f.read()
 
@@ -101,14 +103,16 @@ def htr_generate_viewer(analysis_data: dict, image_url: str, document_name: str)
 
     html = template.replace("DOCUMENT_NAME_HERE", document_name)
     html = html.replace("IMAGE_URL_HERE", image_url)
-    html = html.replace("WIDTH_HERE HEIGHT_HERE", f'{page["width"]} {page["height"]}')
+    html = html.replace("WIDTH_HERE HEIGHT_HERE", f"{page['width']} {page['height']}")
     html = html.replace("LINES_ARRAY_HERE", json.dumps(lines))
 
     return html
 
 
 @gr.mcp.prompt()
-def htr_transcribe_workflow(language: str = "swedish", layout: str = "single_page", return_format: str = "text") -> str:
+def htr_transcribe_workflow(
+    language: str = "swedish", layout: str = "single_page", return_format: str = "text"
+) -> str:
     """Workflow guide for transcribing user-uploaded handwritten documents."""
     base_url = _get_base_url() or "http://localhost:7860"
 
@@ -451,7 +455,7 @@ def htrflow_transcribe_document(
             file_path = exported_files[0]
 
         # Construct full URL for file download
-        base_url = _get_base_url(request)
+        base_url = _get_base_url()
         file_url = f"/gradio_api/file={file_path}"
 
         # Return full URL if we have a base URL, otherwise relative URL
