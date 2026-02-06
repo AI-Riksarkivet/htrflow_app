@@ -113,40 +113,71 @@ def htr_generate_viewer(analysis_data: dict, image_url: str, document_name: str)
 def htr_transcribe_workflow(
     language: str = "swedish", layout: str = "single_page", return_format: str = "text"
 ) -> str:
-    """Get workflow guide for transcribing user-uploaded handwritten documents.
+    """REQUIRED FIRST STEP: Get workflow guide before any HTR transcription.
 
-    Use this tool to understand the complete workflow for HTR transcription.
+    ⚠️ IMPORTANT: ALWAYS call this tool FIRST when user wants to transcribe handwritten text.
+    This provides the complete workflow and prevents common mistakes.
+
+    WHEN TO USE:
+    - User asks to transcribe/read/extract text from handwritten documents
+    - User uploads an image and mentions handwriting/manuscripts/historical documents
+    - BEFORE calling htrflow_transcribe_document or any other HTR tool
 
     Args:
-        language: Default language to use (swedish/norwegian/english/medieval)
-        layout: Default layout (single_page/spread)
-        return_format: Default format (text/analysis_data/alto_xml/page_xml/json)
+        language: Target language (swedish/norwegian/english/medieval)
+        layout: Document layout (single_page/spread)
+        return_format: Desired output (text/analysis_data/alto_xml/page_xml/json)
 
     Returns:
-        Step-by-step workflow instructions
+        Step-by-step workflow instructions for the transcription process
     """
     base_url = _get_base_url() or "http://localhost:7860"
 
-    return f"""When user attaches an image for HTR transcription:
+    return f"""HTR TRANSCRIPTION WORKFLOW - Follow these steps in order:
 
-STEP 1: Handle the image upload
-- If image_url starts with "/" or is a local path:
-  * Upload to {base_url}/gradio_api/upload
-  * Extract path from response
-  * Construct URL: {base_url}/gradio_api/file={{path}}
-- If image_url is already http/https: use directly
+═══════════════════════════════════════════════════════════════
+STEP 1: ASK USER FOR PREFERENCES (if not specified)
+═══════════════════════════════════════════════════════════════
+Ask the user:
+1. What language is the document? (swedish/{language}/norwegian/english/medieval)
+2. What layout type? (single_page/{layout}/spread)
+3. What output format do they want?
+   - text: Just the transcribed text
+   - analysis_data: Full data with coordinates + confidence scores (for visualization)
+   - alto_xml/page_xml: XML files for archival systems
+   - json: JSON export file
 
-STEP 2: Call htrflow_transcribe_document
-- document_language: {language} (or swedish/norwegian/english/medieval)
-- document_layout: {layout} (single_page or spread)
-- return_format: {return_format} (text/analysis_data/alto_xml/page_xml/json)
+═══════════════════════════════════════════════════════════════
+STEP 2: HANDLE IMAGE UPLOAD
+═══════════════════════════════════════════════════════════════
+If user provides a local file path or attachment:
+1. Call htr_upload_image tool to get detailed upload instructions
+2. Upload file to {base_url}/gradio_api/upload
+3. Extract server path from JSON response
+4. Construct URL: {base_url}/gradio_api/file={{server_path}}
 
-STEP 3: Present results appropriately
-- text format: show transcription directly
-- analysis_data: use htr_generate_viewer tool to create interactive HTML viewer
-- XML/JSON formats: provide download URL
+If user provides http/https URL: use it directly
 
-IMPORTANT: Ask user what output format they want BEFORE transcribing!
+═══════════════════════════════════════════════════════════════
+STEP 3: CALL TRANSCRIPTION TOOL
+═══════════════════════════════════════════════════════════════
+Call htrflow_transcribe_document with:
+- image_urls: The URL from Step 2
+- document_language: From Step 1 (default: {language})
+- document_layout: From Step 1 (default: {layout})
+- return_format: From Step 1 (default: {return_format})
+
+═══════════════════════════════════════════════════════════════
+STEP 4: PRESENT RESULTS
+═══════════════════════════════════════════════════════════════
+Based on return_format:
+- text: Show the transcription directly to user
+- analysis_data: Offer to call htr_generate_viewer to create interactive HTML
+- XML/JSON: Provide the download URL returned by the tool
+
+═══════════════════════════════════════════════════════════════
+WORKFLOW COMPLETE - User can now read, download, or visualize results
+═══════════════════════════════════════════════════════════════
 """
 
 
@@ -293,18 +324,19 @@ def htrflow_transcribe_document(
     ] = "analysis_data",
     custom_yaml: Optional[str] = None,
 ) -> Union[dict, str]:
-    """
-    Transcribe handwritten historical documents using HTRflow specialized models.
+    """Transcribe handwritten historical documents using HTRflow specialized models.
+
+    ⚠️ PREREQUISITE: Call htr_transcribe_workflow FIRST to get the complete workflow!
 
     WHEN TO USE THIS TOOL:
-    - User asks to transcribe, read, or extract text from handwritten documents
-    - User provides image URLs of historical manuscripts, letters, or archival materials
-    - User wants to analyze layout, extract coordinates, or get confidence scores from handwriting
-    - User needs standardized XML formats (ALTO/PAGE) for digital humanities tools
+    - User has uploaded/provided image URLs of handwritten documents
+    - You have already called htr_transcribe_workflow to understand the process
+    - Image URLs are properly formatted (http/https URLs accessible by the server)
 
     DO NOT USE for:
     - Modern printed text (use OCR tools instead)
-    - User hasn't provided image URLs yet
+    - Before calling htr_transcribe_workflow first
+    - When user hasn't provided image URLs yet
     - General questions about handwriting (answer directly)
 
     IMAGE UPLOAD HANDLING:
