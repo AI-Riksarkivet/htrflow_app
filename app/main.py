@@ -15,7 +15,12 @@ from app.tabs.submit import (
 )
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
-import app.mcp_tools  # noqa: F401 - Import to register MCP decorators
+from app.mcp_tools import (
+    htrflow_transcribe_document,
+    htr_generate_viewer,
+    htr_upload_image,
+    htr_transcribe_workflow,
+)
 
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
@@ -139,6 +144,12 @@ with gr.Blocks(
         fn=sync_gradio_object_state,
         api_visibility="private",
     )
+
+# Register MCP components as API endpoints
+gr.api(htrflow_transcribe_document, api_name="htrflow_transcribe_document")
+gr.api(htr_generate_viewer, api_name="htr_generate_viewer")
+gr.api(htr_upload_image, api_name="htr_upload_image")
+gr.api(htr_transcribe_workflow, api_name="htr_transcribe_workflow")
 
 # Hide the Translate component's auto-generated /on_lang_change API endpoint
 for dep in demo.fns.values():
