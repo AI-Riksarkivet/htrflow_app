@@ -21,6 +21,9 @@ from app.tabs.visualizer import rename_files_in_directory
 MCP_EXPORT_DIR = Path(__file__).parent / "mcp_exports"
 MCP_EXPORT_DIR.mkdir(exist_ok=True)
 
+# HTML viewer template path
+HTR_VIEWER_TEMPLATE = Path(__file__).parent / "htr_viewer_template.html"
+
 
 def _get_base_url() -> str:
     """Get base URL from SPACE_HOST or GRADIO_ROOT_PATH."""
@@ -34,6 +37,104 @@ def _get_base_url() -> str:
         return f"/{root_path}"
 
     return ""
+
+
+@gr.mcp.resource("htr_image://{filename}")
+def get_htr_image_url(filename: str) -> str:
+    """
+    Get Gradio file URL for an uploaded image to use with HTR transcription.
+
+    When user attaches an image, use this resource to understand how to
+    convert it to a public URL for htrflow_transcribe_document.
+
+    Args:
+        filename: The filename from the user's upload path
+
+    Returns:
+        Instructions for handling image uploads
+    """
+    base_url = _get_base_url() or "http://localhost:7860"
+
+    return f"""To process uploaded image '{filename}' for HTR transcription:
+
+1. Upload the file via: POST {base_url}/gradio_api/upload
+2. Extract server path from JSON response (e.g., "/tmp/gradio/abc123/file.jpg")
+3. Construct full URL: {base_url}/gradio_api/file={{server_path}}
+4. Pass this URL to htrflow_transcribe_document tool
+
+Example:
+```python
+import requests
+files = {{"files": (filename, image_data, "image/jpeg")}}
+response = requests.post("{base_url}/gradio_api/upload", files=files)
+server_path = response.json()[0]
+image_url = f"{base_url}/gradio_api/file={{server_path}}"
+```"""
+
+
+@gr.mcp.resource("htr_viewer_template://html")
+def get_htr_viewer_template() -> str:
+    """
+    Get complete HTML template for interactive HTR polygon viewer.
+
+    Use after htrflow_transcribe_document with return_format="analysis_data"
+    to create visual overlay of detected text regions.
+
+    Returns:
+        Instructions for using the HTML template
+    """
+    return '''INSTRUCTIONS FOR HTR VIEWER:
+
+1. Call htrflow_transcribe_document with return_format="analysis_data"
+2. Extract lines from analysis_data:
+   lines = []
+   for page in analysis_data["pages"]:
+       for region in page["regions"]:
+           lines.extend(region["lines"])
+
+3. Create HTML file with:
+   - Replace title with document name
+   - Set img src to document image URL
+   - Set SVG viewBox="0 0 {width} {height}" from page dimensions
+   - Replace `const lines = [...]` with extracted lines array
+
+TEMPLATE FEATURES:
+- Claude-style light/dark mode (automatic)
+- Toggles: Polygons, Labels, Lines sidebar
+- Hover tooltips with confidence scores
+- Color-coded: green ≥90%, orange ≥50%, red <50%
+- Responsive mobile design
+
+The complete HTML template with all CSS and JavaScript is ready to use.
+Just replace the data placeholders (title, image URL, viewBox, lines array).'''
+
+
+@gr.mcp.prompt()
+def transcribe_uploaded_document(language: str = "swedish", layout: str = "single_page", return_format: str = "text") -> str:
+    """Workflow guide for transcribing user-uploaded handwritten documents."""
+    base_url = _get_base_url() or "http://localhost:7860"
+
+    return f"""When user attaches an image for HTR transcription:
+
+STEP 1: Handle the image upload
+- If image_url starts with "/" or is a local path:
+  * Upload to {base_url}/gradio_api/upload
+  * Extract path from response
+  * Construct URL: {base_url}/gradio_api/file={{path}}
+- If image_url is already http/https: use directly
+
+STEP 2: Call htrflow_transcribe_document
+- document_language: {language} (or swedish/norwegian/english/medieval)
+- document_layout: {layout} (single_page or spread)
+- return_format: {return_format} (text/analysis_data/alto_xml/page_xml/json)
+
+STEP 3: Present results appropriately
+- text format: show transcription directly
+- analysis_data: offer to create interactive HTML viewer (use htr_viewer_template resource)
+- XML/JSON formats: provide download URL
+
+IMPORTANT: Ask user what output format they want BEFORE transcribing!
+"""
 
 
 def _collection_to_dict(collection: Collection) -> dict:
@@ -191,6 +292,13 @@ def htrflow_transcribe_document(
     - Modern printed text (use OCR tools instead)
     - User hasn't provided image URLs yet
     - General questions about handwriting (answer directly)
+
+    IMAGE UPLOAD HANDLING:
+    If user attaches an image (local file path), you must first convert it to a URL:
+    1. Upload via POST to /gradio_api/upload endpoint
+    2. Extract server path from response
+    3. Construct URL: {base_url}/gradio_api/file={server_path}
+    See the htr_image:// MCP resource or transcribe_uploaded_document prompt for details.
 
     RETURN FORMAT GUIDE:
     - "analysis_data": Returns structured JSON with text, coordinates, confidence scores, and layout hierarchy.
