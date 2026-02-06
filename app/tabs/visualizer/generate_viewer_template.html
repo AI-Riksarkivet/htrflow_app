@@ -1,371 +1,365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DOCUMENT_NAME_HERE - HTR Viewer</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOCUMENT_NAME_HERE - HTR Viewer</title>
+<style>
+:root {
+  color-scheme: light dark;
+  --claude-orange: #C15F3C;
+  --claude-orange-dark: #A14A2F;
+  --claude-selection: rgba(193, 95, 60, 0.19);
+  --color-background-primary: #faf9f5;
+  --color-background-secondary: #f5f4ed;
+  --color-background-tertiary: #ebe9e1;
+  --color-background-info: #fdf6f3;
+  --color-text-primary: #2c2c2c;
+  --color-text-secondary: #5c5c5c;
+  --color-text-info: #A14A2F;
+  --color-border-primary: #d4d2cb;
+  --color-accent: var(--claude-orange);
+  --color-accent-dark: var(--claude-orange-dark);
+  --color-svg-background: #ffffff;
+  --color-tooltip-background: rgba(44, 44, 44, 0.95);
+  --color-tooltip-text: #faf9f5;
+  --border-radius-sm: 4px;
+  --border-radius-md: 6px;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --polygon-stroke: rgba(193, 95, 60, 0.45);
+  --polygon-fill: rgba(193, 95, 60, 0.06);
+  --polygon-hover-stroke: rgba(193, 95, 60, 0.8);
+  --polygon-hover-fill: rgba(193, 95, 60, 0.18);
+  --polygon-label-fill: rgba(250, 249, 245, 0.78);
+  --polygon-label-hover-fill: rgba(250, 249, 245, 0.88);
+  --polygon-label-stroke: rgba(193, 95, 60, 0.6);
+  --polygon-label-hover-stroke: rgba(193, 95, 60, 1);
+  --label-color: #2c2c2c;
+  --confidence-high: #4a8c50;
+  --confidence-mid: #c07a2a;
+  --confidence-low: #b91c1c;
+}
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background-primary: #1a1815;
+    --color-background-secondary: #201d18;
+    --color-background-tertiary: #2a2620;
+    --color-background-info: #2a2018;
+    --color-text-primary: #e8e6e3;
+    --color-text-secondary: #a8a6a3;
+    --color-text-info: #e09070;
+    --color-border-primary: #3a3632;
+    --color-svg-background: #252220;
+    --color-tooltip-background: rgba(232, 230, 227, 0.95);
+    --color-tooltip-text: #1a1815;
+    --polygon-stroke: rgba(224, 144, 112, 0.4);
+    --polygon-fill: rgba(224, 144, 112, 0.05);
+    --polygon-hover-stroke: rgba(224, 144, 112, 0.7);
+    --polygon-hover-fill: rgba(224, 144, 112, 0.16);
+    --polygon-label-fill: rgba(26, 24, 21, 0.78);
+    --polygon-label-hover-fill: rgba(26, 24, 21, 0.9);
+    --polygon-label-stroke: rgba(224, 144, 112, 0.6);
+    --polygon-label-hover-stroke: rgba(224, 144, 112, 1);
+    --label-color: #e8e6e3;
+  }
+}
 
-        .claude-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+::selection { background: var(--claude-selection); }
+html, body {
+  width: 100%; height: 100%;
+  font-family: var(--font-serif);
+  color: var(--color-text-primary);
+  background: var(--color-background-primary);
+  -webkit-font-smoothing: antialiased;
+}
+.app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        .claude-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
+header {
+  flex-shrink: 0; display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--color-border-primary);
+  background: var(--color-background-secondary);
+}
+.header-title { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.header-title span { color: var(--color-accent); font-weight: 600; }
+.header-controls { display: flex; gap: 0.5rem; flex-shrink: 0; }
 
-        .claude-header h1 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
+.btn {
+  font-family: var(--font-mono); font-size: 0.75rem; padding: 0.35rem 0.75rem;
+  border: 1px solid var(--color-border-primary); border-radius: var(--border-radius-sm);
+  background: var(--color-background-primary); color: var(--color-text-secondary);
+  cursor: pointer; transition: all 0.15s ease; white-space: nowrap; user-select: none;
+}
+.btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.btn.active { background: var(--color-background-info); border-color: var(--color-accent); color: var(--color-text-info); }
 
-        .claude-header p {
-            opacity: 0.9;
-            font-size: 1rem;
-        }
+.main { flex: 1; display: flex; overflow: hidden; min-height: 0; }
+.viewer {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem; overflow: auto; background: var(--color-background-tertiary); min-width: 0;
+}
+.viewer-frame {
+  position: relative; line-height: 0; border-radius: var(--border-radius-md); overflow: hidden;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.08); border: 1px solid var(--color-border-primary); background: var(--color-svg-background);
+}
+.viewer-frame img { display: block; max-width: 100%; max-height: calc(100vh - 8rem); width: auto; height: auto; }
+.viewer-frame svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 
-        .viewer-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 30px;
-        }
+svg polygon {
+  fill: var(--polygon-fill); stroke: var(--polygon-stroke); stroke-width: 1.5;
+  cursor: pointer; transition: fill 0.15s, stroke 0.15s, stroke-width 0.15s;
+}
+svg polygon:hover, svg polygon.active {
+  fill: var(--polygon-hover-fill); stroke: var(--polygon-hover-stroke); stroke-width: 2.5;
+}
 
-        @media (min-width: 1024px) {
-            .viewer-wrapper {
-                flex-direction: row;
-            }
-        }
+.labels-on svg polygon {
+  fill: var(--polygon-label-fill); stroke: var(--polygon-label-stroke);
+}
+.labels-on svg polygon:hover, .labels-on svg polygon.active {
+  fill: var(--polygon-label-hover-fill); stroke: var(--polygon-label-hover-stroke);
+}
 
-        .image-panel {
-            flex: 1;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            position: relative;
-        }
+svg .svg-label {
+  pointer-events: none; fill: var(--label-color);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600;
+}
+svg .svg-label-shadow {
+  pointer-events: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-weight: 600;
+}
 
-        .image-container {
-            position: relative;
-            overflow: auto;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            max-height: 600px;
-        }
+.sidebar {
+  flex-shrink: 0; width: 320px; background: var(--color-background-secondary);
+  border-left: 1px solid var(--color-border-primary); display: flex; flex-direction: column;
+  overflow: hidden; transition: width 0.25s ease, opacity 0.2s ease;
+}
+.sidebar.collapsed { width: 0; border-left: none; opacity: 0; pointer-events: none; }
+.sidebar-header {
+  flex-shrink: 0; padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-border-primary);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sidebar-header h2 { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-text-secondary); }
+.sidebar-close {
+  background: none; border: none; cursor: pointer; color: var(--color-text-secondary); padding: 0.2rem;
+  border-radius: var(--border-radius-sm); display: flex; align-items: center; justify-content: center;
+  transition: color 0.15s, background 0.15s;
+}
+.sidebar-close:hover { color: var(--color-text-primary); background: var(--color-background-tertiary); }
+.sidebar-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+.line-item {
+  padding: 0.5rem 0.65rem; border-radius: var(--border-radius-sm); margin-bottom: 0.25rem;
+  cursor: pointer; transition: background 0.12s; border-left: 3px solid transparent;
+}
+.line-item:hover, .line-item.highlight { background: var(--claude-selection); border-left-color: var(--color-accent); }
+.line-text { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-primary); line-height: 1.4; }
+.line-meta { font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-text-secondary); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.35rem; }
+.conf-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
 
-        .image-wrapper {
-            position: relative;
-            display: inline-block;
-        }
+.tooltip {
+  position: fixed; pointer-events: none; z-index: 1000;
+  background: var(--color-tooltip-background); color: var(--color-tooltip-text);
+  border-radius: var(--border-radius-md); padding: 0.55rem 0.8rem; max-width: 400px;
+  opacity: 0; transform: translateY(4px); transition: opacity 0.12s, transform 0.12s;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+.tooltip.visible { opacity: 1; transform: translateY(0); }
+.tooltip-text { font-family: var(--font-mono); font-size: 0.82rem; font-weight: 500; line-height: 1.4; margin-bottom: 0.25rem; }
+.tooltip-meta { font-family: var(--font-mono); font-size: 0.65rem; opacity: 0.75; display: flex; align-items: center; gap: 0.4rem; }
 
-        #document-image {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
-        .line-overlay {
-            position: absolute;
-            pointer-events: none;
-        }
-
-        .line-polygon {
-            fill: rgba(255, 215, 0, 0.3);
-            stroke: rgba(255, 215, 0, 0.8);
-            stroke-width: 2;
-            cursor: pointer;
-            pointer-events: auto;
-            transition: all 0.2s ease;
-        }
-
-        .line-polygon:hover {
-            fill: rgba(255, 215, 0, 0.5);
-            stroke: rgba(255, 165, 0, 1);
-            stroke-width: 3;
-        }
-
-        .line-polygon.active {
-            fill: rgba(102, 126, 234, 0.4);
-            stroke: rgba(102, 126, 234, 1);
-            stroke-width: 3;
-        }
-
-        .text-panel {
-            flex: 1;
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .text-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .claude-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .claude-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        .claude-button:active {
-            transform: translateY(0);
-        }
-
-        .text-content {
-            flex: 1;
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: 550px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .text-line {
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-            line-height: 1.6;
-        }
-
-        .text-line:hover {
-            background: rgba(102, 126, 234, 0.1);
-            border-left-color: rgba(102, 126, 234, 0.5);
-        }
-
-        .text-line.active {
-            background: rgba(102, 126, 234, 0.15);
-            border-left-color: #667eea;
-            font-weight: 500;
-        }
-
-        .stats-bar {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-            margin-top: 4px;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: #6c757d;
-            font-size: 0.9rem;
-            background: #f8f9fa;
-        }
-
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
+@media (max-width: 700px) {
+  .sidebar { position: fixed; right: 0; top: 0; bottom: 0; z-index: 900; width: 85vw; max-width: 320px; box-shadow: -4px 0 24px rgba(0,0,0,0.15); }
+  .sidebar.collapsed { width: 0; box-shadow: none; }
+  header { padding: 0.6rem 0.75rem; }
+  .viewer { padding: 0.75rem; }
+}
+</style>
 </head>
 <body>
-    <div class="claude-container">
-        <div class="claude-header">
-            <h1>📜 HTR Transcription Viewer</h1>
-            <p>Document: <strong>DOCUMENT_NAME_HERE</strong></p>
-        </div>
-
-        <div class="stats-bar">
-            <div class="stat-item">
-                <div class="stat-value" id="total-lines">0</div>
-                <div class="stat-label">Total Lines</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="total-words">0</div>
-                <div class="stat-label">Total Words</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="total-chars">0</div>
-                <div class="stat-label">Total Characters</div>
-            </div>
-        </div>
-
-        <div class="viewer-wrapper">
-            <div class="image-panel">
-                <h3 style="margin-bottom: 15px; color: #495057;">Document Image</h3>
-                <div class="image-container">
-                    <div class="image-wrapper">
-                        <img id="document-image" src="IMAGE_URL_HERE" alt="Document">
-                        <svg class="line-overlay" viewBox="0 0 WIDTH_HERE HEIGHT_HERE" preserveAspectRatio="xMinYMin meet">
-                            <!-- Line polygons will be inserted here -->
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-panel">
-                <h3 style="margin-bottom: 15px; color: #495057;">Transcribed Text</h3>
-                <div class="text-controls">
-                    <button class="claude-button" onclick="copyAllText()">📋 Copy All Text</button>
-                    <button class="claude-button" onclick="downloadText()">💾 Download TXT</button>
-                </div>
-                <div class="text-content" id="text-content">
-                    <!-- Text lines will be inserted here -->
-                </div>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p>Generated by <a href="https://github.com/Swedish-National-Archives-AI-lab/htrflow_app" target="_blank">HTRflow</a> |
-            Powered by <a href="https://claude.ai" target="_blank">Claude</a></p>
-        </div>
+<div class="app" id="app">
+  <header>
+    <div class="header-title"><span>HTR</span> Polygon Viewer &middot; DOCUMENT_NAME_HERE</div>
+    <div class="header-controls">
+      <button class="btn" id="btnCopy" onclick="copyAllText()">Copy Text</button>
+      <button class="btn" id="btnDownload" onclick="downloadText()">Download TXT</button>
+      <button class="btn active" id="btnPolygons" onclick="togglePolygons()">Polygons</button>
+      <button class="btn" id="btnLabels" onclick="toggleLabels()">Labels</button>
+      <button class="btn" id="btnLines" onclick="toggleSidebar()">Lines</button>
     </div>
+  </header>
+  <div class="main">
+    <div class="viewer">
+      <div class="viewer-frame">
+        <img src="IMAGE_URL_HERE" alt="Document" />
+        <svg id="svg" viewBox="0 0 WIDTH_HERE HEIGHT_HERE" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+    </div>
+    <div class="sidebar collapsed" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Transcribed Lines</h2>
+        <button class="sidebar-close" onclick="toggleSidebar()" title="Close">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>
+        </button>
+      </div>
+      <div class="sidebar-list" id="lineList"></div>
+    </div>
+  </div>
+</div>
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-text" id="ttText"></div>
+  <div class="tooltip-meta" id="ttMeta"></div>
+</div>
 
-    <script>
-        const lines = LINES_ARRAY_HERE;
+<script>
+const lines = LINES_ARRAY_HERE;
 
-        function initViewer() {
-            const overlay = document.querySelector('.line-overlay');
-            const textContent = document.getElementById('text-content');
-            const image = document.getElementById('document-image');
+const svgEl = document.getElementById('svg');
+const tooltip = document.getElementById('tooltip');
+const ttText = document.getElementById('ttText');
+const ttMeta = document.getElementById('ttMeta');
+const lineListEl = document.getElementById('lineList');
+const sidebarEl = document.getElementById('sidebar');
+const appEl = document.getElementById('app');
 
-            let totalWords = 0;
-            let totalChars = 0;
+let showPolygons = true;
+let showLabels = false;
 
-            lines.forEach(line => {
-                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-                polygon.setAttribute('points', line.polygonPoints);
-                polygon.setAttribute('class', 'line-polygon');
-                polygon.setAttribute('data-line-id', line.id);
+function confColor(c) {
+  if (c >= 0.9) return 'var(--confidence-high)';
+  if (c >= 0.5) return 'var(--confidence-mid)';
+  return 'var(--confidence-low)';
+}
 
-                polygon.addEventListener('click', () => selectLine(line.id));
-                overlay.appendChild(polygon);
+function fitFontSize(ln) {
+  const h = ln.bbox.ymax - ln.bbox.ymin;
+  const w = ln.bbox.xmax - ln.bbox.xmin;
+  const charW = w / Math.max(ln.text.length, 1);
+  return Math.min(h * 0.68, charW * 1.6, 60);
+}
 
-                const textDiv = document.createElement('div');
-                textDiv.className = 'text-line';
-                textDiv.setAttribute('data-line-id', line.id);
-                textDiv.textContent = line.text || '[No text]';
-                textDiv.addEventListener('click', () => selectLine(line.id));
-                textContent.appendChild(textDiv);
+function render() {
+  svgEl.innerHTML = '';
+  lineListEl.innerHTML = '';
 
-                if (line.text) {
-                    totalWords += line.text.split(/\s+/).filter(w => w.length > 0).length;
-                    totalChars += line.text.length;
-                }
-            });
+  lines.forEach((ln, i) => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.dataset.i = i;
 
-            document.getElementById('total-lines').textContent = lines.length;
-            document.getElementById('total-words').textContent = totalWords;
-            document.getElementById('total-chars').textContent = totalChars;
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    poly.setAttribute('points', ln.polygon);
+    poly.id = 'poly-' + i;
+    if (!showPolygons) poly.style.opacity = '0';
+    g.appendChild(poly);
 
-            image.onload = () => {
-                const rect = image.getBoundingClientRect();
-                overlay.style.width = rect.width + 'px';
-                overlay.style.height = rect.height + 'px';
-            };
+    const fontSize = fitFontSize(ln);
+    const cx = (ln.bbox.xmin + ln.bbox.xmax) / 2;
+    const cy = (ln.bbox.ymin + ln.bbox.ymax) / 2 + fontSize * 0.35;
 
-            if (image.complete) {
-                image.onload();
-            }
+    const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    shadow.setAttribute('x', cx); shadow.setAttribute('y', cy);
+    shadow.setAttribute('text-anchor', 'middle'); shadow.setAttribute('font-size', fontSize);
+    shadow.setAttribute('class', 'svg-label-shadow');
+    shadow.setAttribute('stroke', 'var(--polygon-label-fill)');
+    shadow.setAttribute('stroke-width', '5'); shadow.setAttribute('stroke-linejoin', 'round');
+    shadow.textContent = ln.text;
+    shadow.id = 'shadow-' + i;
+    shadow.style.display = showLabels ? '' : 'none';
+    g.appendChild(shadow);
 
-            window.addEventListener('resize', () => {
-                const rect = image.getBoundingClientRect();
-                overlay.style.width = rect.width + 'px';
-                overlay.style.height = rect.height + 'px';
-            });
-        }
+    const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    label.setAttribute('x', cx); label.setAttribute('y', cy);
+    label.setAttribute('text-anchor', 'middle'); label.setAttribute('font-size', fontSize);
+    label.setAttribute('class', 'svg-label');
+    label.textContent = ln.text;
+    label.id = 'label-' + i;
+    label.style.display = showLabels ? '' : 'none';
+    g.appendChild(label);
 
-        function selectLine(lineId) {
-            document.querySelectorAll('.line-polygon, .text-line').forEach(el => {
-                el.classList.remove('active');
-            });
+    g.addEventListener('mouseenter', e => activate(i, e));
+    g.addEventListener('mousemove', e => moveTooltip(e));
+    g.addEventListener('mouseleave', () => deactivate(i));
+    svgEl.appendChild(g);
 
-            document.querySelectorAll(`[data-line-id="${lineId}"]`).forEach(el => {
-                el.classList.add('active');
-            });
+    const div = document.createElement('div');
+    div.className = 'line-item'; div.id = 'item-' + i;
+    div.innerHTML = '<div class="line-text">' + ln.text + '</div>'
+      + '<div class="line-meta"><span class="conf-dot" style="background:' + confColor(ln.confidence) + '"></span>'
+      + (ln.confidence * 100).toFixed(1) + '%</div>';
+    div.addEventListener('mouseenter', () => activate(i));
+    div.addEventListener('mouseleave', () => deactivate(i));
+    lineListEl.appendChild(div);
+  });
+}
 
-            const textLine = document.querySelector(`.text-line[data-line-id="${lineId}"]`);
-            if (textLine) {
-                textLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
+function activate(i, e) {
+  const ln = lines[i];
+  const poly = document.getElementById('poly-' + i);
+  if (poly) { poly.classList.add('active'); poly.style.opacity = '1'; }
+  document.getElementById('item-' + i)?.classList.add('highlight');
+  ttText.textContent = ln.text;
+  ttMeta.innerHTML = '<span class="conf-dot" style="background:' + confColor(ln.confidence) + '"></span>' + (ln.confidence * 100).toFixed(1) + '% confidence';
+  if (e) { moveTooltip(e); tooltip.classList.add('visible'); }
+}
 
-        function copyAllText() {
-            const text = lines.map(l => l.text || '').join('\n');
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Text copied to clipboard!');
-            });
-        }
+function deactivate(i) {
+  const poly = document.getElementById('poly-' + i);
+  if (poly) { poly.classList.remove('active'); if (!showPolygons) poly.style.opacity = '0'; }
+  document.getElementById('item-' + i)?.classList.remove('highlight');
+  tooltip.classList.remove('visible');
+}
 
-        function downloadText() {
-            const text = lines.map(l => l.text || '').join('\n');
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'DOCUMENT_NAME_HERE.txt';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
+function moveTooltip(e) {
+  let x = e.clientX + 12, y = e.clientY + 12;
+  if (x + 300 > window.innerWidth) x = e.clientX - 300 - 12;
+  if (y + 80 > window.innerHeight) y = e.clientY - 80 - 12;
+  tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+}
 
-        initViewer();
-    </script>
+function togglePolygons() {
+  showPolygons = !showPolygons;
+  document.getElementById('btnPolygons').classList.toggle('active', showPolygons);
+  svgEl.querySelectorAll('polygon').forEach(p => {
+    if (!p.classList.contains('active')) p.style.opacity = showPolygons ? '1' : '0';
+  });
+}
+
+function toggleLabels() {
+  showLabels = !showLabels;
+  document.getElementById('btnLabels').classList.toggle('active', showLabels);
+  appEl.classList.toggle('labels-on', showLabels);
+  svgEl.querySelectorAll('.svg-label, .svg-label-shadow').forEach(l => l.style.display = showLabels ? '' : 'none');
+}
+
+function toggleSidebar() {
+  const open = sidebarEl.classList.toggle('collapsed');
+  document.getElementById('btnLines').classList.toggle('active', !open);
+}
+
+function copyAllText() {
+  const text = lines.map(l => l.text || '').join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('btnCopy');
+    btn.textContent = 'Copied!';
+    btn.classList.add('active');
+    setTimeout(() => { btn.textContent = 'Copy Text'; btn.classList.remove('active'); }, 2000);
+  });
+}
+
+function downloadText() {
+  const text = lines.map(l => l.text || '').join('\n');
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'DOCUMENT_NAME_HERE.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+render();
+</script>
 </body>
 </html>

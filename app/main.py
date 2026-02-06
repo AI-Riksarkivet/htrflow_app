@@ -16,6 +16,7 @@ from app.tabs.submit import (
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
 from app.mcp_tools import (
+    htr_upload_image,
     htr_transcribe_text,
     htr_transcribe_and_visualize,
     htr_transcribe_and_export,
@@ -144,7 +145,8 @@ with gr.Blocks(
         api_visibility="private",
     )
 
-    # Register MCP outcome-oriented tools (token-optimized)
+    # Register MCP tools
+    gr.api(htr_upload_image, api_name="htr_upload_image")
     gr.api(htr_transcribe_text, api_name="htr_transcribe_text")
     gr.api(htr_transcribe_and_visualize, api_name="htr_transcribe_and_visualize")
     gr.api(htr_transcribe_and_export, api_name="htr_transcribe_and_export")
