@@ -79,6 +79,7 @@ def _get_htr_viewer_template() -> str:
         return f.read()
 
 
+@gr.mcp.tool()
 def htr_generate_viewer(analysis_data: dict, image_url: str, document_name: str) -> str:
     """Generate complete interactive HTML viewer for HTR transcription results.
 
@@ -270,6 +271,7 @@ def _run_htr_pipeline(
     return result[0]  # Extract collection from tuple
 
 
+@gr.mcp.tool()
 def htrflow_transcribe_document(
     image_urls: Union[str, list[str]],
     document_language: Literal[
