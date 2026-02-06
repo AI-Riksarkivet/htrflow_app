@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOCUMENT_NAME_HERE - HTR Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .claude-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .claude-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .claude-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .claude-header p {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .viewer-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding: 30px;
+        }
+
+        @media (min-width: 1024px) {
+            .viewer-wrapper {
+                flex-direction: row;
+            }
+        }
+
+        .image-panel {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .image-container {
+            position: relative;
+            overflow: auto;
+            border-radius: 8px;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            max-height: 600px;
+        }
+
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        #document-image {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        .line-overlay {
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .line-polygon {
+            fill: rgba(255, 215, 0, 0.3);
+            stroke: rgba(255, 215, 0, 0.8);
+            stroke-width: 2;
+            cursor: pointer;
+            pointer-events: auto;
+            transition: all 0.2s ease;
+        }
+
+        .line-polygon:hover {
+            fill: rgba(255, 215, 0, 0.5);
+            stroke: rgba(255, 165, 0, 1);
+            stroke-width: 3;
+        }
+
+        .line-polygon.active {
+            fill: rgba(102, 126, 234, 0.4);
+            stroke: rgba(102, 126, 234, 1);
+            stroke-width: 3;
+        }
+
+        .text-panel {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .text-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .claude-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .claude-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .claude-button:active {
+            transform: translateY(0);
+        }
+
+        .text-content {
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 550px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .text-line {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+            line-height: 1.6;
+        }
+
+        .text-line:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-left-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .text-line.active {
+            background: rgba(102, 126, 234, 0.15);
+            border-left-color: #667eea;
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 0.9rem;
+            background: #f8f9fa;
+        }
+
+        .footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="claude-container">
+        <div class="claude-header">
+            <h1>📜 HTR Transcription Viewer</h1>
+            <p>Document: <strong>DOCUMENT_NAME_HERE</strong></p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <div class="stat-value" id="total-lines">0</div>
+                <div class="stat-label">Total Lines</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-words">0</div>
+                <div class="stat-label">Total Words</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-chars">0</div>
+                <div class="stat-label">Total Characters</div>
+            </div>
+        </div>
+
+        <div class="viewer-wrapper">
+            <div class="image-panel">
+                <h3 style="margin-bottom: 15px; color: #495057;">Document Image</h3>
+                <div class="image-container">
+                    <div class="image-wrapper">
+                        <img id="document-image" src="IMAGE_URL_HERE" alt="Document">
+                        <svg class="line-overlay" viewBox="0 0 WIDTH_HERE HEIGHT_HERE" preserveAspectRatio="xMinYMin meet">
+                            <!-- Line polygons will be inserted here -->
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-panel">
+                <h3 style="margin-bottom: 15px; color: #495057;">Transcribed Text</h3>
+                <div class="text-controls">
+                    <button class="claude-button" onclick="copyAllText()">📋 Copy All Text</button>
+                    <button class="claude-button" onclick="downloadText()">💾 Download TXT</button>
+                </div>
+                <div class="text-content" id="text-content">
+                    <!-- Text lines will be inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Generated by <a href="https://github.com/Swedish-National-Archives-AI-lab/htrflow_app" target="_blank">HTRflow</a> |
+            Powered by <a href="https://claude.ai" target="_blank">Claude</a></p>
+        </div>
+    </div>
+
+    <script>
+        const lines = LINES_ARRAY_HERE;
+
+        function initViewer() {
+            const overlay = document.querySelector('.line-overlay');
+            const textContent = document.getElementById('text-content');
+            const image = document.getElementById('document-image');
+
+            let totalWords = 0;
+            let totalChars = 0;
+
+            lines.forEach(line => {
+                const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+                polygon.setAttribute('points', line.polygonPoints);
+                polygon.setAttribute('class', 'line-polygon');
+                polygon.setAttribute('data-line-id', line.id);
+
+                polygon.addEventListener('click', () => selectLine(line.id));
+                overlay.appendChild(polygon);
+
+                const textDiv = document.createElement('div');
+                textDiv.className = 'text-line';
+                textDiv.setAttribute('data-line-id', line.id);
+                textDiv.textContent = line.text || '[No text]';
+                textDiv.addEventListener('click', () => selectLine(line.id));
+                textContent.appendChild(textDiv);
+
+                if (line.text) {
+                    totalWords += line.text.split(/\s+/).filter(w => w.length > 0).length;
+                    totalChars += line.text.length;
+                }
+            });
+
+            document.getElementById('total-lines').textContent = lines.length;
+            document.getElementById('total-words').textContent = totalWords;
+            document.getElementById('total-chars').textContent = totalChars;
+
+            image.onload = () => {
+                const rect = image.getBoundingClientRect();
+                overlay.style.width = rect.width + 'px';
+                overlay.style.height = rect.height + 'px';
+            };
+
+            if (image.complete) {
+                image.onload();
+            }
+
+            window.addEventListener('resize', () => {
+                const rect = image.getBoundingClientRect();
+                overlay.style.width = rect.width + 'px';
+                overlay.style.height = rect.height + 'px';
+            });
+        }
+
+        function selectLine(lineId) {
+            document.querySelectorAll('.line-polygon, .text-line').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            document.querySelectorAll(`[data-line-id="${lineId}"]`).forEach(el => {
+                el.classList.add('active');
+            });
+
+            const textLine = document.querySelector(`.text-line[data-line-id="${lineId}"]`);
+            if (textLine) {
+                textLine.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function copyAllText() {
+            const text = lines.map(l => l.text || '').join('\n');
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Text copied to clipboard!');
+            });
+        }
+
+        function downloadText() {
+            const text = lines.map(l => l.text || '').join('\n');
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'DOCUMENT_NAME_HERE.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        initViewer();
+    </script>
+</body>
+</html>

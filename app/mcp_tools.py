@@ -7,6 +7,7 @@ and returns results in the format most appropriate for the user's intent.
 
 import os
 import shutil
+import json
 from pathlib import Path
 from typing import Optional, Union, Literal
 import uuid
@@ -20,9 +21,6 @@ from app.tabs.visualizer import rename_files_in_directory
 # Create MCP export directory in the app directory (accessible by Gradio)
 MCP_EXPORT_DIR = Path(__file__).parent / "mcp_exports"
 MCP_EXPORT_DIR.mkdir(exist_ok=True)
-
-# HTML viewer template path
-HTR_VIEWER_TEMPLATE = Path(__file__).parent / "htr_viewer_template.html"
 
 
 def _get_base_url() -> str:
@@ -39,10 +37,10 @@ def _get_base_url() -> str:
     return ""
 
 
-@gr.mcp.resource("htr_image://{filename}")
-def get_htr_image_url(filename: str) -> str:
+@gr.mcp.resource("htr_upload_image://{filename}")
+def htr_upload_image(filename: str) -> str:
     """
-    Get Gradio file URL for an uploaded image to use with HTR transcription.
+    Get instructions for uploading an image to use with HTR transcription.
 
     When user attaches an image, use this resource to understand how to
     convert it to a public URL for htrflow_transcribe_document.
@@ -72,45 +70,45 @@ image_url = f"{base_url}/gradio_api/file={{server_path}}"
 ```"""
 
 
-@gr.mcp.resource("htr_viewer_template://html")
-def get_htr_viewer_template() -> str:
-    """
-    Get complete HTML template for interactive HTR polygon viewer.
+def _get_htr_viewer_template() -> str:
+    """Load the HTR viewer HTML template from file."""
+    template_path = Path(__file__).parent / "tabs" / "visualizer" / "generate_viewer_template.html"
+    with open(template_path, "r", encoding="utf-8") as f:
+        return f.read()
 
-    Use after htrflow_transcribe_document with return_format="analysis_data"
-    to create visual overlay of detected text regions.
+
+def htr_generate_viewer(analysis_data: dict, image_url: str, document_name: str) -> str:
+    """Generate complete interactive HTML viewer for HTR transcription results.
+
+    Creates a split-view interface with synchronized image and text panels.
+    Click on lines in either panel to highlight them in both views.
+
+    Args:
+        analysis_data: Dict with structure {"pages": [{"width": int, "height": int, "regions": [...]}]}
+        image_url: Full URL to the document image
+        document_name: Name of the document (for display and download filename)
 
     Returns:
-        Instructions for using the HTML template
+        Complete HTML string ready to save or display
     """
-    return '''INSTRUCTIONS FOR HTR VIEWER:
+    lines = []
+    page = analysis_data["pages"][0]
 
-1. Call htrflow_transcribe_document with return_format="analysis_data"
-2. Extract lines from analysis_data:
-   lines = []
-   for page in analysis_data["pages"]:
-       for region in page["regions"]:
-           lines.extend(region["lines"])
+    for region in page["regions"]:
+        lines.extend(region["lines"])
 
-3. Create HTML file with:
-   - Replace title with document name
-   - Set img src to document image URL
-   - Set SVG viewBox="0 0 {width} {height}" from page dimensions
-   - Replace `const lines = [...]` with extracted lines array
+    template = _get_htr_viewer_template()
 
-TEMPLATE FEATURES:
-- Claude-style light/dark mode (automatic)
-- Toggles: Polygons, Labels, Lines sidebar
-- Hover tooltips with confidence scores
-- Color-coded: green ≥90%, orange ≥50%, red <50%
-- Responsive mobile design
+    html = template.replace("DOCUMENT_NAME_HERE", document_name)
+    html = html.replace("IMAGE_URL_HERE", image_url)
+    html = html.replace("WIDTH_HERE HEIGHT_HERE", f'{page["width"]} {page["height"]}')
+    html = html.replace("LINES_ARRAY_HERE", json.dumps(lines))
 
-The complete HTML template with all CSS and JavaScript is ready to use.
-Just replace the data placeholders (title, image URL, viewBox, lines array).'''
+    return html
 
 
 @gr.mcp.prompt()
-def transcribe_uploaded_document(language: str = "swedish", layout: str = "single_page", return_format: str = "text") -> str:
+def htr_transcribe_workflow(language: str = "swedish", layout: str = "single_page", return_format: str = "text") -> str:
     """Workflow guide for transcribing user-uploaded handwritten documents."""
     base_url = _get_base_url() or "http://localhost:7860"
 
@@ -130,7 +128,7 @@ STEP 2: Call htrflow_transcribe_document
 
 STEP 3: Present results appropriately
 - text format: show transcription directly
-- analysis_data: offer to create interactive HTML viewer (use htr_viewer_template resource)
+- analysis_data: use htr_generate_viewer tool to create interactive HTML viewer
 - XML/JSON formats: provide download URL
 
 IMPORTANT: Ask user what output format they want BEFORE transcribing!
