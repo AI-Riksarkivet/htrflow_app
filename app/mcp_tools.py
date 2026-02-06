@@ -116,6 +116,38 @@ def _get_yaml_config(pipeline: str, custom_yaml: Optional[str]) -> str:
     return get_yaml(pipeline)
 
 
+def _run_htr_pipeline(
+    image_urls: Union[str, list[str]],
+    pipeline: str,
+    custom_yaml: Optional[str],
+    progress: gr.Progress = None,
+) -> Collection:
+    """
+    Core HTR pipeline execution - used by all MCP tools.
+
+    Args:
+        image_urls: Image URL(s) to process
+        pipeline: Pipeline name
+        custom_yaml: Custom YAML config (overrides pipeline)
+        progress: Progress tracker
+
+    Returns:
+        Processed Collection object
+    """
+    yaml_config = _get_yaml_config(pipeline, custom_yaml)
+    batch_images = _prepare_images_for_htrflow(image_urls)
+
+    if progress:
+        progress(0, desc="Starting HTR transcription")
+
+    result = next(
+        run_htrflow(
+            yaml_config, batch_images, progress=progress if progress else gr.Progress()
+        )
+    )
+    return result[0]
+
+
 def htr_for_analysis(
     image_urls: Union[str, list[str]],
     pipeline: str = "Swedish - Spreads",
@@ -161,21 +193,16 @@ def htr_for_analysis(
             }]
         }
     """
-    yaml_config = _get_yaml_config(pipeline, custom_yaml)
-    batch_images = _prepare_images_for_htrflow(image_urls)
-
-    if progress:
-        progress(0, desc="Starting HTR transcription")
-    collection, _ = run_htrflow(
-        yaml_config, batch_images, progress=progress if progress else gr.Progress()
-    )
+    collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress)
 
     if progress:
         progress(0.95, desc="Structuring data")
+
     data = _collection_to_dict(collection)
 
     if progress:
         progress(1.0, desc="Complete")
+
     return data
 
 
@@ -211,14 +238,7 @@ def htr_export_format(
             f"output_format must be one of {valid_formats}, got: {output_format}"
         )
 
-    yaml_config = _get_yaml_config(pipeline, custom_yaml)
-    batch_images = _prepare_images_for_htrflow(image_urls)
-
-    if progress:
-        progress(0, desc="Starting HTR transcription")
-    collection, _ = run_htrflow(
-        yaml_config, batch_images, progress=progress if progress else gr.Progress()
-    )
+    collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress)
 
     if progress:
         progress(0.9, desc=f"Exporting to {output_format} format")
@@ -238,4 +258,80 @@ def htr_export_format(
 
     if progress:
         progress(1.0, desc="Export complete")
+
     return file_path
+
+
+def htr_for_analysis_mcp(
+    image_urls: Union[str, list[str]],
+    pipeline: str = "Swedish - Spreads",
+    custom_yaml: Optional[str] = None,
+) -> dict:
+    """
+    Transcribe handwritten documents and return structured data for analysis.
+
+    Returns complete hierarchical data including text, coordinates, confidence scores,
+    and layout information. Use this when you need to analyze the document structure,
+    extract specific regions, or perform further processing with the LLM.
+
+    Args:
+        image_urls: Image URL(s) to process
+        pipeline: Pipeline name - "Swedish - Spreads", "Swedish - Single page and snippets",
+                  "Norwegian - Single page and snippets", "Medieval - Single page and snippets",
+                  or "English - Single page and snippets"
+        custom_yaml: Custom HTRflow YAML config (overrides pipeline)
+
+    Returns:
+        {
+            "label": str,
+            "num_pages": int,
+            "num_lines": int,
+            "pages": [{
+                "label": str,
+                "width": int,
+                "height": int,
+                "path": str,
+                "regions": [{
+                    "label": str,
+                    "bbox": {"xmin", "ymin", "xmax", "ymax"},
+                    "polygon": str,
+                    "lines": [{
+                        "text": str,
+                        "bbox": {"xmin", "ymin", "xmax", "ymax"},
+                        "polygon": str,
+                        "confidence": float
+                    }]
+                }]
+            }]
+        }
+    """
+    return htr_for_analysis(image_urls, pipeline, custom_yaml, progress=None)
+
+
+def htr_export_format_mcp(
+    image_urls: Union[str, list[str]],
+    pipeline: str = "Swedish - Spreads",
+    output_format: str = "alto",
+    custom_yaml: Optional[str] = None,
+) -> str:
+    """
+    Transcribe handwritten documents and export to standardized format.
+
+    Exports results to formats supported by document analysis tools and viewers.
+    ALTO and PAGE XML are standard formats for historical document digitization
+    that preserve layout, text, and metadata for visualization in specialized viewers.
+
+    Args:
+        image_urls: Image URL(s) to process
+        pipeline: Pipeline name - "Swedish - Spreads", "Swedish - Single page and snippets",
+                  "Norwegian - Single page and snippets", "Medieval - Single page and snippets",
+                  or "English - Single page and snippets"
+        output_format: Export format - "txt", "alto", "page", or "json"
+        custom_yaml: Custom HTRflow YAML config (overrides pipeline)
+
+    Returns:
+        File path to exported file (single page) or ZIP archive (multiple pages)
+    """
+    return htr_export_format(
+        image_urls, pipeline, output_format, custom_yaml, progress=None
+    )
