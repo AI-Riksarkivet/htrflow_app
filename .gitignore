@@ -30,6 +30,9 @@ app/tabs/[a-z0-9]*/
 !app/tabs/visualizer/
 !app/tabs/__pycache__/
 
+# MCP export files (temporary exports for MCP API)
+app/mcp_exports/
+
 #
 page_xml.xml
 page_txt.txt

@@ -5,16 +5,35 @@ Provides a single outcome-oriented tool that transcribes handwritten documents
 and returns results in the format most appropriate for the user's intent.
 """
 
+import os
 import shutil
-import tempfile
 from pathlib import Path
 from typing import Optional, Union, Literal
+import uuid
 
 import gradio as gr
 from htrflow.volume.volume import Collection
 
 from app.tabs.submit import run_htrflow, get_yaml
 from app.tabs.visualizer import rename_files_in_directory
+
+# Create MCP export directory in the app directory (accessible by Gradio)
+MCP_EXPORT_DIR = Path(__file__).parent / "mcp_exports"
+MCP_EXPORT_DIR.mkdir(exist_ok=True)
+
+
+def _get_base_url() -> str:
+    """Get base URL from SPACE_HOST or GRADIO_ROOT_PATH."""
+    space_host = os.getenv("SPACE_HOST")
+    if space_host:
+        host = space_host.split(",")[0].strip()
+        return f"https://{host}"
+
+    root_path = os.getenv("GRADIO_ROOT_PATH", "").strip("/")
+    if root_path:
+        return f"/{root_path}"
+
+    return ""
 
 
 def _collection_to_dict(collection: Collection) -> dict:
@@ -154,7 +173,9 @@ def htrflow_transcribe_document(
         "swedish", "norwegian", "english", "medieval"
     ] = "swedish",
     document_layout: Literal["single_page", "spread"] = "single_page",
-    return_format: Literal["analysis_data", "alto_xml", "page_xml", "text", "json"] = "analysis_data",
+    return_format: Literal[
+        "analysis_data", "alto_xml", "page_xml", "text", "json"
+    ] = "analysis_data",
     custom_yaml: Optional[str] = None,
 ) -> Union[dict, str]:
     """
@@ -174,12 +195,19 @@ def htrflow_transcribe_document(
     RETURN FORMAT GUIDE:
     - "analysis_data": Returns structured JSON with text, coordinates, confidence scores, and layout hierarchy.
       Use when user wants to analyze, search, or process the transcription programmatically.
-    - "alto_xml" or "page_xml": Returns file path to XML conforming to ALTO/PAGE standards.
-      Use when user needs output for document viewers, digital archives, or preservation systems.
+      RETURNS: dict object (ready to use immediately)
+
     - "text": Returns plain text transcription only.
       Use when user just wants to read the content without metadata.
-    - "json": Returns file path to JSON export.
+      RETURNS: str with plain text (ready to use immediately)
+
+    - "alto_xml" or "page_xml": Returns download URL to XML file conforming to ALTO/PAGE standards.
+      Use when user needs output for document viewers, digital archives, or preservation systems.
+      RETURNS: str with full download URL (e.g., "https://example.com/gradio_api/file=/path/to/file.xml")
+
+    - "json": Returns download URL to JSON export file.
       Use when user wants to download raw structured data.
+      RETURNS: str with full download URL (e.g., "https://example.com/gradio_api/file=/path/to/file.json")
 
     Args:
         image_urls: Single image URL or list of image URLs pointing to document images.
@@ -227,8 +255,13 @@ def htrflow_transcribe_document(
                 }]
             }
 
-        If return_format is "alto_xml", "page_xml", "text", or "json":
-            Returns str: File path to the exported file or ZIP archive (for multiple pages)
+        If return_format is "text":
+            Returns str: Plain text transcription
+
+        If return_format is "alto_xml", "page_xml", or "json":
+            Returns str: Full download URL to the exported file or ZIP archive (for multiple pages).
+            Example: "https://riksarkivet-htr-demo.hf.space/gradio_api/file=/path/to/file.xml"
+            The URL can be used directly to download or fetch the file content.
 
     Example:
         User: "Can you transcribe this Swedish letter? https://example.com/letter.jpg"
@@ -251,14 +284,25 @@ def htrflow_transcribe_document(
         ("swedish", "single_page"): "Swedish - Single page and snippets",
         ("swedish", "spread"): "Swedish - Spreads",
         ("norwegian", "single_page"): "Norwegian - Single page and snippets",
-        ("norwegian", "spread"): "Norwegian - Single page and snippets",  # No spread version
+        (
+            "norwegian",
+            "spread",
+        ): "Norwegian - Single page and snippets",  # No spread version
         ("english", "single_page"): "English - Single page and snippets",
-        ("english", "spread"): "English - Single page and snippets",  # No spread version
+        (
+            "english",
+            "spread",
+        ): "English - Single page and snippets",  # No spread version
         ("medieval", "single_page"): "Medieval - Single page and snippets",
-        ("medieval", "spread"): "Medieval - Single page and snippets",  # No spread version
+        (
+            "medieval",
+            "spread",
+        ): "Medieval - Single page and snippets",  # No spread version
     }
 
-    pipeline = pipeline_map.get((document_language, document_layout), "Swedish - Single page and snippets")
+    pipeline = pipeline_map.get(
+        (document_language, document_layout), "Swedish - Single page and snippets"
+    )
 
     # Run HTR pipeline
     collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress=None)
@@ -279,22 +323,29 @@ def htrflow_transcribe_document(
 
     else:
         # Export to file format (alto_xml, page_xml, json)
-        format_map = {
-            "alto_xml": "alto",
-            "page_xml": "page",
-            "json": "json"
-        }
+        format_map = {"alto_xml": "alto", "page_xml": "page", "json": "json"}
         output_format = format_map[return_format]
 
-        temp_dir = Path(tempfile.mkdtemp())
-        export_dir = temp_dir / output_format
+        export_id = str(uuid.uuid4())[:8]
+        export_base_dir = MCP_EXPORT_DIR / export_id
+        export_base_dir.mkdir(exist_ok=True)
+        export_dir = export_base_dir / output_format
 
         collection.save(directory=str(export_dir), serializer=output_format)
         exported_files = rename_files_in_directory(str(export_dir), output_format)
 
         if len(exported_files) > 1:
-            zip_path = temp_dir / f"htrflow_export_{output_format}.zip"
-            shutil.make_archive(str(zip_path).replace(".zip", ""), "zip", str(export_dir))
-            return str(zip_path)
+            zip_path = export_base_dir / f"htrflow_export_{output_format}.zip"
+            shutil.make_archive(
+                str(zip_path).replace(".zip", ""), "zip", str(export_dir)
+            )
+            file_path = str(zip_path)
         else:
-            return exported_files[0]
+            file_path = exported_files[0]
+
+        base_url = _get_base_url()
+        return (
+            f"{base_url}/gradio_api/file={file_path}"
+            if base_url
+            else f"/gradio_api/file={file_path}"
+        )

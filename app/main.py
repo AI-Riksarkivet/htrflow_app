@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 import gradio as gr
 from gradio_i18n import Translate, gettext as _
@@ -150,6 +151,10 @@ for dep in demo.fns.values():
 demo.queue()
 
 if __name__ == "__main__":
+    # Add MCP export directory to allowed paths so files can be served
+    mcp_export_dir = Path(__file__).parent / "mcp_exports"
+    mcp_export_dir.mkdir(exist_ok=True)
+
     demo.launch(
         server_name="0.0.0.0",
         server_port=7860,
@@ -160,4 +165,5 @@ if __name__ == "__main__":
         footer_links=["api", "settings"],
         root_path=os.environ.get("GRADIO_ROOT_PATH", ""),
         mcp_server=True,
+        allowed_paths=[str(mcp_export_dir)],
     )
