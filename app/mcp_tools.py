@@ -1,15 +1,14 @@
 """
-MCP API endpoints for HTRflow handwritten text recognition.
+MCP API endpoint for HTRflow handwritten text recognition.
 
-Two tools with distinct use cases:
-- htr_for_analysis: Returns structured JSON data for LLM analysis and exploration
-- htr_export_format: Exports to standardized formats (ALTO/PAGE XML) for document viewers
+Provides a single outcome-oriented tool that transcribes handwritten documents
+and returns results in the format most appropriate for the user's intent.
 """
 
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional, Union, Literal
 
 import gradio as gr
 from htrflow.volume.volume import Collection
@@ -140,198 +139,162 @@ def _run_htr_pipeline(
     if progress:
         progress(0, desc="Starting HTR transcription")
 
+    # run_htrflow is a generator that yields (collection, gr.skip())
     result = next(
         run_htrflow(
             yaml_config, batch_images, progress=progress if progress else gr.Progress()
         )
     )
-    return result[0]
+    return result[0]  # Extract collection from tuple
 
 
-def htr_for_analysis(
+def htrflow_transcribe_document(
     image_urls: Union[str, list[str]],
-    pipeline: str = "Swedish - Spreads",
+    document_language: Literal[
+        "swedish", "norwegian", "english", "medieval"
+    ] = "swedish",
+    document_layout: Literal["single_page", "spread"] = "single_page",
+    return_format: Literal["analysis_data", "alto_xml", "page_xml", "text", "json"] = "analysis_data",
     custom_yaml: Optional[str] = None,
-    progress: gr.Progress = None,
-) -> dict:
+) -> Union[dict, str]:
     """
-    Transcribe handwritten documents and return structured data for analysis.
+    Transcribe handwritten historical documents using HTRflow specialized models.
 
-    Returns complete hierarchical data including text, coordinates, confidence scores,
-    and layout information. Use this when you need to analyze the document structure,
-    extract specific regions, or perform further processing with the LLM.
+    WHEN TO USE THIS TOOL:
+    - User asks to transcribe, read, or extract text from handwritten documents
+    - User provides image URLs of historical manuscripts, letters, or archival materials
+    - User wants to analyze layout, extract coordinates, or get confidence scores from handwriting
+    - User needs standardized XML formats (ALTO/PAGE) for digital humanities tools
+
+    DO NOT USE for:
+    - Modern printed text (use OCR tools instead)
+    - User hasn't provided image URLs yet
+    - General questions about handwriting (answer directly)
+
+    RETURN FORMAT GUIDE:
+    - "analysis_data": Returns structured JSON with text, coordinates, confidence scores, and layout hierarchy.
+      Use when user wants to analyze, search, or process the transcription programmatically.
+    - "alto_xml" or "page_xml": Returns file path to XML conforming to ALTO/PAGE standards.
+      Use when user needs output for document viewers, digital archives, or preservation systems.
+    - "text": Returns plain text transcription only.
+      Use when user just wants to read the content without metadata.
+    - "json": Returns file path to JSON export.
+      Use when user wants to download raw structured data.
 
     Args:
-        image_urls: Image URL(s) to process
-        pipeline: Pipeline name - "Swedish - Spreads", "Swedish - Single page and snippets",
-                  "Norwegian - Single page and snippets", "Medieval - Single page and snippets",
-                  or "English - Single page and snippets"
-        custom_yaml: Custom HTRflow YAML config (overrides pipeline)
-        progress: Progress tracker
+        image_urls: Single image URL or list of image URLs pointing to document images.
+                   Must be publicly accessible URLs (http:// or https://).
+        document_language: Language of the handwritten text. Choices:
+                          - "swedish": Swedish historical documents (default)
+                          - "norwegian": Norwegian historical documents
+                          - "english": English historical documents
+                          - "medieval": Medieval manuscripts
+        document_layout: Physical layout of the document. Choices:
+                        - "single_page": Single page or snippets (default)
+                        - "spread": Two-page spread (book opening)
+        return_format: Output format based on user's intent. Choices:
+                      - "analysis_data": JSON with full hierarchy, coordinates, confidence (default)
+                      - "alto_xml": ALTO XML file path for archival systems
+                      - "page_xml": PAGE XML file path for document viewers
+                      - "text": Plain text transcription only
+                      - "json": JSON file path for download
+        custom_yaml: Advanced: Custom HTRflow YAML pipeline config. Only use if user provides
+                    specific model settings. Overrides document_language and document_layout.
 
     Returns:
-        {
-            "label": str,
-            "num_pages": int,
-            "num_lines": int,
-            "pages": [{
+        If return_format is "analysis_data":
+            Returns dict with structure:
+            {
                 "label": str,
-                "width": int,
-                "height": int,
-                "path": str,
-                "regions": [{
+                "num_pages": int,
+                "num_lines": int,
+                "pages": [{
                     "label": str,
-                    "bbox": {"xmin", "ymin", "xmax", "ymax"},
-                    "polygon": str,
-                    "lines": [{
-                        "text": str,
-                        "bbox": {"xmin", "ymin", "xmax", "ymax"},
+                    "width": int,
+                    "height": int,
+                    "path": str,
+                    "regions": [{
+                        "label": str,
+                        "bbox": {"xmin": int, "ymin": int, "xmax": int, "ymax": int},
                         "polygon": str,
-                        "confidence": float
+                        "lines": [{
+                            "text": str,
+                            "bbox": {"xmin": int, "ymin": int, "xmax": int, "ymax": int},
+                            "polygon": str,
+                            "confidence": float
+                        }]
                     }]
                 }]
-            }]
-        }
-    """
-    collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress)
+            }
 
-    if progress:
-        progress(0.95, desc="Structuring data")
+        If return_format is "alto_xml", "page_xml", "text", or "json":
+            Returns str: File path to the exported file or ZIP archive (for multiple pages)
 
-    data = _collection_to_dict(collection)
-
-    if progress:
-        progress(1.0, desc="Complete")
-
-    return data
-
-
-def htr_export_format(
-    image_urls: Union[str, list[str]],
-    pipeline: str = "Swedish - Spreads",
-    output_format: str = "alto",
-    custom_yaml: Optional[str] = None,
-    progress: gr.Progress = None,
-) -> str:
-    """
-    Transcribe handwritten documents and export to standardized format.
-
-    Exports results to formats supported by document analysis tools and viewers.
-    ALTO and PAGE XML are standard formats for historical document digitization
-    that preserve layout, text, and metadata for visualization in specialized viewers.
-
-    Args:
-        image_urls: Image URL(s) to process
-        pipeline: Pipeline name - "Swedish - Spreads", "Swedish - Single page and snippets",
-                  "Norwegian - Single page and snippets", "Medieval - Single page and snippets",
-                  or "English - Single page and snippets"
-        output_format: Export format - "txt", "alto", "page", or "json"
-        custom_yaml: Custom HTRflow YAML config (overrides pipeline)
-        progress: Progress tracker
-
-    Returns:
-        File path to exported file (single page) or ZIP archive (multiple pages)
-    """
-    valid_formats = ["txt", "alto", "page", "json"]
-    if output_format not in valid_formats:
-        raise ValueError(
-            f"output_format must be one of {valid_formats}, got: {output_format}"
+    Example:
+        User: "Can you transcribe this Swedish letter? https://example.com/letter.jpg"
+        Tool call: htrflow_transcribe_document(
+            image_urls="https://example.com/letter.jpg",
+            document_language="swedish",
+            document_layout="single_page",
+            return_format="text"
         )
 
-    collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress)
+        User: "I need to analyze the layout and confidence scores of this manuscript"
+        Tool call: htrflow_transcribe_document(
+            image_urls="https://example.com/manuscript.jpg",
+            document_language="medieval",
+            return_format="analysis_data"
+        )
+    """
+    # Map user-friendly parameters to internal pipeline names
+    pipeline_map = {
+        ("swedish", "single_page"): "Swedish - Single page and snippets",
+        ("swedish", "spread"): "Swedish - Spreads",
+        ("norwegian", "single_page"): "Norwegian - Single page and snippets",
+        ("norwegian", "spread"): "Norwegian - Single page and snippets",  # No spread version
+        ("english", "single_page"): "English - Single page and snippets",
+        ("english", "spread"): "English - Single page and snippets",  # No spread version
+        ("medieval", "single_page"): "Medieval - Single page and snippets",
+        ("medieval", "spread"): "Medieval - Single page and snippets",  # No spread version
+    }
 
-    if progress:
-        progress(0.9, desc=f"Exporting to {output_format} format")
+    pipeline = pipeline_map.get((document_language, document_layout), "Swedish - Single page and snippets")
 
-    temp_dir = Path(tempfile.mkdtemp())
-    export_dir = temp_dir / output_format
+    # Run HTR pipeline
+    collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress=None)
 
-    collection.save(directory=str(export_dir), serializer=output_format)
-    exported_files = rename_files_in_directory(str(export_dir), output_format)
+    # Return based on requested format
+    if return_format == "analysis_data":
+        return _collection_to_dict(collection)
 
-    if len(exported_files) > 1:
-        zip_path = temp_dir / f"export_{output_format}.zip"
-        shutil.make_archive(str(zip_path).replace(".zip", ""), "zip", str(export_dir))
-        file_path = str(zip_path)
+    elif return_format == "text":
+        # Extract plain text
+        text_lines = []
+        for page in collection.pages:
+            lines = list(page.traverse(lambda node: node.is_line()))
+            for line in lines:
+                if line.text:
+                    text_lines.append(line.text)
+        return "\n".join(text_lines)
+
     else:
-        file_path = exported_files[0]
-
-    if progress:
-        progress(1.0, desc="Export complete")
-
-    return file_path
-
-
-def htr_for_analysis_mcp(
-    image_urls: Union[str, list[str]],
-    pipeline: str = "Swedish - Spreads",
-    custom_yaml: Optional[str] = None,
-) -> dict:
-    """
-    Transcribe handwritten documents and return structured data for analysis.
-
-    Returns complete hierarchical data including text, coordinates, confidence scores,
-    and layout information. Use this when you need to analyze the document structure,
-    extract specific regions, or perform further processing with the LLM.
-
-    Args:
-        image_urls: Image URL(s) to process
-        pipeline: Pipeline name - "Swedish - Spreads", "Swedish - Single page and snippets",
-                  "Norwegian - Single page and snippets", "Medieval - Single page and snippets",
-                  or "English - Single page and snippets"
-        custom_yaml: Custom HTRflow YAML config (overrides pipeline)
-
-    Returns:
-        {
-            "label": str,
-            "num_pages": int,
-            "num_lines": int,
-            "pages": [{
-                "label": str,
-                "width": int,
-                "height": int,
-                "path": str,
-                "regions": [{
-                    "label": str,
-                    "bbox": {"xmin", "ymin", "xmax", "ymax"},
-                    "polygon": str,
-                    "lines": [{
-                        "text": str,
-                        "bbox": {"xmin", "ymin", "xmax", "ymax"},
-                        "polygon": str,
-                        "confidence": float
-                    }]
-                }]
-            }]
+        # Export to file format (alto_xml, page_xml, json)
+        format_map = {
+            "alto_xml": "alto",
+            "page_xml": "page",
+            "json": "json"
         }
-    """
-    return htr_for_analysis(image_urls, pipeline, custom_yaml, progress=None)
+        output_format = format_map[return_format]
 
+        temp_dir = Path(tempfile.mkdtemp())
+        export_dir = temp_dir / output_format
 
-def htr_export_format_mcp(
-    image_urls: Union[str, list[str]],
-    pipeline: str = "Swedish - Spreads",
-    output_format: str = "alto",
-    custom_yaml: Optional[str] = None,
-) -> str:
-    """
-    Transcribe handwritten documents and export to standardized format.
+        collection.save(directory=str(export_dir), serializer=output_format)
+        exported_files = rename_files_in_directory(str(export_dir), output_format)
 
-    Exports results to formats supported by document analysis tools and viewers.
-    ALTO and PAGE XML are standard formats for historical document digitization
-    that preserve layout, text, and metadata for visualization in specialized viewers.
-
-    Args:
-        image_urls: Image URL(s) to process
-        pipeline: Pipeline name - "Swedish - Spreads", "Swedish - Single page and snippets",
-                  "Norwegian - Single page and snippets", "Medieval - Single page and snippets",
-                  or "English - Single page and snippets"
-        output_format: Export format - "txt", "alto", "page", or "json"
-        custom_yaml: Custom HTRflow YAML config (overrides pipeline)
-
-    Returns:
-        File path to exported file (single page) or ZIP archive (multiple pages)
-    """
-    return htr_export_format(
-        image_urls, pipeline, output_format, custom_yaml, progress=None
-    )
+        if len(exported_files) > 1:
+            zip_path = temp_dir / f"htrflow_export_{output_format}.zip"
+            shutil.make_archive(str(zip_path).replace(".zip", ""), "zip", str(export_dir))
+            return str(zip_path)
+        else:
+            return exported_files[0]

@@ -14,10 +14,7 @@ from app.tabs.submit import (
 )
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
-from app.mcp_tools import (
-    htr_for_analysis,
-    htr_export_format,
-)
+from app.mcp_tools import htrflow_transcribe_document
 
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
@@ -143,8 +140,7 @@ with gr.Blocks(
     )
 
     # Register MCP tools
-    gr.api(htr_for_analysis, api_name="htr_for_analysis")
-    gr.api(htr_export_format, api_name="htr_export_format")
+    gr.api(htrflow_transcribe_document, api_name="htrflow_transcribe_document")
 
 # Hide the Translate component's auto-generated /on_lang_change API endpoint
 for dep in demo.fns.values():
