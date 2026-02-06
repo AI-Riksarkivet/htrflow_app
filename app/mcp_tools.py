@@ -7,6 +7,7 @@ and returns results in the format most appropriate for the user's intent.
 
 import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Optional, Union, Literal
 import uuid
@@ -173,9 +174,7 @@ def htrflow_transcribe_document(
         "swedish", "norwegian", "english", "medieval"
     ] = "swedish",
     document_layout: Literal["single_page", "spread"] = "single_page",
-    return_format: Literal[
-        "analysis_data", "alto_xml", "page_xml", "text", "json"
-    ] = "analysis_data",
+    return_format: Literal["analysis_data", "alto_xml", "page_xml", "text", "json"] = "analysis_data",
     custom_yaml: Optional[str] = None,
 ) -> Union[dict, str]:
     """
@@ -284,25 +283,14 @@ def htrflow_transcribe_document(
         ("swedish", "single_page"): "Swedish - Single page and snippets",
         ("swedish", "spread"): "Swedish - Spreads",
         ("norwegian", "single_page"): "Norwegian - Single page and snippets",
-        (
-            "norwegian",
-            "spread",
-        ): "Norwegian - Single page and snippets",  # No spread version
+        ("norwegian", "spread"): "Norwegian - Single page and snippets",  # No spread version
         ("english", "single_page"): "English - Single page and snippets",
-        (
-            "english",
-            "spread",
-        ): "English - Single page and snippets",  # No spread version
+        ("english", "spread"): "English - Single page and snippets",  # No spread version
         ("medieval", "single_page"): "Medieval - Single page and snippets",
-        (
-            "medieval",
-            "spread",
-        ): "Medieval - Single page and snippets",  # No spread version
+        ("medieval", "spread"): "Medieval - Single page and snippets",  # No spread version
     }
 
-    pipeline = pipeline_map.get(
-        (document_language, document_layout), "Swedish - Single page and snippets"
-    )
+    pipeline = pipeline_map.get((document_language, document_layout), "Swedish - Single page and snippets")
 
     # Run HTR pipeline
     collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress=None)
@@ -323,7 +311,11 @@ def htrflow_transcribe_document(
 
     else:
         # Export to file format (alto_xml, page_xml, json)
-        format_map = {"alto_xml": "alto", "page_xml": "page", "json": "json"}
+        format_map = {
+            "alto_xml": "alto",
+            "page_xml": "page",
+            "json": "json"
+        }
         output_format = format_map[return_format]
 
         export_id = str(uuid.uuid4())[:8]
@@ -334,18 +326,20 @@ def htrflow_transcribe_document(
         collection.save(directory=str(export_dir), serializer=output_format)
         exported_files = rename_files_in_directory(str(export_dir), output_format)
 
+        # Determine the file to return
         if len(exported_files) > 1:
             zip_path = export_base_dir / f"htrflow_export_{output_format}.zip"
-            shutil.make_archive(
-                str(zip_path).replace(".zip", ""), "zip", str(export_dir)
-            )
+            shutil.make_archive(str(zip_path).replace(".zip", ""), "zip", str(export_dir))
             file_path = str(zip_path)
         else:
             file_path = exported_files[0]
 
-        base_url = _get_base_url()
-        return (
-            f"{base_url}/gradio_api/file={file_path}"
-            if base_url
-            else f"/gradio_api/file={file_path}"
-        )
+        # Construct full URL for file download
+        base_url = _get_base_url(request)
+        file_url = f"/gradio_api/file={file_path}"
+
+        # Return full URL if we have a base URL, otherwise relative URL
+        if base_url:
+            return f"{base_url}{file_url}"
+        else:
+            return file_url
