@@ -123,6 +123,7 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
         gr.Warning("HTRflow: You must upload atleast 1 image or more")
 
     images = [temp_img[0] for temp_img in batch_image_gallery]
+    logger.info("Starting HTR pipeline with %d image(s)", len(images))
 
     collection = Collection(images)
 
@@ -140,6 +141,7 @@ def run_htrflow(custom_template_yaml, batch_image_gallery, progress=gr.Progress(
     progress(1, desc="HTRflow: Finish, redirecting to 'Results tab'")
     time.sleep(2)
     gr.Info("Completed succesfully ✨")
+    logger.info("HTR pipeline completed: %d page(s) processed", len(collection.pages))
 
     yield collection, gr.skip()
 

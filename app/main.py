@@ -17,9 +17,7 @@ from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
 from app.mcp_tools import (
     htr_upload_image,
-    htr_transcribe_text,
-    htr_transcribe_and_visualize,
-    htr_transcribe_and_export,
+    htr_transcribe,
 )
 
 logging.getLogger("transformers").setLevel(logging.ERROR)
@@ -126,18 +124,24 @@ with gr.Blocks(
 
     def sync_gradio_object_state(input_value, state_value):
         """Synchronize the Collection."""
-        state_value = input_value
-        return state_value if state_value is not None else gr.skip()
+        if input_value is not None:
+            return input_value
+        return gr.skip()
 
-    # Auto-navigate to Results tab after HTR processing
+    # Auto-navigate to Results tab after HTR processing, then sync collection
     collection_submit_state.change(
-        lambda collection: gr.Tabs(selected="result") if collection else gr.skip(),
+        lambda coll: gr.Tabs(selected="result") if coll else gr.skip(),
         inputs=collection_submit_state,
         outputs=navbar,
         api_visibility="private",
+    ).then(
+        sync_gradio_object_state,
+        inputs=[collection_submit_state, collection_viz_state],
+        outputs=[collection_viz_state],
+        api_visibility="private",
     )
 
-    # Sync collection from Upload to Results tab
+    # Also sync when user manually navigates to Results tab
     tab_visualizer.select(
         inputs=[collection_submit_state, collection_viz_state],
         outputs=[collection_viz_state],
@@ -147,9 +151,7 @@ with gr.Blocks(
 
     # Register MCP tools
     gr.api(htr_upload_image, api_name="htr_upload_image")
-    gr.api(htr_transcribe_text, api_name="htr_transcribe_text")
-    gr.api(htr_transcribe_and_visualize, api_name="htr_transcribe_and_visualize")
-    gr.api(htr_transcribe_and_export, api_name="htr_transcribe_and_export")
+    gr.api(htr_transcribe, api_name="htr_transcribe")
 
 # Hide the Translate component's auto-generated /on_lang_change API endpoint
 for dep in demo.fns.values():

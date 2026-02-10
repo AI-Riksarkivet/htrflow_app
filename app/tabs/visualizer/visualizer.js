@@ -467,10 +467,16 @@
         renderPage(currentPageIndex);
     };
 
-    let lastTotalPages = props.value?.totalPages;
+    function getDataFingerprint(val) {
+        if (!val || !val.pages || val.pages.length === 0) return null;
+        return val.pages.map(p => p.path).join('|') + '|' + val.totalPages;
+    }
+
+    let lastFingerprint = getDataFingerprint(props.value);
     setInterval(() => {
-        if (props.value?.totalPages && props.value.totalPages !== lastTotalPages) {
-            lastTotalPages = props.value.totalPages;
+        const currentFingerprint = getDataFingerprint(props.value);
+        if (currentFingerprint && currentFingerprint !== lastFingerprint) {
+            lastFingerprint = currentFingerprint;
             initVisualizer();
         }
     }, 100);

@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 from pathlib import Path
@@ -7,8 +6,6 @@ import gradio as gr
 from htrflow.volume.volume import Collection
 from htrflow.results import RecognizedText, TEXT_RESULT_KEY
 from gradio_i18n import gettext as _
-
-logger = logging.getLogger(__name__)
 
 current_dir = Path(__file__).parent
 visualizer_dir = current_dir / "visualizer"
@@ -21,6 +18,7 @@ def load_file(filename):
     with open(file_path, "r", encoding="utf-8") as f:
         return f.read()
 
+from gradio.events import Dependency
 
 class HTRVisualizer(gr.HTML):
     """Unified HTR visualization with synchronized image and transcription panels"""
@@ -73,6 +71,11 @@ class HTRVisualizer(gr.HTML):
                 },
             },
         }
+    from typing import Callable, Literal, Sequence, Any, TYPE_CHECKING
+    from gradio.blocks import Block
+    if TYPE_CHECKING:
+        from gradio.components import Timer
+        from gradio.components.base import Component
 
 
 def prepare_visualizer_data(collection: Collection, current_page_index: int):
@@ -182,11 +185,9 @@ def export_and_download(file_format, collection: Collection, req: gr.Request):
         else:
             file_path = exported_files[0]
 
-        logger.info("Export complete: format=%s, files=%d, path=%s", file_format, len(exported_files), file_path)
         gr.Info("✅ Export successful! Download starting...")
         return file_path
 
-    logger.info("Export produced no files: format=%s", file_format)
     return None
 
 

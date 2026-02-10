@@ -214,10 +214,10 @@ def _run_htr_pipeline(
 
 @gr.mcp.tool()
 def htr_upload_image(filename: str = "image.jpg") -> str:
-    """Upload a user-attached image to the server and get a URL for transcription tools.
+    """Upload a user-attached image to the server and get a URL for htr_transcribe.
 
-    Use when: User attaches or uploads a local image file and you need a server-accessible
-    URL to pass to htr_transcribe_text, htr_transcribe_and_visualize, or htr_transcribe_and_export.
+    Use when: User attaches or uploads a local image file and you need a
+    server-accessible URL to pass to htr_transcribe.
 
     NOT needed when: User already provides an http/https URL directly.
 
@@ -242,165 +242,137 @@ def htr_upload_image(filename: str = "image.jpg") -> str:
 3. Construct the image_url:
    image_url = "{base_url}/gradio_api/file=" + server_path
 
-4. Pass image_url to any transcription tool:
-   - htr_transcribe_text(image_url)          → get plain text
-   - htr_transcribe_and_visualize(image_url)  → get interactive viewer
-   - htr_transcribe_and_export(image_url, "alto_xml") → get archival export"""
+4. Pass image_url to htr_transcribe with desired output format:
+   - htr_transcribe(image_url, output="text")      → plain text
+   - htr_transcribe(image_url, output="viewer")     → interactive viewer URL
+   - htr_transcribe(image_url, output="alto_xml")   → ALTO XML download URL
+   - htr_transcribe(image_url, output="page_xml")   → PAGE XML download URL
+   - htr_transcribe(image_url, output="json")        → JSON download URL"""
 
 
 @gr.mcp.tool()
-def htr_transcribe_text(
+def htr_transcribe(
     image_url: str,
+    output: Literal["text", "viewer", "alto_xml", "page_xml", "json"] = "text",
     language: Literal["swedish", "norwegian", "english", "medieval"] = "swedish",
-    layout: Literal["single_page", "spread"] = "single_page",
-) -> str:
-    """Transcribe handwritten historical document and return plain text.
+    layout: Literal["single_page", "spread"] = "spread",
+) -> Union[str, dict]:
+    """Transcribe a handwritten historical document using AI models.
 
-    Use when: User wants to read what the document says.
+    This is the main transcription tool. It runs the HTR (Handwritten Text Recognition)
+    pipeline and returns results in the format specified by the output argument.
+
+    If the user attached a local file, first call htr_upload_image to get an image_url.
 
     Args:
-        image_url: Direct URL to document image (http/https, must be accessible by server).
-                   If user attached a local file, first use htr_upload_image to get a URL.
-        language: Document language (swedish=default, norwegian, english, medieval)
-        layout: Page layout (single_page=default, spread=two-page book opening)
+        image_url: URL to the document image. Either a public http/https URL,
+                   or a Gradio file URL obtained via htr_upload_image.
+        output: What to return after transcription. Choices:
+                - "text": Plain text transcription (default). Best for reading content.
+                - "viewer": Interactive HTML viewer URL with polygons, confidence scores,
+                  and line-by-line highlighting. Best for visual inspection.
+                - "alto_xml": ALTO XML file download URL. Standard archival format.
+                - "page_xml": PAGE XML file download URL. Standard archival format.
+                - "json": JSON file download URL. Structured data export.
+        language: Language of the handwritten document. Choices:
+                  - "swedish": Swedish historical documents (default)
+                  - "norwegian": Norwegian historical documents
+                  - "english": English historical documents
+                  - "medieval": Medieval manuscripts
+        layout: Physical layout of the document page. Choices:
+                - "single_page": Single page or snippet (default)
+                - "spread": Two-page book opening / spread
 
     Returns:
-        Plain text transcription of the document.
+        Depends on the output argument:
 
-    Example:
-        User: "What does this Swedish letter say?"
-        → htr_transcribe_text("https://example.com/letter.jpg", "swedish")
-        → Returns: "Kära Maria, Jag skriver..."
+        output="text" → str
+            Plain text transcription, one line per text line.
+
+        output="viewer" → dict
+            {"viewer_url": str, "text_preview": str,
+             "stats": {"num_lines": int, "num_pages": int, "avg_confidence": float},
+             "message": str}
+
+        output="alto_xml" | "page_xml" | "json" → dict
+            {"download_url": str, "format": str, "file_size_kb": float, "message": str}
+
+    Examples:
+        User: "What does this letter say?"
+        → htr_transcribe("https://example.com/letter.jpg")
+
+        User: "Transcribe this and show me the line regions"
+        → htr_transcribe("https://example.com/doc.jpg", output="viewer")
+
+        User: "Export as ALTO XML for our archive"
+        → htr_transcribe("https://example.com/doc.jpg", output="alto_xml")
+
+        User: "Read this Swedish manuscript spread"
+        → htr_transcribe("https://example.com/spread.jpg", output="text",
+                         language="swedish", layout="spread")
     """
     pipeline = _resolve_pipeline(language, layout)
     collection = _run_htr_pipeline(image_url, pipeline, None, progress=None)
-    return _extract_text(collection)
 
+    # --- output="text" ---
+    if output == "text":
+        return _extract_text(collection)
 
-@gr.mcp.tool()
-def htr_transcribe_and_visualize(
-    image_url: str,
-    language: Literal["swedish", "norwegian", "english", "medieval"] = "swedish",
-    layout: Literal["single_page", "spread"] = "single_page",
-) -> dict:
-    """Transcribe document and generate interactive visualization.
+    # --- output="viewer" ---
+    if output == "viewer":
+        analysis_data = _collection_to_dict(collection)
 
-    Use when: User wants to see transcription WITH line-by-line visualization,
-    confidence scores, or clickable regions.
+        export_id = str(uuid.uuid4())[:8]
+        json_path = MCP_EXPORT_DIR / f"htr_analysis_{export_id}.json"
+        with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(analysis_data, f)
 
-    Args:
-        image_url: Direct URL to document image (must be accessible by server)
-        language: Document language (default: swedish)
-        layout: Page layout (default: single_page)
+        document_name = collection.label or f"document_{export_id}"
 
-    Returns:
-        {
-            "viewer_url": "https://.../viewer_abc123.html",
-            "text_preview": "First 500 characters...",
+        lines = []
+        page = analysis_data["pages"][0]
+        for region in page["regions"]:
+            lines.extend(region["lines"])
+
+        template = _get_htr_viewer_template()
+        html = template.replace("DOCUMENT_NAME_HERE", document_name)
+        html = html.replace("IMAGE_URL_HERE", image_url)
+        html = html.replace(
+            "WIDTH_HERE HEIGHT_HERE", f"{page['width']} {page['height']}"
+        )
+        html = html.replace("LINES_ARRAY_HERE", json.dumps(lines))
+
+        html_path = MCP_EXPORT_DIR / f"viewer_{document_name}_{export_id}.html"
+        with open(html_path, "w", encoding="utf-8") as f:
+            f.write(html)
+
+        viewer_url = _build_file_url(str(html_path))
+
+        total_confidence = sum(
+            line["confidence"]
+            for page in analysis_data["pages"]
+            for region in page["regions"]
+            for line in region["lines"]
+        )
+        avg_confidence = total_confidence / max(analysis_data["num_lines"], 1)
+
+        full_text = _extract_text(collection)
+        text_preview = full_text[:500] + ("..." if len(full_text) > 500 else "")
+
+        return {
+            "viewer_url": viewer_url,
+            "text_preview": text_preview,
             "stats": {
-                "num_lines": 45,
-                "num_pages": 1,
-                "avg_confidence": 0.94
+                "num_lines": analysis_data["num_lines"],
+                "num_pages": analysis_data["num_pages"],
+                "avg_confidence": round(avg_confidence, 3),
             },
-            "message": "Open viewer_url to see interactive transcription"
+            "message": "Open viewer_url in browser to see interactive transcription",
         }
 
-    Example:
-        User: "Transcribe this and show me where the text is"
-        → htr_transcribe_and_visualize("https://example.com/doc.jpg")
-        → Returns viewer URL + stats (small response ~300 tokens)
-    """
-    pipeline = _resolve_pipeline(language, layout)
-    collection = _run_htr_pipeline(image_url, pipeline, None, progress=None)
-
-    # Convert to dict and save as JSON (no token cost!)
-    analysis_data = _collection_to_dict(collection)
-
-    export_id = str(uuid.uuid4())[:8]
-    json_path = MCP_EXPORT_DIR / f"htr_analysis_{export_id}.json"
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump(analysis_data, f)
-
-    # Generate HTML viewer
-    document_name = collection.label or f"document_{export_id}"
-
-    lines = []
-    page = analysis_data["pages"][0]
-    for region in page["regions"]:
-        lines.extend(region["lines"])
-
-    template = _get_htr_viewer_template()
-    html = template.replace("DOCUMENT_NAME_HERE", document_name)
-    html = html.replace("IMAGE_URL_HERE", image_url)
-    html = html.replace("WIDTH_HERE HEIGHT_HERE", f'{page["width"]} {page["height"]}')
-    html = html.replace("LINES_ARRAY_HERE", json.dumps(lines))
-
-    html_path = MCP_EXPORT_DIR / f"viewer_{document_name}_{export_id}.html"
-    with open(html_path, "w", encoding="utf-8") as f:
-        f.write(html)
-
-    viewer_url = _build_file_url(str(html_path))
-
-    # Calculate stats
-    total_confidence = sum(
-        line["confidence"]
-        for page in analysis_data["pages"]
-        for region in page["regions"]
-        for line in region["lines"]
-    )
-    avg_confidence = total_confidence / max(analysis_data["num_lines"], 1)
-
-    full_text = _extract_text(collection)
-    text_preview = full_text[:500] + ("..." if len(full_text) > 500 else "")
-
-    return {
-        "viewer_url": viewer_url,
-        "text_preview": text_preview,
-        "stats": {
-            "num_lines": analysis_data["num_lines"],
-            "num_pages": analysis_data["num_pages"],
-            "avg_confidence": round(avg_confidence, 3),
-        },
-        "message": "Open viewer_url in your browser to see the interactive transcription with clickable regions",
-    }
-
-
-@gr.mcp.tool()
-def htr_transcribe_and_export(
-    image_url: str,
-    export_format: Literal["alto_xml", "page_xml", "json"],
-    language: Literal["swedish", "norwegian", "english", "medieval"] = "swedish",
-    layout: Literal["single_page", "spread"] = "single_page",
-) -> dict:
-    """Transcribe document and export to standard archival format.
-
-    Use when: User needs ALTO XML, PAGE XML, or JSON for digital humanities
-    tools, archives, or further processing.
-
-    Args:
-        image_url: Direct URL to document image (must be accessible by server)
-        export_format: Output format (alto_xml, page_xml, json)
-        language: Document language (default: swedish)
-        layout: Page layout (default: single_page)
-
-    Returns:
-        {
-            "download_url": "https://.../export_abc123.xml",
-            "format": "alto_xml",
-            "file_size_kb": 125,
-            "message": "Download file from download_url"
-        }
-
-    Example:
-        User: "Export this as ALTO XML"
-        → htr_transcribe_and_export("https://example.com/doc.jpg", "alto_xml")
-        → Returns download URL
-    """
-    pipeline = _resolve_pipeline(language, layout)
-    collection = _run_htr_pipeline(image_url, pipeline, None, progress=None)
-
+    # --- output="alto_xml" | "page_xml" | "json" ---
     format_map = {"alto_xml": "alto", "page_xml": "page", "json": "json"}
-    output_format = format_map[export_format]
+    output_format = format_map[output]
 
     export_id = str(uuid.uuid4())[:8]
     export_base_dir = MCP_EXPORT_DIR / export_id
@@ -422,7 +394,7 @@ def htr_transcribe_and_export(
 
     return {
         "download_url": download_url,
-        "format": export_format,
+        "format": output,
         "file_size_kb": file_size_kb,
-        "message": f"Download {export_format} file from download_url",
+        "message": f"Download {output} file from download_url",
     }
