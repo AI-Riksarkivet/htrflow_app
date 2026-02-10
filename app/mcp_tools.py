@@ -308,6 +308,7 @@ def htr_transcribe(
     export_format: Literal["alto_xml", "page_xml", "json"] = "alto_xml",
     language: Literal["swedish", "norwegian", "english", "medieval"] = "swedish",
     layout: Literal["single_page", "spread"] = "single_page",
+    custom_yaml: Optional[str] = None,
 ) -> dict:
     """Transcribe handwritten historical documents and return all results in one call.
 
@@ -338,6 +339,24 @@ def htr_transcribe(
         layout: Physical layout of the document pages.
                 - "single_page": Single page or snippet (default)
                 - "spread": Two-page book opening / spread
+        custom_yaml: Optional custom HTRflow pipeline YAML configuration string.
+                     When provided, overrides language and layout. Defines the
+                     full pipeline with steps for segmentation, text recognition,
+                     and line ordering. Example:
+                       steps:
+                         - step: Segmentation
+                           settings:
+                             model: yolo
+                             model_settings:
+                               model: Riksarkivet/yolov9-lines-within-regions-1
+                         - step: TextRecognition
+                           settings:
+                             model: TrOCR
+                             model_settings:
+                               model: Riksarkivet/trocr-base-handwritten-hist-swe-2
+                             generation_settings:
+                               batch_size: 16
+                         - step: OrderLines
 
     Returns:
         dict with URLs to all generated files (you can fetch any of these):
@@ -368,7 +387,7 @@ def htr_transcribe(
                          language="swedish", layout="spread")
     """
     pipeline = _resolve_pipeline(language, layout)
-    collection = _run_htr_pipeline(image_urls, pipeline, None, progress=None)
+    collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress=None)
 
     export_id = str(uuid.uuid4())[:8]
 
