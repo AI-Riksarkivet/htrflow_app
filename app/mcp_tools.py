@@ -226,15 +226,25 @@ def _build_viewer_pages_data(
     return viewer_pages
 
 
+FORMAT_DISPLAY = {"alto_xml": "ALTO XML", "page_xml": "PAGE XML", "json": "JSON"}
+
+
 def _generate_viewer(
-    collection: Collection, viewer_pages_data: list[dict], export_id: str
+    collection: Collection,
+    viewer_pages_data: list[dict],
+    export_id: str,
+    export_url: str,
+    export_format: str,
 ) -> str:
     """Generate interactive gallery viewer HTML and return its URL."""
     document_name = collection.label or f"document_{export_id}"
+    format_label = FORMAT_DISPLAY.get(export_format, export_format.upper())
 
     template = _get_htr_viewer_template()
     html = template.replace("DOCUMENT_NAME_HERE", document_name)
     html = html.replace("PAGES_DATA_HERE", json.dumps(viewer_pages_data))
+    html = html.replace("EXPORT_URL_HERE", export_url)
+    html = html.replace("EXPORT_FORMAT_HERE", f"Download {format_label}")
 
     html_path = MCP_EXPORT_DIR / f"viewer_{document_name}_{export_id}.html"
     with open(html_path, "w", encoding="utf-8") as f:
@@ -390,9 +400,11 @@ def htr_transcribe(
     export_id = str(uuid.uuid4())[:8]
 
     pages_url = _save_pages_json(collection, export_id)
-    viewer_pages_data = _build_viewer_pages_data(collection, image_urls)
-    viewer_url = _generate_viewer(collection, viewer_pages_data, export_id)
     export_url = _export_collection(collection, export_format, export_id)
+    viewer_pages_data = _build_viewer_pages_data(collection, image_urls)
+    viewer_url = _generate_viewer(
+        collection, viewer_pages_data, export_id, export_url, export_format
+    )
 
     return {
         "pages_url": pages_url,
