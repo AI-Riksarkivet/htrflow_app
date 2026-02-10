@@ -327,79 +327,51 @@ def htr_transcribe(
     layout: Literal["single_page", "spread"] = "single_page",
     custom_yaml: Optional[str] = None,
 ) -> dict:
-    """Transcribe handwritten historical documents and return all results in one call.
+    """Transcribe handwritten documents. Returns ONLY URLs — present them to the user as-is.
 
-    IMPORTANT — two rules:
-    1. Local files MUST be uploaded first. Call htr_upload_image to get upload
-       instructions, upload via curl, then use the returned server URLs here.
-       Local paths like /mnt/... or /tmp/... will NOT work as image_urls.
-    2. Pass ALL image URLs in one call. Do NOT call this tool per image.
-
-    Runs the HTR AI pipeline once and returns URLs to generated files.
-    The language and layout apply to all images in the batch.
+    CRITICAL RULES:
+    1. Upload first: User-attached files MUST be uploaded via htr_upload_image
+       before calling this tool. Use curl to upload to /gradio_api/upload, then
+       construct the full URL from the returned server path. Do NOT guess or
+       fabricate image URLs (e.g. CDN links) — only use URLs constructed from
+       the upload response.
+    2. Batch everything: Pass ALL image URLs in ONE call. NEVER call this tool
+       multiple times for separate images — that wastes expensive GPU time.
+    3. Return URLs only: Your response to the user should ONLY contain the
+       returned URLs as clickable links. Do NOT fetch, read, or parse any of
+       the returned URLs. Do NOT transcribe or reproduce the document text in
+       your message — the viewer_url already shows everything interactively.
 
     Args:
-        image_urls: Server-accessible URLs only (http/https). Local file paths
-                    will fail. For user-attached files, upload them first via
-                    htr_upload_image + curl, then pass all URLs here in one list.
-        export_format: Format for the archival export file.
-                       - "alto_xml": ALTO XML (default). Standard archival format.
-                       - "page_xml": PAGE XML. Standard archival format.
-                       - "json": JSON. Structured data export.
-        language: Language of the handwritten documents.
-                  - "swedish": Swedish historical documents (default)
-                  - "norwegian": Norwegian historical documents
-                  - "english": English historical documents
-                  - "medieval": Medieval manuscripts
-        layout: Physical layout of the document pages.
-                - "single_page": Single page or snippet (default)
-                - "spread": Two-page book opening / spread
-        custom_yaml: Optional custom HTRflow pipeline YAML configuration string.
-                     When provided, overrides language and layout. Defines the
-                     full pipeline with steps for segmentation, text recognition,
-                     and line ordering. Example:
-                       steps:
-                         - step: Segmentation
-                           settings:
-                             model: yolo
-                             model_settings:
-                               model: Riksarkivet/yolov9-lines-within-regions-1
-                         - step: TextRecognition
-                           settings:
-                             model: TrOCR
-                             model_settings:
-                               model: Riksarkivet/trocr-base-handwritten-hist-swe-2
-                             generation_settings:
-                               batch_size: 16
-                         - step: OrderLines
+        image_urls: List of full server URLs constructed from the upload step.
+                    Must follow the pattern: {base_url}/gradio_api/file={server_path}
+                    where server_path comes from the upload response.
+        export_format: Export format: "alto_xml" (default), "page_xml", or "json".
+        language: Document language: "swedish" (default), "norwegian",
+                  "english", or "medieval".
+        layout: Page layout: "single_page" (default) or "spread" (two-page opening).
+        custom_yaml: Optional HTRflow YAML pipeline config string. Overrides
+                     language/layout when provided.
 
     Returns:
-        dict with URLs to all generated files. IMPORTANT: Always present ALL
-        returned URLs to the user in a structured way. Do NOT fetch pages_url
-        to dump its contents — just share the links.
+        dict with file URLs. Present these links to the user — nothing else.
+        Do NOT fetch or read any URL. Do NOT reproduce document text.
 
-            viewer_url: Interactive HTML gallery viewer with polygon overlays,
-                confidence scores, page navigation, and copy/download text.
-                This is the main result — the user opens this in their browser.
-            pages_url: JSON file with the structured transcription data
-                (per-page lines with id, text, confidence). Available if the
-                user wants to work with the raw transcription data.
-            export_url: Archival export file in the requested export_format.
-                For multi-page documents this is a ZIP archive.
-            export_format: The format of the export file (echoed back).
+            viewer_url: Interactive gallery viewer — the main result.
+                User opens this in their browser to see images with polygon
+                overlays, search, confidence scores, and text download.
+            pages_url: JSON with per-page transcription lines.
+                Only share this link — do NOT fetch it or show its contents.
+            export_url: Archival export file in the requested format.
+            export_format: The requested format (echoed back).
 
-    Examples:
-        User: "What does this letter say?"
-        → htr_transcribe(image_urls=["https://example.com/letter.jpg"])
-        → Present viewer_url, pages_url, and export_url to the user.
+    Example response to user:
+        "Here are your transcription results:
+         - **Viewer**: [viewer_url] (interactive gallery with text overlays)
+         - **Transcription data**: [pages_url]
+         - **Export (ALTO XML)**: [export_url]"
 
-        User: "Transcribe these 3 pages and export as PAGE XML"
-        → htr_transcribe(image_urls=["url1", "url2", "url3"],
-                         export_format="page_xml")
-
-        User: "Read this Swedish manuscript spread"
-        → htr_transcribe(image_urls=["https://example.com/spread.jpg"],
-                         language="swedish", layout="spread")
+        That's it. No text reproduction. No fetching URLs.
     """
     pipeline = _resolve_pipeline(language, layout)
     collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress=None)
