@@ -157,17 +157,33 @@ def _save_pages_json(collection: Collection, export_id: str) -> str:
     return _build_file_url(str(json_path))
 
 
-def _build_viewer_pages_data(
-    collection: Collection, image_urls: list[str]
-) -> list[dict]:
+def _resolve_page_image_url(page) -> str:
+    """Get the correct image URL for a collection page.
+
+    Uses page.path as the authoritative source because Collection sorts
+    pages alphabetically, so index-based mapping to the original
+    image_urls list would produce wrong associations.
+    """
+    page_path = getattr(page, "path", None)
+    if not page_path:
+        return ""
+    path_str = str(page_path)
+    if path_str.startswith(("http://", "https://")):
+        return path_str
+    if os.path.exists(path_str):
+        return _build_file_url(path_str)
+    return path_str
+
+
+def _build_viewer_pages_data(collection: Collection) -> list[dict]:
     """Build the full per-page data needed by the gallery viewer template.
 
-    Unlike _extract_pages_lines (lightweight for API), this includes bboxes,
+    Unlike _save_pages_json (lightweight for API), this includes bboxes,
     polygons, and image URLs needed for the interactive HTML viewer.
     """
     viewer_pages = []
 
-    for i, page in enumerate(collection.pages):
+    for page in collection.pages:
         regions_raw = list(
             page.traverse(
                 lambda node: node.children and all(child.is_line() for child in node)
@@ -205,18 +221,9 @@ def _build_viewer_pages_data(
                         }
                     )
 
-        # Use page's own image path if available, otherwise map from input URLs
-        page_path = getattr(page, "path", None)
-        if page_path and os.path.exists(str(page_path)):
-            img_url = _build_file_url(str(page_path))
-        elif i < len(image_urls):
-            img_url = image_urls[i]
-        else:
-            img_url = image_urls[-1]
-
         viewer_pages.append(
             {
-                "image_url": img_url,
+                "image_url": _resolve_page_image_url(page),
                 "width": page.width,
                 "height": page.height,
                 "lines": lines,
@@ -401,7 +408,7 @@ def htr_transcribe(
 
     pages_url = _save_pages_json(collection, export_id)
     export_url = _export_collection(collection, export_format, export_id)
-    viewer_pages_data = _build_viewer_pages_data(collection, image_urls)
+    viewer_pages_data = _build_viewer_pages_data(collection)
     viewer_url = _generate_viewer(
         collection, viewer_pages_data, export_id, export_url, export_format
     )
