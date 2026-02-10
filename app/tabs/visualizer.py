@@ -182,7 +182,12 @@ def export_and_download(file_format, collection: Collection, req: gr.Request):
         else:
             file_path = exported_files[0]
 
-        logger.info("Export complete: format=%s, files=%d, path=%s", file_format, len(exported_files), file_path)
+        logger.info(
+            "Export complete: format=%s, files=%d, path=%s",
+            file_format,
+            len(exported_files),
+            file_path,
+        )
         gr.Info("✅ Export successful! Download starting...")
         return file_path
 
