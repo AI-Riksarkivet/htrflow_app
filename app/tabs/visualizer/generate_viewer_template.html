@@ -39,6 +39,8 @@
   --confidence-high: #4a8c50;
   --confidence-mid: #c07a2a;
   --confidence-low: #b91c1c;
+  --search-match-stroke: rgba(234, 179, 8, 0.85);
+  --search-match-fill: rgba(234, 179, 8, 0.20);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -63,6 +65,8 @@
     --polygon-label-stroke: rgba(224, 144, 112, 0.6);
     --polygon-label-hover-stroke: rgba(224, 144, 112, 1);
     --label-color: #e8e6e3;
+    --search-match-stroke: rgba(250, 204, 21, 0.75);
+    --search-match-fill: rgba(250, 204, 21, 0.14);
   }
 }
 
@@ -103,6 +107,22 @@ header {
 .btn-nav:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent); }
 .btn-nav:disabled { opacity: 0.35; cursor: default; }
 
+.search-box {
+  display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;
+}
+.search-input {
+  font-family: var(--font-mono); font-size: 0.75rem; padding: 0.3rem 0.55rem;
+  border: 1px solid var(--color-border-primary); border-radius: var(--border-radius-sm);
+  background: var(--color-background-primary); color: var(--color-text-primary);
+  width: 150px; outline: none; transition: border-color 0.15s;
+}
+.search-input:focus { border-color: var(--color-accent); }
+.search-input::placeholder { color: var(--color-text-secondary); opacity: 0.6; }
+.search-count {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  color: var(--color-text-secondary); white-space: nowrap;
+}
+
 .btn {
   font-family: var(--font-mono); font-size: 0.75rem; padding: 0.35rem 0.75rem;
   border: 1px solid var(--color-border-primary); border-radius: var(--border-radius-sm);
@@ -130,6 +150,12 @@ svg polygon {
 }
 svg polygon:hover, svg polygon.active {
   fill: var(--polygon-hover-fill); stroke: var(--polygon-hover-stroke); stroke-width: 2.5;
+}
+svg polygon.search-match {
+  fill: var(--search-match-fill); stroke: var(--search-match-stroke); stroke-width: 2.5;
+}
+svg polygon.search-match:hover, svg polygon.search-match.active {
+  fill: var(--polygon-hover-fill); stroke: var(--polygon-hover-stroke); stroke-width: 3;
 }
 
 .labels-on svg polygon {
@@ -171,6 +197,7 @@ svg .svg-label-shadow {
   cursor: pointer; transition: background 0.12s; border-left: 3px solid transparent;
 }
 .line-item:hover, .line-item.highlight { background: var(--claude-selection); border-left-color: var(--color-accent); }
+.line-item.search-match { background: rgba(234, 179, 8, 0.12); border-left-color: var(--search-match-stroke); }
 .line-text { font-family: var(--font-mono); font-size: 0.8rem; color: var(--color-text-primary); line-height: 1.4; }
 .line-meta { font-family: var(--font-mono); font-size: 0.65rem; color: var(--color-text-secondary); margin-top: 0.15rem; display: flex; align-items: center; gap: 0.35rem; }
 .conf-dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
@@ -189,8 +216,9 @@ svg .svg-label-shadow {
 @media (max-width: 700px) {
   .sidebar { position: fixed; right: 0; top: 0; bottom: 0; z-index: 900; width: 85vw; max-width: 320px; box-shadow: -4px 0 24px rgba(0,0,0,0.15); }
   .sidebar.collapsed { width: 0; box-shadow: none; }
-  header { padding: 0.6rem 0.75rem; }
+  header { padding: 0.6rem 0.75rem; flex-wrap: wrap; }
   .viewer { padding: 0.75rem; }
+  .search-input { width: 110px; }
 }
 </style>
 </head>
@@ -203,9 +231,14 @@ svg .svg-label-shadow {
       <span class="page-indicator" id="pageIndicator">1 / 1</span>
       <button class="btn-nav" id="btnNext" onclick="nextPage()">&rsaquo;</button>
     </div>
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search lines..." oninput="doSearch(this.value)">
+      <span class="search-count" id="searchCount"></span>
+    </div>
     <div class="header-controls">
       <button class="btn" id="btnCopy" onclick="copyAllText()">Copy Text</button>
       <button class="btn" id="btnDownload" onclick="downloadText()">Download TXT</button>
+      <button class="btn" id="btnDownloadImg" onclick="downloadImage()">Download Image</button>
       <button class="btn active" id="btnPolygons" onclick="togglePolygons()">Polygons</button>
       <button class="btn" id="btnLabels" onclick="toggleLabels()">Labels</button>
       <button class="btn" id="btnLines" onclick="toggleSidebar()">Lines</button>
@@ -250,9 +283,12 @@ const pageNav = document.getElementById('pageNav');
 const pageIndicator = document.getElementById('pageIndicator');
 const btnPrev = document.getElementById('btnPrev');
 const btnNext = document.getElementById('btnNext');
+const searchCountEl = document.getElementById('searchCount');
 
 let showPolygons = true;
 let showLabels = false;
+let searchQuery = '';
+let searchMatches = [];
 
 if (pages.length <= 1) pageNav.style.display = 'none';
 
@@ -274,12 +310,26 @@ function fitFontSize(ln) {
 function renderPage(idx) {
   currentPageIdx = idx;
   const page = pages[idx];
-  docImage.src = page.image_url;
+
+  svgEl.innerHTML = '';
+  lineListEl.innerHTML = '';
+
   svgEl.setAttribute('viewBox', '0 0 ' + page.width + ' ' + page.height);
   pageIndicator.textContent = (idx + 1) + ' / ' + pages.length;
   btnPrev.disabled = idx === 0;
   btnNext.disabled = idx === pages.length - 1;
-  render(page.lines);
+
+  let rendered = false;
+  function onReady() {
+    if (rendered) return;
+    rendered = true;
+    render(page.lines);
+  }
+
+  docImage.onload = onReady;
+  docImage.onerror = onReady;
+  docImage.src = page.image_url;
+  if (docImage.complete) onReady();
 }
 
 function prevPage() { if (currentPageIdx > 0) renderPage(currentPageIdx - 1); }
@@ -337,6 +387,8 @@ function render(lines) {
     div.addEventListener('mouseleave', () => deactivate(i));
     lineListEl.appendChild(div);
   });
+
+  applySearchHighlights();
 }
 
 function activate(i, e) {
@@ -351,7 +403,10 @@ function activate(i, e) {
 
 function deactivate(i) {
   const poly = document.getElementById('poly-' + i);
-  if (poly) { poly.classList.remove('active'); if (!showPolygons) poly.style.opacity = '0'; }
+  if (poly) {
+    poly.classList.remove('active');
+    if (!showPolygons && !poly.classList.contains('search-match')) poly.style.opacity = '0';
+  }
   document.getElementById('item-' + i)?.classList.remove('highlight');
   tooltip.classList.remove('visible');
 }
@@ -367,7 +422,9 @@ function togglePolygons() {
   showPolygons = !showPolygons;
   document.getElementById('btnPolygons').classList.toggle('active', showPolygons);
   svgEl.querySelectorAll('polygon').forEach(p => {
-    if (!p.classList.contains('active')) p.style.opacity = showPolygons ? '1' : '0';
+    if (!p.classList.contains('active') && !p.classList.contains('search-match')) {
+      p.style.opacity = showPolygons ? '1' : '0';
+    }
   });
 }
 
@@ -383,27 +440,115 @@ function toggleSidebar() {
   document.getElementById('btnLines').classList.toggle('active', !open);
 }
 
+/* --- Search --- */
+
+function doSearch(query) {
+  searchQuery = query.toLowerCase().trim();
+  searchMatches = [];
+
+  if (!searchQuery) {
+    clearSearchHighlights();
+    searchCountEl.textContent = '';
+    return;
+  }
+
+  pages.forEach(function(page, pageIdx) {
+    page.lines.forEach(function(line, lineIdx) {
+      if (line.text && line.text.toLowerCase().indexOf(searchQuery) !== -1) {
+        searchMatches.push({ pageIdx: pageIdx, lineIdx: lineIdx });
+      }
+    });
+  });
+
+  var pageCount = new Set(searchMatches.map(function(m) { return m.pageIdx; })).size;
+  if (searchMatches.length === 0) {
+    searchCountEl.textContent = 'No matches';
+  } else if (pages.length > 1) {
+    searchCountEl.textContent = searchMatches.length + ' in ' + pageCount + (pageCount === 1 ? ' page' : ' pages');
+  } else {
+    searchCountEl.textContent = searchMatches.length + ' found';
+  }
+
+  var currentPageHasMatches = searchMatches.some(function(m) { return m.pageIdx === currentPageIdx; });
+  if (!currentPageHasMatches && searchMatches.length > 0) {
+    renderPage(searchMatches[0].pageIdx);
+  } else {
+    applySearchHighlights();
+  }
+}
+
+function applySearchHighlights() {
+  clearSearchHighlights();
+  if (!searchQuery) return;
+
+  var firstMatch = null;
+  searchMatches
+    .filter(function(m) { return m.pageIdx === currentPageIdx; })
+    .forEach(function(m) {
+      var poly = document.getElementById('poly-' + m.lineIdx);
+      if (poly) { poly.classList.add('search-match'); poly.style.opacity = '1'; }
+      var item = document.getElementById('item-' + m.lineIdx);
+      if (item) {
+        item.classList.add('search-match');
+        if (!firstMatch) firstMatch = item;
+      }
+    });
+
+  if (firstMatch && !sidebarEl.classList.contains('collapsed')) {
+    firstMatch.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function clearSearchHighlights() {
+  svgEl.querySelectorAll('polygon.search-match').forEach(function(p) {
+    p.classList.remove('search-match');
+    if (!showPolygons && !p.classList.contains('active')) p.style.opacity = '0';
+  });
+  lineListEl.querySelectorAll('.line-item.search-match').forEach(function(el) {
+    el.classList.remove('search-match');
+  });
+}
+
+/* --- Downloads --- */
+
 function getAllText() {
-  return pages.flatMap(p => p.lines.map(l => l.text || '')).join('\n');
+  return pages.flatMap(function(p) { return p.lines.map(function(l) { return l.text || ''; }); }).join('\n');
 }
 
 function copyAllText() {
-  navigator.clipboard.writeText(getAllText()).then(() => {
-    const btn = document.getElementById('btnCopy');
+  navigator.clipboard.writeText(getAllText()).then(function() {
+    var btn = document.getElementById('btnCopy');
     btn.textContent = 'Copied!';
     btn.classList.add('active');
-    setTimeout(() => { btn.textContent = 'Copy Text'; btn.classList.remove('active'); }, 2000);
+    setTimeout(function() { btn.textContent = 'Copy Text'; btn.classList.remove('active'); }, 2000);
   });
 }
 
 function downloadText() {
-  const blob = new Blob([getAllText()], { type: 'text/plain' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  var blob = new Blob([getAllText()], { type: 'text/plain' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
   a.href = url;
   a.download = 'DOCUMENT_NAME_HERE.txt';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadImage() {
+  var page = pages[currentPageIdx];
+  fetch(page.image_url)
+    .then(function(r) { return r.blob(); })
+    .then(function(blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'page_' + (currentPageIdx + 1) + '.jpg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    })
+    .catch(function() { window.open(page.image_url, '_blank'); });
 }
 
 renderPage(0);

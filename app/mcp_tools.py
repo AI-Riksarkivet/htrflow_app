@@ -312,21 +312,19 @@ def htr_transcribe(
 ) -> dict:
     """Transcribe handwritten historical documents and return all results in one call.
 
-    Runs the full HTR (Handwritten Text Recognition) AI pipeline once and returns
-    URLs to all generated files. The pipeline is expensive — call this tool ONCE
-    with ALL images in the image_urls list. Do NOT call it multiple times for
-    images that belong to the same request.
+    IMPORTANT — two rules:
+    1. Local files MUST be uploaded first. Call htr_upload_image to get upload
+       instructions, upload via curl, then use the returned server URLs here.
+       Local paths like /mnt/... or /tmp/... will NOT work as image_urls.
+    2. Pass ALL image URLs in one call. Do NOT call this tool per image.
 
-    All outputs are generated from a single pipeline run with minimal overhead.
+    Runs the HTR AI pipeline once and returns URLs to generated files.
     The language and layout apply to all images in the batch.
 
-    If the user attached local files, first call htr_upload_image for each file
-    to get server-accessible URLs, then pass ALL URLs in a single htr_transcribe call.
-
     Args:
-        image_urls: IMPORTANT: Pass ALL image URLs in a single list. Do NOT call
-                    this tool separately per image. Each URL is either a public
-                    http/https URL or a Gradio file URL obtained via htr_upload_image.
+        image_urls: Server-accessible URLs only (http/https). Local file paths
+                    will fail. For user-attached files, upload them first via
+                    htr_upload_image + curl, then pass all URLs here in one list.
         export_format: Format for the archival export file.
                        - "alto_xml": ALTO XML (default). Standard archival format.
                        - "page_xml": PAGE XML. Standard archival format.
@@ -359,24 +357,24 @@ def htr_transcribe(
                          - step: OrderLines
 
     Returns:
-        dict with URLs to all generated files (you can fetch any of these):
-            pages_url: URL to a JSON file containing the structured transcription.
-                The JSON is a list of pages, each with a list of lines:
-                [{page: 1, lines: [{id, text, confidence}, ...]}, ...]
-                Fetch this URL to read the transcribed text and confidence scores.
-            viewer_url: URL to an interactive HTML gallery viewer. The viewer
-                shows document images with polygon overlays on detected text
-                lines, confidence highlighting, page navigation for multi-page
-                documents, and copy/download text actions. Share this URL with
-                the user to explore the transcription visually.
-            export_url: URL to download the archival export file in the
-                requested export_format. For multi-page documents with multiple
-                export files, this is a ZIP archive.
+        dict with URLs to all generated files. IMPORTANT: Always present ALL
+        returned URLs to the user in a structured way. Do NOT fetch pages_url
+        to dump its contents — just share the links.
+
+            viewer_url: Interactive HTML gallery viewer with polygon overlays,
+                confidence scores, page navigation, and copy/download text.
+                This is the main result — the user opens this in their browser.
+            pages_url: JSON file with the structured transcription data
+                (per-page lines with id, text, confidence). Available if the
+                user wants to work with the raw transcription data.
+            export_url: Archival export file in the requested export_format.
+                For multi-page documents this is a ZIP archive.
             export_format: The format of the export file (echoed back).
 
     Examples:
         User: "What does this letter say?"
         → htr_transcribe(image_urls=["https://example.com/letter.jpg"])
+        → Present viewer_url, pages_url, and export_url to the user.
 
         User: "Transcribe these 3 pages and export as PAGE XML"
         → htr_transcribe(image_urls=["url1", "url2", "url3"],
