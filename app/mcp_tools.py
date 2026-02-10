@@ -2,8 +2,8 @@
 MCP API endpoint for HTRflow handwritten text recognition.
 
 Provides outcome-oriented tools that transcribe handwritten documents
-and return all results in a single call — per-line transcription with
-confidence, interactive gallery viewer, and archival export file.
+and return all results as file URLs in a single call — structured
+transcription data, interactive gallery viewer, and archival export.
 """
 
 import os
@@ -120,11 +120,11 @@ def _run_htr_pipeline(
     return result[0]  # Extract collection from tuple
 
 
-def _extract_pages_lines(collection: Collection) -> list[dict]:
-    """Extract simplified per-page line data for the API response.
+def _save_pages_json(collection: Collection, export_id: str) -> str:
+    """Save per-page line data as JSON file and return its URL.
 
-    Returns a lightweight list with just id, text, and confidence per line,
-    grouped by page. This is what the MCP agent receives.
+    Produces a lightweight JSON with id, text, and confidence per line,
+    grouped by page. The agent can fetch this URL to read the transcription.
     """
     pages = []
     for i, page in enumerate(collection.pages):
@@ -150,7 +150,11 @@ def _extract_pages_lines(collection: Collection) -> list[dict]:
                     }
                 )
         pages.append({"page": i + 1, "lines": lines})
-    return pages
+
+    json_path = MCP_EXPORT_DIR / f"pages_{export_id}.json"
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(pages, f, ensure_ascii=False)
+    return _build_file_url(str(json_path))
 
 
 def _build_viewer_pages_data(
@@ -293,8 +297,9 @@ def htr_upload_image(filename: str = "image.jpg") -> str:
 3. Construct the image_url:
    image_url = "{base_url}/gradio_api/file=" + server_path
 
-4. Pass image_url to htr_transcribe:
-   htr_transcribe(image_urls=[image_url])"""
+4. Collect ALL image_urls, then pass them in a SINGLE htr_transcribe call:
+   htr_transcribe(image_urls=[image_url_1, image_url_2, ...])
+   IMPORTANT: Do NOT call htr_transcribe separately per image."""
 
 
 @gr.mcp.tool()
@@ -307,19 +312,20 @@ def htr_transcribe(
     """Transcribe handwritten historical documents and return all results in one call.
 
     Runs the full HTR (Handwritten Text Recognition) AI pipeline once and returns
-    everything: per-line transcription with confidence scores, an interactive
-    gallery viewer with polygon overlays, and an archival export file.
+    URLs to all generated files. The pipeline is expensive — call this tool ONCE
+    with ALL images in the image_urls list. Do NOT call it multiple times for
+    images that belong to the same request.
 
     All outputs are generated from a single pipeline run with minimal overhead.
     The language and layout apply to all images in the batch.
 
     If the user attached local files, first call htr_upload_image for each file
-    to get server-accessible URLs.
+    to get server-accessible URLs, then pass ALL URLs in a single htr_transcribe call.
 
     Args:
-        image_urls: List of image URLs to transcribe. Each URL is either a public
+        image_urls: IMPORTANT: Pass ALL image URLs in a single list. Do NOT call
+                    this tool separately per image. Each URL is either a public
                     http/https URL or a Gradio file URL obtained via htr_upload_image.
-                    Pass one URL for a single document, or multiple for batch processing.
         export_format: Format for the archival export file.
                        - "alto_xml": ALTO XML (default). Standard archival format.
                        - "page_xml": PAGE XML. Standard archival format.
@@ -334,17 +340,19 @@ def htr_transcribe(
                 - "spread": Two-page book opening / spread
 
     Returns:
-        dict with all transcription results:
-            pages: List of page results, each containing:
-                page: Page number (1-indexed).
-                lines: List of transcribed lines, each with:
-                    id: Line identifier.
-                    text: Transcribed text content.
-                    confidence: Model confidence score (0.0 to 1.0).
-            viewer_url: URL to interactive HTML gallery viewer with polygon
-                overlays, confidence highlighting, page navigation,
-                and copy/download actions. Open in browser.
-            export_url: URL to download the archival export file.
+        dict with URLs to all generated files (you can fetch any of these):
+            pages_url: URL to a JSON file containing the structured transcription.
+                The JSON is a list of pages, each with a list of lines:
+                [{page: 1, lines: [{id, text, confidence}, ...]}, ...]
+                Fetch this URL to read the transcribed text and confidence scores.
+            viewer_url: URL to an interactive HTML gallery viewer. The viewer
+                shows document images with polygon overlays on detected text
+                lines, confidence highlighting, page navigation for multi-page
+                documents, and copy/download text actions. Share this URL with
+                the user to explore the transcription visually.
+            export_url: URL to download the archival export file in the
+                requested export_format. For multi-page documents with multiple
+                export files, this is a ZIP archive.
             export_format: The format of the export file (echoed back).
 
     Examples:
@@ -359,20 +367,18 @@ def htr_transcribe(
         → htr_transcribe(image_urls=["https://example.com/spread.jpg"],
                          language="swedish", layout="spread")
     """
-    # 1. Run the expensive AI pipeline once
     pipeline = _resolve_pipeline(language, layout)
     collection = _run_htr_pipeline(image_urls, pipeline, None, progress=None)
 
     export_id = str(uuid.uuid4())[:8]
 
-    # 2. Generate all outputs from the same result (cheap post-processing)
-    pages_lines = _extract_pages_lines(collection)
+    pages_url = _save_pages_json(collection, export_id)
     viewer_pages_data = _build_viewer_pages_data(collection, image_urls)
     viewer_url = _generate_viewer(collection, viewer_pages_data, export_id)
     export_url = _export_collection(collection, export_format, export_id)
 
     return {
-        "pages": pages_lines,
+        "pages_url": pages_url,
         "viewer_url": viewer_url,
         "export_url": export_url,
         "export_format": export_format,
