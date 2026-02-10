@@ -14,6 +14,7 @@
         let currentPageIndex = props.value.currentPageIndex || 0;
         let selectedLineId = null;
         let editedTexts = {};
+        let isEditMode = false;
 
         let viewBox = { x: 0, y: 0, width: 0, height: 0 };
         let isPanning = false;
@@ -462,6 +463,32 @@
 
         if (nextBtn) {
             nextBtn.addEventListener('click', navigateToNext);
+        }
+
+        const fullscreenBtn = element.querySelector('#fullscreen-btn');
+        const visualizerRoot = element.querySelector('.htr-visualizer') || element.closest('.htr-visualizer');
+
+        if (fullscreenBtn && visualizerRoot) {
+            const iconExpand = fullscreenBtn.querySelector('.icon-expand');
+            const iconShrink = fullscreenBtn.querySelector('.icon-shrink');
+
+            function updateFullscreenIcon() {
+                const isFs = document.fullscreenElement === visualizerRoot;
+                iconExpand.style.display = isFs ? 'none' : 'block';
+                iconShrink.style.display = isFs ? 'block' : 'none';
+                visualizerRoot.classList.toggle('is-fullscreen', isFs);
+            }
+
+            fullscreenBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                } else {
+                    visualizerRoot.requestFullscreen();
+                }
+            });
+
+            document.addEventListener('fullscreenchange', updateFullscreenIcon);
         }
 
         renderPage(currentPageIndex);

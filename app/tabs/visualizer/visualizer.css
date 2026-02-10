@@ -194,6 +194,13 @@
     transform: scale(0.95);
 }
 
+.zoom-divider {
+    width: 1px;
+    height: 14px;
+    background: var(--border-color-primary);
+    margin: 0 1px;
+}
+
 .zoom-level {
     padding: 0 4px;
     font-size: 11px;
@@ -440,4 +447,26 @@
 .image-panel::-webkit-scrollbar-thumb:hover,
 .transcription-panel::-webkit-scrollbar-thumb:hover {
     background: var(--border-color-accent-dark);
+}
+
+/* Fullscreen mode */
+.htr-visualizer.is-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: var(--background-fill-primary);
+    padding: 0.75rem;
+    box-sizing: border-box;
+}
+
+.htr-visualizer.is-fullscreen .htr-visualizer-content {
+    height: 100%;
+}
+
+.htr-visualizer.is-fullscreen .image-panel {
+    max-height: none !important;
+}
+
+.htr-visualizer.is-fullscreen .transcription-panel-container {
+    max-height: none !important;
 }

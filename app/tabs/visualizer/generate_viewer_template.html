@@ -87,6 +87,22 @@ header {
 .header-title span { color: var(--color-accent); font-weight: 600; }
 .header-controls { display: flex; gap: 0.5rem; flex-shrink: 0; }
 
+.page-nav {
+  display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0;
+}
+.page-indicator {
+  font-family: var(--font-mono); font-size: 0.75rem;
+  color: var(--color-text-secondary); min-width: 3.5rem; text-align: center;
+}
+.btn-nav {
+  font-family: var(--font-mono); font-size: 0.75rem; padding: 0.3rem 0.55rem;
+  border: 1px solid var(--color-border-primary); border-radius: var(--border-radius-sm);
+  background: var(--color-background-primary); color: var(--color-text-secondary);
+  cursor: pointer; transition: all 0.15s ease; user-select: none; line-height: 1;
+}
+.btn-nav:hover:not(:disabled) { border-color: var(--color-accent); color: var(--color-accent); }
+.btn-nav:disabled { opacity: 0.35; cursor: default; }
+
 .btn {
   font-family: var(--font-mono); font-size: 0.75rem; padding: 0.35rem 0.75rem;
   border: 1px solid var(--color-border-primary); border-radius: var(--border-radius-sm);
@@ -182,6 +198,11 @@ svg .svg-label-shadow {
 <div class="app" id="app">
   <header>
     <div class="header-title"><span>HTR</span> Polygon Viewer &middot; DOCUMENT_NAME_HERE</div>
+    <div class="page-nav" id="pageNav">
+      <button class="btn-nav" id="btnPrev" onclick="prevPage()">&lsaquo;</button>
+      <span class="page-indicator" id="pageIndicator">1 / 1</span>
+      <button class="btn-nav" id="btnNext" onclick="nextPage()">&rsaquo;</button>
+    </div>
     <div class="header-controls">
       <button class="btn" id="btnCopy" onclick="copyAllText()">Copy Text</button>
       <button class="btn" id="btnDownload" onclick="downloadText()">Download TXT</button>
@@ -193,8 +214,8 @@ svg .svg-label-shadow {
   <div class="main">
     <div class="viewer">
       <div class="viewer-frame">
-        <img src="IMAGE_URL_HERE" alt="Document" />
-        <svg id="svg" viewBox="0 0 WIDTH_HERE HEIGHT_HERE" preserveAspectRatio="xMidYMid meet"></svg>
+        <img id="docImage" alt="Document" />
+        <svg id="svg" preserveAspectRatio="xMidYMid meet"></svg>
       </div>
     </div>
     <div class="sidebar collapsed" id="sidebar">
@@ -214,18 +235,28 @@ svg .svg-label-shadow {
 </div>
 
 <script>
-const lines = LINES_ARRAY_HERE;
+const pages = PAGES_DATA_HERE;
+let currentPageIdx = 0;
 
 const svgEl = document.getElementById('svg');
+const docImage = document.getElementById('docImage');
 const tooltip = document.getElementById('tooltip');
 const ttText = document.getElementById('ttText');
 const ttMeta = document.getElementById('ttMeta');
 const lineListEl = document.getElementById('lineList');
 const sidebarEl = document.getElementById('sidebar');
 const appEl = document.getElementById('app');
+const pageNav = document.getElementById('pageNav');
+const pageIndicator = document.getElementById('pageIndicator');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
 
 let showPolygons = true;
 let showLabels = false;
+
+if (pages.length <= 1) pageNav.style.display = 'none';
+
+function currentLines() { return pages[currentPageIdx].lines; }
 
 function confColor(c) {
   if (c >= 0.9) return 'var(--confidence-high)';
@@ -240,7 +271,21 @@ function fitFontSize(ln) {
   return Math.min(h * 0.68, charW * 1.6, 60);
 }
 
-function render() {
+function renderPage(idx) {
+  currentPageIdx = idx;
+  const page = pages[idx];
+  docImage.src = page.image_url;
+  svgEl.setAttribute('viewBox', '0 0 ' + page.width + ' ' + page.height);
+  pageIndicator.textContent = (idx + 1) + ' / ' + pages.length;
+  btnPrev.disabled = idx === 0;
+  btnNext.disabled = idx === pages.length - 1;
+  render(page.lines);
+}
+
+function prevPage() { if (currentPageIdx > 0) renderPage(currentPageIdx - 1); }
+function nextPage() { if (currentPageIdx < pages.length - 1) renderPage(currentPageIdx + 1); }
+
+function render(lines) {
   svgEl.innerHTML = '';
   lineListEl.innerHTML = '';
 
@@ -295,7 +340,7 @@ function render() {
 }
 
 function activate(i, e) {
-  const ln = lines[i];
+  const ln = currentLines()[i];
   const poly = document.getElementById('poly-' + i);
   if (poly) { poly.classList.add('active'); poly.style.opacity = '1'; }
   document.getElementById('item-' + i)?.classList.add('highlight');
@@ -338,9 +383,12 @@ function toggleSidebar() {
   document.getElementById('btnLines').classList.toggle('active', !open);
 }
 
+function getAllText() {
+  return pages.flatMap(p => p.lines.map(l => l.text || '')).join('\n');
+}
+
 function copyAllText() {
-  const text = lines.map(l => l.text || '').join('\n');
-  navigator.clipboard.writeText(text).then(() => {
+  navigator.clipboard.writeText(getAllText()).then(() => {
     const btn = document.getElementById('btnCopy');
     btn.textContent = 'Copied!';
     btn.classList.add('active');
@@ -349,8 +397,7 @@ function copyAllText() {
 }
 
 function downloadText() {
-  const text = lines.map(l => l.text || '').join('\n');
-  const blob = new Blob([text], { type: 'text/plain' });
+  const blob = new Blob([getAllText()], { type: 'text/plain' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -359,7 +406,7 @@ function downloadText() {
   URL.revokeObjectURL(url);
 }
 
-render();
+renderPage(0);
 </script>
 </body>
 </html>

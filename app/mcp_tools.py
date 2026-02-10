@@ -1,8 +1,9 @@
 """
 MCP API endpoint for HTRflow handwritten text recognition.
 
-Provides a single outcome-oriented tool that transcribes handwritten documents
-and returns results in the format most appropriate for the user's intent.
+Provides outcome-oriented tools that transcribe handwritten documents
+and return all results in a single call — per-line transcription with
+confidence, interactive gallery viewer, and archival export file.
 """
 
 import os
@@ -54,17 +55,6 @@ def _resolve_pipeline(language: str, layout: str) -> str:
     return PIPELINE_MAP.get((language, layout), "Swedish - Single page and snippets")
 
 
-def _extract_text(collection: Collection) -> str:
-    """Extract plain text from a Collection."""
-    text_lines = []
-    for page in collection.pages:
-        lines = list(page.traverse(lambda node: node.is_line()))
-        for line in lines:
-            if line.text:
-                text_lines.append(line.text)
-    return "\n".join(text_lines)
-
-
 def _build_file_url(file_path: str) -> str:
     """Construct a Gradio file download URL."""
     base_url = _get_base_url()
@@ -79,88 +69,6 @@ def _get_htr_viewer_template() -> str:
     )
     with open(template_path, "r", encoding="utf-8") as f:
         return f.read()
-
-
-def _collection_to_dict(collection: Collection) -> dict:
-    """Convert Collection to serializable dict with full structure."""
-    pages_data = []
-    total_lines = 0
-
-    for page in collection.pages:
-        regions_raw = list(
-            page.traverse(
-                lambda node: node.children and all(child.is_line() for child in node)
-            )
-        )
-
-        regions_data = []
-        for region in regions_raw:
-            lines_data = []
-
-            for line in region:
-                if line.is_line():
-                    text_result = line.get("text_result")
-                    confidence = (
-                        text_result.scores[0]
-                        if (
-                            text_result
-                            and hasattr(text_result, "scores")
-                            and text_result.scores
-                        )
-                        else 1.0
-                    )
-
-                    lines_data.append(
-                        {
-                            "label": line.label,
-                            "text": line.text or "",
-                            "bbox": {
-                                "xmin": int(line.bbox[0]),
-                                "ymin": int(line.bbox[1]),
-                                "xmax": int(line.bbox[2]),
-                                "ymax": int(line.bbox[3]),
-                            },
-                            "polygon": " ".join(
-                                [f"{int(p[0])},{int(p[1])}" for p in line.polygon]
-                            ),
-                            "confidence": float(confidence),
-                        }
-                    )
-                    total_lines += 1
-
-            if lines_data:
-                regions_data.append(
-                    {
-                        "label": region.label,
-                        "bbox": {
-                            "xmin": int(region.bbox[0]),
-                            "ymin": int(region.bbox[1]),
-                            "xmax": int(region.bbox[2]),
-                            "ymax": int(region.bbox[3]),
-                        },
-                        "polygon": " ".join(
-                            [f"{int(p[0])},{int(p[1])}" for p in region.polygon]
-                        ),
-                        "lines": lines_data,
-                    }
-                )
-
-        pages_data.append(
-            {
-                "label": page.label,
-                "width": page.width,
-                "height": page.height,
-                "path": page.path,
-                "regions": regions_data,
-            }
-        )
-
-    return {
-        "label": collection.label,
-        "num_pages": len(collection.pages),
-        "num_lines": total_lines,
-        "pages": pages_data,
-    }
 
 
 def _prepare_images_for_htrflow(
@@ -186,7 +94,7 @@ def _run_htr_pipeline(
     progress: gr.Progress = None,
 ) -> Collection:
     """
-    Core HTR pipeline execution - used by all MCP tools.
+    Core HTR pipeline execution — the expensive AI/GPU step.
 
     Args:
         image_urls: Image URL(s) to process
@@ -210,6 +118,149 @@ def _run_htr_pipeline(
         )
     )
     return result[0]  # Extract collection from tuple
+
+
+def _extract_pages_lines(collection: Collection) -> list[dict]:
+    """Extract simplified per-page line data for the API response.
+
+    Returns a lightweight list with just id, text, and confidence per line,
+    grouped by page. This is what the MCP agent receives.
+    """
+    pages = []
+    for i, page in enumerate(collection.pages):
+        page_lines = list(page.traverse(lambda node: node.is_line()))
+        lines = []
+        for line in page_lines:
+            if line.text:
+                text_result = line.get("text_result")
+                confidence = (
+                    text_result.scores[0]
+                    if (
+                        text_result
+                        and hasattr(text_result, "scores")
+                        and text_result.scores
+                    )
+                    else 1.0
+                )
+                lines.append(
+                    {
+                        "id": line.label,
+                        "text": line.text,
+                        "confidence": round(float(confidence), 3),
+                    }
+                )
+        pages.append({"page": i + 1, "lines": lines})
+    return pages
+
+
+def _build_viewer_pages_data(
+    collection: Collection, image_urls: list[str]
+) -> list[dict]:
+    """Build the full per-page data needed by the gallery viewer template.
+
+    Unlike _extract_pages_lines (lightweight for API), this includes bboxes,
+    polygons, and image URLs needed for the interactive HTML viewer.
+    """
+    viewer_pages = []
+
+    for i, page in enumerate(collection.pages):
+        regions_raw = list(
+            page.traverse(
+                lambda node: node.children and all(child.is_line() for child in node)
+            )
+        )
+
+        lines = []
+        for region in regions_raw:
+            for line in region:
+                if line.is_line():
+                    text_result = line.get("text_result")
+                    confidence = (
+                        text_result.scores[0]
+                        if (
+                            text_result
+                            and hasattr(text_result, "scores")
+                            and text_result.scores
+                        )
+                        else 1.0
+                    )
+                    lines.append(
+                        {
+                            "label": line.label,
+                            "text": line.text or "",
+                            "bbox": {
+                                "xmin": int(line.bbox[0]),
+                                "ymin": int(line.bbox[1]),
+                                "xmax": int(line.bbox[2]),
+                                "ymax": int(line.bbox[3]),
+                            },
+                            "polygon": " ".join(
+                                [f"{int(p[0])},{int(p[1])}" for p in line.polygon]
+                            ),
+                            "confidence": float(confidence),
+                        }
+                    )
+
+        # Use page's own image path if available, otherwise map from input URLs
+        page_path = getattr(page, "path", None)
+        if page_path and os.path.exists(str(page_path)):
+            img_url = _build_file_url(str(page_path))
+        elif i < len(image_urls):
+            img_url = image_urls[i]
+        else:
+            img_url = image_urls[-1]
+
+        viewer_pages.append(
+            {
+                "image_url": img_url,
+                "width": page.width,
+                "height": page.height,
+                "lines": lines,
+            }
+        )
+
+    return viewer_pages
+
+
+def _generate_viewer(
+    collection: Collection, viewer_pages_data: list[dict], export_id: str
+) -> str:
+    """Generate interactive gallery viewer HTML and return its URL."""
+    document_name = collection.label or f"document_{export_id}"
+
+    template = _get_htr_viewer_template()
+    html = template.replace("DOCUMENT_NAME_HERE", document_name)
+    html = html.replace("PAGES_DATA_HERE", json.dumps(viewer_pages_data))
+
+    html_path = MCP_EXPORT_DIR / f"viewer_{document_name}_{export_id}.html"
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html)
+
+    return _build_file_url(str(html_path))
+
+
+def _export_collection(
+    collection: Collection, export_format: str, export_id: str
+) -> str:
+    """Export collection to file and return download URL."""
+    format_map = {"alto_xml": "alto", "page_xml": "page", "json": "json"}
+    output_format = format_map[export_format]
+
+    export_base_dir = MCP_EXPORT_DIR / export_id
+    export_base_dir.mkdir(exist_ok=True)
+    export_dir = export_base_dir / output_format
+
+    collection.save(directory=str(export_dir), serializer=output_format)
+    exported_files = rename_files_in_directory(str(export_dir), output_format)
+
+    if len(exported_files) > 1:
+        zip_path = export_base_dir / f"htrflow_export_{output_format}.zip"
+        shutil.make_archive(str(zip_path).replace(".zip", ""), "zip", str(export_dir))
+        file_path = str(zip_path)
+    else:
+        file_path = exported_files[0]
+
+    return _build_file_url(file_path)
 
 
 @gr.mcp.tool()
@@ -242,159 +293,87 @@ def htr_upload_image(filename: str = "image.jpg") -> str:
 3. Construct the image_url:
    image_url = "{base_url}/gradio_api/file=" + server_path
 
-4. Pass image_url to htr_transcribe with desired output format:
-   - htr_transcribe(image_url, output="text")      → plain text
-   - htr_transcribe(image_url, output="viewer")     → interactive viewer URL
-   - htr_transcribe(image_url, output="alto_xml")   → ALTO XML download URL
-   - htr_transcribe(image_url, output="page_xml")   → PAGE XML download URL
-   - htr_transcribe(image_url, output="json")        → JSON download URL"""
+4. Pass image_url to htr_transcribe:
+   htr_transcribe(image_urls=[image_url])"""
 
 
 @gr.mcp.tool()
 def htr_transcribe(
-    image_url: str,
-    output: Literal["text", "viewer", "alto_xml", "page_xml", "json"] = "text",
+    image_urls: list[str],
+    export_format: Literal["alto_xml", "page_xml", "json"] = "alto_xml",
     language: Literal["swedish", "norwegian", "english", "medieval"] = "swedish",
-    layout: Literal["single_page", "spread"] = "spread",
-) -> Union[str, dict]:
-    """Transcribe a handwritten historical document using AI models.
+    layout: Literal["single_page", "spread"] = "single_page",
+) -> dict:
+    """Transcribe handwritten historical documents and return all results in one call.
 
-    This is the main transcription tool. It runs the HTR (Handwritten Text Recognition)
-    pipeline and returns results in the format specified by the output argument.
+    Runs the full HTR (Handwritten Text Recognition) AI pipeline once and returns
+    everything: per-line transcription with confidence scores, an interactive
+    gallery viewer with polygon overlays, and an archival export file.
 
-    If the user attached a local file, first call htr_upload_image to get an image_url.
+    All outputs are generated from a single pipeline run with minimal overhead.
+    The language and layout apply to all images in the batch.
+
+    If the user attached local files, first call htr_upload_image for each file
+    to get server-accessible URLs.
 
     Args:
-        image_url: URL to the document image. Either a public http/https URL,
-                   or a Gradio file URL obtained via htr_upload_image.
-        output: What to return after transcription. Choices:
-                - "text": Plain text transcription (default). Best for reading content.
-                - "viewer": Interactive HTML viewer URL with polygons, confidence scores,
-                  and line-by-line highlighting. Best for visual inspection.
-                - "alto_xml": ALTO XML file download URL. Standard archival format.
-                - "page_xml": PAGE XML file download URL. Standard archival format.
-                - "json": JSON file download URL. Structured data export.
-        language: Language of the handwritten document. Choices:
+        image_urls: List of image URLs to transcribe. Each URL is either a public
+                    http/https URL or a Gradio file URL obtained via htr_upload_image.
+                    Pass one URL for a single document, or multiple for batch processing.
+        export_format: Format for the archival export file.
+                       - "alto_xml": ALTO XML (default). Standard archival format.
+                       - "page_xml": PAGE XML. Standard archival format.
+                       - "json": JSON. Structured data export.
+        language: Language of the handwritten documents.
                   - "swedish": Swedish historical documents (default)
                   - "norwegian": Norwegian historical documents
                   - "english": English historical documents
                   - "medieval": Medieval manuscripts
-        layout: Physical layout of the document page. Choices:
+        layout: Physical layout of the document pages.
                 - "single_page": Single page or snippet (default)
                 - "spread": Two-page book opening / spread
 
     Returns:
-        Depends on the output argument:
-
-        output="text" → str
-            Plain text transcription, one line per text line.
-
-        output="viewer" → dict
-            {"viewer_url": str, "text_preview": str,
-             "stats": {"num_lines": int, "num_pages": int, "avg_confidence": float},
-             "message": str}
-
-        output="alto_xml" | "page_xml" | "json" → dict
-            {"download_url": str, "format": str, "file_size_kb": float, "message": str}
+        dict with all transcription results:
+            pages: List of page results, each containing:
+                page: Page number (1-indexed).
+                lines: List of transcribed lines, each with:
+                    id: Line identifier.
+                    text: Transcribed text content.
+                    confidence: Model confidence score (0.0 to 1.0).
+            viewer_url: URL to interactive HTML gallery viewer with polygon
+                overlays, confidence highlighting, page navigation,
+                and copy/download actions. Open in browser.
+            export_url: URL to download the archival export file.
+            export_format: The format of the export file (echoed back).
 
     Examples:
         User: "What does this letter say?"
-        → htr_transcribe("https://example.com/letter.jpg")
+        → htr_transcribe(image_urls=["https://example.com/letter.jpg"])
 
-        User: "Transcribe this and show me the line regions"
-        → htr_transcribe("https://example.com/doc.jpg", output="viewer")
-
-        User: "Export as ALTO XML for our archive"
-        → htr_transcribe("https://example.com/doc.jpg", output="alto_xml")
+        User: "Transcribe these 3 pages and export as PAGE XML"
+        → htr_transcribe(image_urls=["url1", "url2", "url3"],
+                         export_format="page_xml")
 
         User: "Read this Swedish manuscript spread"
-        → htr_transcribe("https://example.com/spread.jpg", output="text",
+        → htr_transcribe(image_urls=["https://example.com/spread.jpg"],
                          language="swedish", layout="spread")
     """
+    # 1. Run the expensive AI pipeline once
     pipeline = _resolve_pipeline(language, layout)
-    collection = _run_htr_pipeline(image_url, pipeline, None, progress=None)
-
-    # --- output="text" ---
-    if output == "text":
-        return _extract_text(collection)
-
-    # --- output="viewer" ---
-    if output == "viewer":
-        analysis_data = _collection_to_dict(collection)
-
-        export_id = str(uuid.uuid4())[:8]
-        json_path = MCP_EXPORT_DIR / f"htr_analysis_{export_id}.json"
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(analysis_data, f)
-
-        document_name = collection.label or f"document_{export_id}"
-
-        lines = []
-        page = analysis_data["pages"][0]
-        for region in page["regions"]:
-            lines.extend(region["lines"])
-
-        template = _get_htr_viewer_template()
-        html = template.replace("DOCUMENT_NAME_HERE", document_name)
-        html = html.replace("IMAGE_URL_HERE", image_url)
-        html = html.replace(
-            "WIDTH_HERE HEIGHT_HERE", f"{page['width']} {page['height']}"
-        )
-        html = html.replace("LINES_ARRAY_HERE", json.dumps(lines))
-
-        html_path = MCP_EXPORT_DIR / f"viewer_{document_name}_{export_id}.html"
-        with open(html_path, "w", encoding="utf-8") as f:
-            f.write(html)
-
-        viewer_url = _build_file_url(str(html_path))
-
-        total_confidence = sum(
-            line["confidence"]
-            for page in analysis_data["pages"]
-            for region in page["regions"]
-            for line in region["lines"]
-        )
-        avg_confidence = total_confidence / max(analysis_data["num_lines"], 1)
-
-        full_text = _extract_text(collection)
-        text_preview = full_text[:500] + ("..." if len(full_text) > 500 else "")
-
-        return {
-            "viewer_url": viewer_url,
-            "text_preview": text_preview,
-            "stats": {
-                "num_lines": analysis_data["num_lines"],
-                "num_pages": analysis_data["num_pages"],
-                "avg_confidence": round(avg_confidence, 3),
-            },
-            "message": "Open viewer_url in browser to see interactive transcription",
-        }
-
-    # --- output="alto_xml" | "page_xml" | "json" ---
-    format_map = {"alto_xml": "alto", "page_xml": "page", "json": "json"}
-    output_format = format_map[output]
+    collection = _run_htr_pipeline(image_urls, pipeline, None, progress=None)
 
     export_id = str(uuid.uuid4())[:8]
-    export_base_dir = MCP_EXPORT_DIR / export_id
-    export_base_dir.mkdir(exist_ok=True)
-    export_dir = export_base_dir / output_format
 
-    collection.save(directory=str(export_dir), serializer=output_format)
-    exported_files = rename_files_in_directory(str(export_dir), output_format)
-
-    if len(exported_files) > 1:
-        zip_path = export_base_dir / f"htrflow_export_{output_format}.zip"
-        shutil.make_archive(str(zip_path).replace(".zip", ""), "zip", str(export_dir))
-        file_path = str(zip_path)
-    else:
-        file_path = exported_files[0]
-
-    file_size_kb = round(Path(file_path).stat().st_size / 1024, 1)
-    download_url = _build_file_url(file_path)
+    # 2. Generate all outputs from the same result (cheap post-processing)
+    pages_lines = _extract_pages_lines(collection)
+    viewer_pages_data = _build_viewer_pages_data(collection, image_urls)
+    viewer_url = _generate_viewer(collection, viewer_pages_data, export_id)
+    export_url = _export_collection(collection, export_format, export_id)
 
     return {
-        "download_url": download_url,
-        "format": output,
-        "file_size_kb": file_size_kb,
-        "message": f"Download {output} file from download_url",
+        "pages": pages_lines,
+        "viewer_url": viewer_url,
+        "export_url": export_url,
+        "export_format": export_format,
     }
