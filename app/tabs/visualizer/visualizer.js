@@ -424,7 +424,7 @@
             editToggle.addEventListener('change', (e) => {
                 const isEnabled = e.target.checked;
                 toggleEditMode(isEnabled);
-                saveBtn.style.display = isEnabled ? 'inline-block' : 'none';
+                saveBtn.style.display = isEnabled ? 'inline-flex' : 'none';
 
                 if (!isEnabled) {
                     editedTexts = {};
