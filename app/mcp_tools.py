@@ -284,39 +284,39 @@ def _export_collection(
     return _build_file_url(file_path)
 
 
-@gr.mcp.tool()
-def htr_upload_image(filename: str = "image.jpg") -> str:
-    """Upload a user-attached image to the server and get a URL for htr_transcribe.
-
-    Use when: User attaches or uploads a local image file and you need a
-    server-accessible URL to pass to htr_transcribe.
-
-    NOT needed when: User already provides an http/https URL directly.
-
-    Args:
-        filename: The filename from the user's upload (e.g. "letter.jpg")
-
-    Returns:
-        Step-by-step instructions for uploading the file and constructing the image_url.
-    """
-    base_url = _get_base_url() or "http://localhost:7860"
-
-    return f"""To upload '{filename}' for HTR transcription:
-
-1. POST the file to: {base_url}/gradio_api/upload
-   Content-Type: multipart/form-data
-   Body: files=[("files", ("{filename}", file_bytes, "image/jpeg"))]
-
-2. Extract server path from JSON response:
-   Response: ["/tmp/gradio/abc123/{filename}"]
-   server_path = response.json()[0]
-
-3. Construct the image_url:
-   image_url = "{base_url}/gradio_api/file=" + server_path
-
-4. Collect ALL image_urls, then pass them in a SINGLE htr_transcribe call:
-   htr_transcribe(image_urls=[image_url_1, image_url_2, ...])
-   IMPORTANT: Do NOT call htr_transcribe separately per image."""
+# @gr.mcp.tool()
+# def htr_upload_image(filename: str = "image.jpg") -> str:
+#     """Upload a user-attached image to the server and get a URL for htr_transcribe.
+#
+#     Use when: User attaches or uploads a local image file and you need a
+#     server-accessible URL to pass to htr_transcribe.
+#
+#     NOT needed when: User already provides an http/https URL directly.
+#
+#     Args:
+#         filename: The filename from the user's upload (e.g. "letter.jpg")
+#
+#     Returns:
+#         Step-by-step instructions for uploading the file and constructing the image_url.
+#     """
+#     base_url = _get_base_url() or "http://localhost:7860"
+#
+#     return f"""To upload '{filename}' for HTR transcription:
+#
+# 1. POST the file to: {base_url}/gradio_api/upload
+#    Content-Type: multipart/form-data
+#    Body: files=[("files", ("{filename}", file_bytes, "image/jpeg"))]
+#
+# 2. Extract server path from JSON response:
+#    Response: ["/tmp/gradio/abc123/{filename}"]
+#    server_path = response.json()[0]
+#
+# 3. Construct the image_url:
+#    image_url = "{base_url}/gradio_api/file=" + server_path
+#
+# 4. Collect ALL image_urls, then pass them in a SINGLE htr_transcribe call:
+#    htr_transcribe(image_urls=[image_url_1, image_url_2, ...])
+#    IMPORTANT: Do NOT call htr_transcribe separately per image."""
 
 
 @gr.mcp.tool()
@@ -327,25 +327,11 @@ def htr_transcribe(
     layout: Literal["single_page", "spread"] = "single_page",
     custom_yaml: Optional[str] = None,
 ) -> dict:
-    """Transcribe handwritten documents. Returns ONLY URLs — present them to the user as-is.
-
-    CRITICAL RULES:
-    1. Upload first: User-attached files MUST be uploaded via htr_upload_image
-       before calling this tool. Use curl to upload to /gradio_api/upload, then
-       construct the full URL from the returned server path. Do NOT guess or
-       fabricate image URLs (e.g. CDN links) — only use URLs constructed from
-       the upload response.
-    2. Batch everything: Pass ALL image URLs in ONE call. NEVER call this tool
-       multiple times for separate images — that wastes expensive GPU time.
-    3. Return URLs only: Your response to the user should ONLY contain the
-       returned URLs as clickable links. Do NOT fetch, read, or parse any of
-       the returned URLs. Do NOT transcribe or reproduce the document text in
-       your message — the viewer_url already shows everything interactively.
+    """Transcribe handwritten documents and return results as file URLs.
 
     Args:
-        image_urls: List of full server URLs constructed from the upload step.
-                    Must follow the pattern: {base_url}/gradio_api/file={server_path}
-                    where server_path comes from the upload response.
+        image_urls: List of full server URLs to process (from upload endpoint
+                    or direct http/https URLs).
         export_format: Export format: "alto_xml" (default), "page_xml", or "json".
         language: Document language: "swedish" (default), "norwegian",
                   "english", or "medieval".
@@ -354,24 +340,13 @@ def htr_transcribe(
                      language/layout when provided.
 
     Returns:
-        dict with file URLs. Present these links to the user — nothing else.
-        Do NOT fetch or read any URL. Do NOT reproduce document text.
-
-            viewer_url: Interactive gallery viewer — the main result.
-                User opens this in their browser to see images with polygon
-                overlays, search, confidence scores, and text download.
-            pages_url: JSON with per-page transcription lines.
-                Only share this link — do NOT fetch it or show its contents.
+        dict with file URLs:
+            viewer_url: Interactive gallery viewer with polygon overlays,
+                search, confidence scores, and text download.
+            pages_url: JSON with per-page transcription lines
+                (id, text, confidence per line).
             export_url: Archival export file in the requested format.
             export_format: The requested format (echoed back).
-
-    Example response to user:
-        "Here are your transcription results:
-         - **Viewer**: [viewer_url] (interactive gallery with text overlays)
-         - **Transcription data**: [pages_url]
-         - **Export (ALTO XML)**: [export_url]"
-
-        That's it. No text reproduction. No fetching URLs.
     """
     pipeline = _resolve_pipeline(language, layout)
     collection = _run_htr_pipeline(image_urls, pipeline, custom_yaml, progress=None)

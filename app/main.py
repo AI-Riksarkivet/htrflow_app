@@ -16,7 +16,7 @@ from app.tabs.submit import (
 from app.tabs.visualizer import collection as collection_viz_state
 from app.tabs.visualizer import visualizer
 from app.mcp_tools import (
-    htr_upload_image,
+    # htr_upload_image,
     htr_transcribe,
 )
 
@@ -150,7 +150,7 @@ with gr.Blocks(
     )
 
     # Register MCP tools
-    gr.api(htr_upload_image, api_name="htr_upload_image")
+    # gr.api(htr_upload_image, api_name="htr_upload_image")
     gr.api(htr_transcribe, api_name="htr_transcribe")
 
 # Hide the Translate component's auto-generated /on_lang_change API endpoint
