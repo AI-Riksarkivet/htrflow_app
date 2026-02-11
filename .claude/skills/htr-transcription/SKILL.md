@@ -60,20 +60,53 @@ images. Each call runs an expensive GPU pipeline — batch everything.
 
 ### 4. Present results
 
-Return the URLs as clickable links:
+After transcription, present results as an **inline artifact** for the viewer
+and **downloadable links** for data exports.
 
-> Here are your transcription results:
-> - **Viewer**: [viewer_url] (interactive gallery with text overlays)
-> - **Transcription data**: [pages_url]
-> - **Export (ALTO XML)**: [export_url]
+#### 4a. Inline viewer artifact
 
-Present all returned URLs as **artifacts and downloadable links**:
-- `viewer_url` — embed the interactive gallery viewer as an artifact
-- `pages_url` — share as downloadable link (transcription JSON)
-- `export_url` — share as downloadable link (archival export)
+Download the viewer HTML, then embed all images as base64 data URIs so the
+artifact is fully self-contained (the artifact sandbox blocks external
+requests to the Gradio server).
+
+```bash
+curl -sL "{viewer_url}" -o /home/claude/viewer.html
+```
+
+Then run this Python script to embed images:
+
+```python
+import re, base64, urllib.request
+
+with open("/home/claude/viewer.html", "r") as f:
+    html = f.read()
+
+# Find all Gradio image URLs and embed as base64
+for url in set(re.findall(
+    r'https://riksarkivet-htr-demo\.hf\.space/gradio_api/file=[^\s"]+\.(?:jpg|png)', html
+)):
+    with urllib.request.urlopen(url) as resp:
+        img_data = resp.read()
+    ext = "jpeg" if url.endswith(".jpg") else "png"
+    data_uri = f"data:image/{ext};base64,{base64.b64encode(img_data).decode()}"
+    html = html.replace(url, data_uri)
+
+with open("/mnt/user-data/outputs/viewer.html", "w") as f:
+    f.write(html)
+```
+
+Then call `present_files` with `/mnt/user-data/outputs/viewer.html` to render
+the interactive viewer as an inline artifact.
+
+#### 4b. Export links
+
+Provide the remaining URLs as clickable download links:
+
+> - **Transcription data**: [pages_url] (per-line JSON)
+> - **Export**: [export_url] (archival export)
 
 Do NOT reproduce document text as plain text in your response — present
-the artifacts and links instead.
+the artifact and links instead.
 
 ## Options
 
