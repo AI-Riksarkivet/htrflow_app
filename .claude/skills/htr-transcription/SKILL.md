@@ -65,15 +65,15 @@ and **downloadable links** for data exports.
 
 #### 4a. Inline viewer artifact
 
-Download the viewer HTML, then embed all images as base64 data URIs so the
-artifact is fully self-contained (the artifact sandbox blocks external
-requests to the Gradio server).
+Download the viewer HTML, then inline all external dependencies (OpenSeadragon
+JS and images) so the artifact is fully self-contained (the artifact sandbox
+blocks external requests).
 
 ```bash
 curl -sL "{viewer_url}" -o /home/claude/viewer.html
 ```
 
-Then run this Python script to embed images:
+Then run this Python script to embed dependencies:
 
 ```python
 import re, base64, urllib.request
@@ -81,7 +81,14 @@ import re, base64, urllib.request
 with open("/home/claude/viewer.html", "r") as f:
     html = f.read()
 
-# Find all Gradio image URLs and embed as base64
+# Inline OpenSeadragon JS (CDN script -> inline script)
+osd_match = re.search(r'<script src="(https://cdn[^"]+openseadragon[^"]+)">\s*</script>', html)
+if osd_match:
+    with urllib.request.urlopen(osd_match.group(1)) as resp:
+        osd_js = resp.read().decode()
+    html = html.replace(osd_match.group(0), f"<script>{osd_js}</script>")
+
+# Embed all Gradio image URLs as base64 data URIs
 for url in set(re.findall(
     r'https://riksarkivet-htr-demo\.hf\.space/gradio_api/file=[^\s"]+\.(?:jpg|png)', html
 )):
