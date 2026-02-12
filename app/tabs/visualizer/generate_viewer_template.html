@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DOCUMENT_NAME_HERE - HTR Viewer</title>
+<script>
+// Polyfill for sandboxed environments (e.g. Claude artifact iframe)
+// No-op in normal browsers where these methods already exist.
+(function(){
+  var noop = function(){};
+  if (typeof console === 'undefined') window.console = {};
+  ['assert','warn','log','error','info','debug','trace','group','groupEnd','time','timeEnd'].forEach(function(m){
+    if (!console[m]) console[m] = noop;
+  });
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/openseadragon@4/build/openseadragon/openseadragon.min.js"></script>
 <style>
 :root {
